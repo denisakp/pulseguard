@@ -126,6 +126,25 @@ routes once the frontend service is repointed. New features are v1-only.
 
 ## Patterns to follow
 
+### Feature development flow (speckit — MANDATORY)
+
+Every new feature MUST go through the speckit SDD cycle in this exact order. Do
+not skip a step, do not reorder:
+
+1. **specify** (`/speckit-specify`) — draft the feature spec from the request
+2. **clarify** (`/speckit-clarify`) — resolve underspecified areas before planning
+3. **plan** (`/speckit-plan`) — design artifacts + Constitution Check
+4. **tasks** (`/speckit-tasks`) — dependency-ordered `tasks.md`
+5. **analyze** (`/speckit-analyze`) — cross-artifact consistency (spec/plan/tasks)
+6. **taskstoissues** (`/speckit-taskstoissues`) — turn tasks into GitHub issues
+7. **implement** (`/speckit-implement`) — execute the tasks
+
+Each step gates the next: don't plan on an unclarified spec, don't implement on
+tasks that failed analyze. Artifacts land under `specs/NNN-name/` (gitignored per
+the chantier convention). The bundled workflow is defined in
+`.specify/workflows/speckit/workflow.yml`; the order is enforced by the
+constitution's Delivery Workflow (`.specify/memory/constitution.md`).
+
 ### Adding a new monitor type
 
 1. Implement `CheckStrategy` in `internal/monitoring/strategy/yourtype.go`
