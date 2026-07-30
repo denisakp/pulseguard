@@ -86,7 +86,7 @@ Handlers never run checks or query DB directly. Scheduling goes through the Sche
 
 ### Key layers
 
-- **Entry point**: `cmd/api/main.go` — thin orchestrator (~26 lines), delegates to `internal/platform/bootstrap/`
+- **Entry point**: `cmd/api/main.go` — thin orchestrator (~35 lines), delegates to `internal/platform/bootstrap/`
 - **HTTP**: `internal/api/router.go` (Chi router), handlers in `internal/api/handler/`
 - **Domain models**: `internal/domain/models.go` — source of truth, IDs are ULIDs (set in `EnsureID()` called explicitly by sqlc Create wrappers)
 - **Services**: `internal/service/` — business logic, domain-level errors (not HTTP errors)
@@ -179,7 +179,7 @@ sqlc-only workflow. Full walkthrough at `internal/repository/sqlc/README.md`; ca
 1. Handler in `internal/api/handler/v1/` (interface + impl pattern)
 2. DTOs in `internal/dto/v1/`
 3. Route in `internal/api/router.go` (v1 sub-group)
-4. Swaggo annotations, then `make swag` and commit `docs/`
+4. Swaggo annotations, then `make openapi` + `make gen-fe-types`, commit `api/openapi/v1.{yaml,json}`
 5. Test scope enforcement (read-only API key → 403 on writes)
 
 ### Database migrations
@@ -216,6 +216,7 @@ Dashboard: http://localhost:9009 (project `ogoune`). Block on CRITICAL/BLOCKER i
 
 - `APP_SECRET_KEY` env var is mandatory — app refuses to start without it
 - `.private/` is gitignored — drop personal scratch / strategy docs there. `specs/` is also gitignored per the chantier convention.
+- Two docs trees, don't confuse: `docs/` = internal engineering docs (adrs/architecture/runbooks); `nebula/` = public VitePress site (docs.ogoune.com, auto-deployed on Vercel). Public-facing changes go in `nebula/`
 - Repository errors: map `repository.ErrNotFound` to service-level errors, handlers map those to HTTP status
 - Incident event steps (`detected`, `resource_down_alert`, `resolved`, `resource_up_alert`) may not all be present
 - Never block on scheduler failures — log and return `ErrSchedulerSync`
