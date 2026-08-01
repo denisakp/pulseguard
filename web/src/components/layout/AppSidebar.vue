@@ -8,6 +8,7 @@ import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 import { useResourceStore } from '@/stores/resourceStore'
+import { useHostStore } from '@/stores/hostStore'
 
 interface NavItem {
   label: string
@@ -15,12 +16,26 @@ interface NavItem {
   icon: string
 }
 
-const monitor: NavItem[] = [
-  { label: 'Overview', to: '/overview', icon: 'i-lucide-gauge' },
-  { label: 'Resources', to: '/resources', icon: 'i-lucide-radar' },
-  { label: 'Incidents', to: '/incidents', icon: 'i-lucide-zap' },
-  { label: 'Maintenance', to: '/maintenance', icon: 'i-lucide-wrench' },
-]
+// The Hosts entry appears only once at least one host is registered (spec 081).
+const hostStore = useHostStore()
+onMounted(() => {
+  if (hostStore.hosts.length === 0) void hostStore.fetch()
+})
+
+const monitor = computed<NavItem[]>(() => {
+  const items: NavItem[] = [
+    { label: 'Overview', to: '/overview', icon: 'i-lucide-gauge' },
+    { label: 'Resources', to: '/resources', icon: 'i-lucide-radar' },
+  ]
+  if (hostStore.count > 0) {
+    items.push({ label: 'Hosts', to: '/hosts', icon: 'i-lucide-server' })
+  }
+  items.push(
+    { label: 'Incidents', to: '/incidents', icon: 'i-lucide-zap' },
+    { label: 'Maintenance', to: '/maintenance', icon: 'i-lucide-wrench' },
+  )
+  return items
+})
 
 const report: NavItem[] = [
   { label: 'Reports', to: '/reports', icon: 'i-lucide-file-text' },

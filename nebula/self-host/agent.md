@@ -37,6 +37,11 @@ journalctl -u ogoune-agent -f
 
 Within ~15 seconds the host reports live metrics and shows as **online**.
 
+Open the **Hosts** section in Ogoune to see your fleet: each host's live CPU /
+memory / disk, the services running on it, and per-host metric graphs. Link a
+monitor to its host from the monitor page to see the machine's health alongside
+its checks.
+
 ## Configuration
 
 Precedence: **flags > environment > file > defaults**.
