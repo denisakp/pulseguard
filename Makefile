@@ -28,6 +28,11 @@ build-be: sqlc-check
 	mkdir -p dist
 	go build -o $(BINARY) ./cmd/api/main.go
 
+# Host monitoring agent binary (spec 080). Version is stamped from git.
+build-agent:
+	mkdir -p dist
+	go build -ldflags "-X main.version=$$(git describe --tags --always --dirty 2>/dev/null || echo dev)" -o dist/ogoune-agent ./cmd/agent
+
 SQLC_BIN := $(shell go env GOPATH)/bin/sqlc
 
 sqlc-bin:

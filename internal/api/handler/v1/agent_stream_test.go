@@ -111,3 +111,50 @@ func TestAgentStream_RejectsBadCredential(t *testing.T) {
 	}
 	require.Error(t, err2, "dial without a credential must not establish the stream")
 }
+
+// TestAgentStream_VersionedAndLegacyFrames asserts the backend accepts BOTH a
+// frame carrying schema_version:1 and a legacy frame with no schema_version
+// (spec 080 additive contract; 079 backward-compat regression).
+func TestAgentStream_VersionedAndLegacyFrames(t *testing.T) {
+	cases := []struct {
+		name  string
+		frame map[string]any
+	}{
+		{"versioned", map[string]any{
+			"schema_version": 1,
+			"cpu_pct":        33.0, "mem_pct": 44.0, "net_in": 1, "net_out": 2,
+			"disks": []any{map[string]any{"mount": "/", "used_pct": 55.0}},
+		}},
+		{"legacy_no_version", map[string]any{
+			"cpu_pct": 33.0, "mem_pct": 44.0, "net_in": 1, "net_out": 2,
+			"disks": []any{map[string]any{"mount": "/", "used_pct": 55.0}},
+		}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			deps := newHostTestDeps()
+			ctx := context.Background()
+			host, raw, _, err := deps.hostSvc.Register(ctx, "h")
+			require.NoError(t, err)
+
+			r := chi.NewRouter()
+			r.With(middleware.HostCredentialAuth(deps.credSvc)).
+				Get("/api/v1/agent/stream", v1.NewAgentStreamHandler(deps.metricsSvc).Stream)
+			server := httptest.NewServer(r)
+			defer server.Close()
+
+			dialCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			defer cancel()
+			conn, _, err := websocket.Dial(dialCtx, "ws://"+server.Listener.Addr().String()+"/api/v1/agent/stream",
+				&websocket.DialOptions{HTTPHeader: http.Header{"Authorization": []string{"Bearer " + raw}}})
+			require.NoError(t, err)
+			require.NoError(t, wsjson.Write(dialCtx, conn, tc.frame))
+			_ = conn.Close(websocket.StatusNormalClosure, "")
+
+			require.Eventually(t, func() bool {
+				h, err := deps.hostSvc.Get(ctx, host.ID)
+				return err == nil && h.Online && h.LastCPUPct != nil
+			}, 2*time.Second, 20*time.Millisecond, "host should ingest the %s frame", tc.name)
+		})
+	}
+}
