@@ -54,8 +54,12 @@ type Config struct {
 	MetricsEnabled bool
 	MetricsToken   string
 
-	// Notification feed retention (spec 072)
+	// Notification feed retention
 	NotificationRetentionDays int
+
+	HostMetricsRetentionDays int           // purge samples older than this (default 7)
+	HostMetricsRawWindow     time.Duration // keep raw (undecimated) samples within this window (default 48h)
+	HostFreshnessThreshold   time.Duration // a host is "online" while last_seen_at is within this (default 45s)
 
 	// Swagger configuration
 	EnableSwagger bool
@@ -67,7 +71,7 @@ type Config struct {
 	// Environment
 	AppEnv string
 
-	// SSL provider for custom domains (spec 059 FR-030 / FR-040).
+	// SSL provider for custom domains
 	// One of: "letsencrypt" | "external" | "disabled". Default "external".
 	SSLProvider string
 
@@ -108,6 +112,12 @@ func Load() Config {
 	if notificationRetentionDays <= 0 {
 		notificationRetentionDays = 90 // never 0 — would prune the entire feed
 	}
+	hostMetricsRetentionDays := parseInt(GetEnv("HOST_METRICS_RETENTION_DAYS", "7"))
+	if hostMetricsRetentionDays <= 0 {
+		hostMetricsRetentionDays = 7 // never 0 — would purge all host metrics
+	}
+	hostMetricsRawWindow := parseDuration(GetEnv("HOST_METRICS_RAW_WINDOW", "48h"))
+	hostFreshnessThreshold := parseDuration(GetEnv("HOST_FRESHNESS_THRESHOLD", "45s"))
 	enableSwagger := parseBool(GetEnv("ENABLE_SWAGGER", "false"), false)
 	logFormat := GetEnv("LOG_FORMAT", "json")
 	logLevel := GetEnv("LOG_LEVEL", "info")
@@ -156,6 +166,9 @@ func Load() Config {
 		MetricsEnabled:                 metricsEnabled,
 		MetricsToken:                   metricsToken,
 		NotificationRetentionDays:      notificationRetentionDays,
+		HostMetricsRetentionDays:       hostMetricsRetentionDays,
+		HostMetricsRawWindow:           hostMetricsRawWindow,
+		HostFreshnessThreshold:         hostFreshnessThreshold,
 		EnableSwagger:                  enableSwagger,
 		AppEnv:                         appEnv,
 		SSLProvider:                    sslProvider,
@@ -289,7 +302,7 @@ func MustInit() Config {
 		os.Exit(1)
 	}
 
-	// Validate SSL_PROVIDER (spec 059 FR-030). Allowed: letsencrypt|external|disabled.
+	// Validate SSL_PROVIDER. Allowed: letsencrypt|external|disabled.
 	switch cfg.SSLProvider {
 	case "letsencrypt", "external", "disabled":
 		// ok

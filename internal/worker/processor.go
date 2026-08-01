@@ -16,6 +16,7 @@ type Processor struct {
 	expiryHandler      *ExpiryTaskHandler
 	retentionHandler   *NotificationRetentionHandler
 	reportHandler      *ReportTaskHandler
+	hostRetention      *HostMetricsRetentionHandler
 }
 
 // Config controls worker concurrency and queue weights for the hosted Asynq lane.
@@ -33,6 +34,7 @@ func NewProcessor(
 	expiryHandler *ExpiryTaskHandler,
 	retentionHandler *NotificationRetentionHandler,
 	reportHandler *ReportTaskHandler,
+	hostRetention *HostMetricsRetentionHandler,
 	config Config,
 ) *Processor {
 	if config.Concurrency <= 0 {
@@ -61,6 +63,7 @@ func NewProcessor(
 		expiryHandler:      expiryHandler,
 		retentionHandler:   retentionHandler,
 		reportHandler:      reportHandler,
+		hostRetention:      hostRetention,
 	}
 }
 
@@ -77,6 +80,9 @@ func (p *Processor) Start(ctx context.Context) error {
 	}
 	if p.reportHandler != nil {
 		mux.HandleFunc(TypeReportCheck, p.reportHandler.ProcessTask)
+	}
+	if p.hostRetention != nil {
+		mux.HandleFunc(TypeHostMetricsRetention, p.hostRetention.ProcessTask)
 	}
 	// Note: notification:send handler removed - notifications are now sent directly by IncidentService
 

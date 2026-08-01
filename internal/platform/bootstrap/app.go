@@ -54,6 +54,10 @@ type App struct {
 	ReportSettingsRepo        port.ReportSettingsRepository
 	ReportHistoryRepo         port.ReportHistoryRepository
 	AnnouncementRepo          port.AnnouncementRepository
+	// Spec 079 — Agent device monitoring
+	HostRepo           port.HostRepository
+	HostCredentialRepo port.HostCredentialRepository
+	HostMetricsRepo    port.HostMetricsRepository
 
 	// Metrics phase
 	MetricsRecorder       domain.MetricsRecorder
@@ -89,6 +93,10 @@ type App struct {
 	ReportService           *service.ReportService
 	AnnouncementService     *service.AnnouncementService
 	IntegrationsService     *svcintegrations.IntegrationsService
+	// Spec 079 — Agent device monitoring
+	HostService           *service.HostService
+	HostCredentialService *service.HostCredentialService
+	HostMetricsService    *service.HostMetricsService
 
 	// Spec 060 — Public status page
 	PublicStatusService   *service.PublicStatusService

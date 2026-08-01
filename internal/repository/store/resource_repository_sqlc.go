@@ -788,6 +788,53 @@ func (r *ResourceRepositorySQLC) FindScheduledResources(ctx context.Context) ([]
 	return out, nil
 }
 
+// SetResourceHostID links (or unlinks, when hostID is nil) a monitor to a host.
+func (r *ResourceRepositorySQLC) SetResourceHostID(ctx context.Context, resourceID string, hostID *string) error {
+	now := time.Now()
+	switch {
+	case r.pgQ != nil:
+		n, err := r.pgQ.SetResourceHostID(ctx, pgsqlc.SetResourceHostIDParams{
+			ID:        resourceID,
+			HostID:    pgTextFromPtr(hostID),
+			UpdatedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		})
+		if err != nil {
+			return fmt.Errorf("sqlc: set resource host_id: %w", err)
+		}
+		if n == 0 {
+			return repository.ErrNotFound
+		}
+		return nil
+	case r.sqliteQ != nil:
+		n, err := r.sqliteQ.SetResourceHostID(ctx, sqlitesqlc.SetResourceHostIDParams{
+			ID:        resourceID,
+			HostID:    nullStringFromPtr(hostID),
+			UpdatedAt: now,
+		})
+		if err != nil {
+			return fmt.Errorf("sqlc: set resource host_id: %w", err)
+		}
+		if n == 0 {
+			return repository.ErrNotFound
+		}
+		return nil
+	default:
+		return r.unconfigured()
+	}
+}
+
+// ClearResourceHostIDByHost unlinks every monitor pointing at the given host.
+func (r *ResourceRepositorySQLC) ClearResourceHostIDByHost(ctx context.Context, hostID string) error {
+	switch {
+	case r.pgQ != nil:
+		return r.pgQ.ClearResourceHostIDByHost(ctx, pgTextFromPtr(&hostID))
+	case r.sqliteQ != nil:
+		return r.sqliteQ.ClearResourceHostIDByHost(ctx, nullStringFromPtr(&hostID))
+	default:
+		return r.unconfigured()
+	}
+}
+
 // ---------- Mapping helpers ----------
 
 func resourceToPGCreate(r *domain.Resource) pgsqlc.CreateResourceParams {
@@ -827,6 +874,7 @@ func resourceToPGCreate(r *domain.Resource) pgsqlc.CreateResourceParams {
 		KeywordMode:             pgTextFromPtr(r.KeywordMode),
 		ProtocolType:            pgTextFromPtr(r.ProtocolType),
 		ProtocolPort:            pgInt4FromPtr(r.ProtocolPort),
+		HostID:                  pgTextFromPtr(r.HostID),
 	}
 }
 
@@ -867,6 +915,7 @@ func resourceToSQLiteCreate(r *domain.Resource) sqlitesqlc.CreateResourceParams 
 		KeywordMode:             nullStringFromPtr(r.KeywordMode),
 		ProtocolType:            nullStringFromPtr(r.ProtocolType),
 		ProtocolPort:            nullInt64FromPtrInt(r.ProtocolPort),
+		HostID:                  nullStringFromPtr(r.HostID),
 	}
 }
 
@@ -905,6 +954,7 @@ func resourceFromPG(row pgsqlc.Resource) *domain.Resource {
 		KeywordMode:             ptrStringFromPGText(row.KeywordMode),
 		ProtocolType:            ptrStringFromPGText(row.ProtocolType),
 		ProtocolPort:            ptrIntFromPGInt4(row.ProtocolPort),
+		HostID:                  ptrStringFromPGText(row.HostID),
 	}
 	if md := metaFromPG(row); md != nil {
 		out.Metadata = md
@@ -947,6 +997,7 @@ func resourceFromSQLite(row sqlitesqlc.Resource) *domain.Resource {
 		KeywordMode:             ptrStringFromNullString(row.KeywordMode),
 		ProtocolType:            ptrStringFromNullString(row.ProtocolType),
 		ProtocolPort:            ptrIntFromNullInt64(row.ProtocolPort),
+		HostID:                  ptrStringFromNullString(row.HostID),
 	}
 	if md := metaFromSQLite(row); md != nil {
 		out.Metadata = md

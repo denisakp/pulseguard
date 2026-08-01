@@ -67,6 +67,9 @@ func NewRouter(
 	announcementV1Handler *v1handler.AnnouncementHandler,
 	integrationsV1Handler *v1handler.IntegrationsHandler,
 	resourceImportV1Handler *v1handler.ResourceImportHandler,
+	hostV1Handler *v1handler.HostHandler,
+	agentStreamV1Handler *v1handler.AgentStreamHandler,
+	hostCredentialService *service.HostCredentialService,
 	enableSwagger bool,
 	cfg *config.Config,
 ) http.Handler {
@@ -303,6 +306,11 @@ func NewRouter(
 			registerSwaggerUI(r)
 		}
 
+		// Agent metrics ingestion (spec 079) — WebSocket, authenticated by the
+		// per-host bearer credential, NOT operator auth. Mounted outside the
+		// operator-auth group and wrapped by HostCredentialAuth.
+		r.With(middleware.HostCredentialAuth(hostCredentialService)).Get("/agent/stream", agentStreamV1Handler.Stream)
+
 		// Authenticated v1 sub-group
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.AuthMiddleware(authService, apiKeyService, sessionService))
@@ -318,6 +326,19 @@ func NewRouter(
 				r.With(middleware.RequireReadWrite).Delete("/{id}", monitorV1Handler.Delete)
 				r.With(middleware.RequireReadWrite).Post("/{id}/pause", monitorV1Handler.Pause)
 				r.With(middleware.RequireReadWrite).Post("/{id}/resume", monitorV1Handler.Resume)
+				// Monitor↔host link (spec 079). Write-scoped.
+				r.With(middleware.RequireReadWrite).Post("/{id}/host", hostV1Handler.LinkMonitor)
+				r.With(middleware.RequireReadWrite).Delete("/{id}/host", hostV1Handler.UnlinkMonitor)
+			})
+			// Hosts — agent device monitoring (spec 079). Read GET; writes scoped.
+			r.Route("/hosts", func(r chi.Router) {
+				r.Get("/", hostV1Handler.List)
+				r.With(middleware.RequireReadWrite).Post("/", hostV1Handler.Register)
+				r.Get("/{id}", hostV1Handler.Get)
+				r.With(middleware.RequireReadWrite).Delete("/{id}", hostV1Handler.Delete)
+				r.Get("/{id}/metrics", hostV1Handler.Metrics)
+				r.With(middleware.RequireReadWrite).Post("/{id}/credential/rotate", hostV1Handler.RotateCredential)
+				r.With(middleware.RequireReadWrite).Post("/{id}/credential/revoke", hostV1Handler.RevokeCredential)
 			})
 			// Incident routes — registered in T029
 			r.Route("/incidents", func(r chi.Router) {

@@ -87,6 +87,9 @@ func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil, // hostV1Handler
+		nil, // agentStreamV1Handler
+		nil, // hostCredentialService
 		false,
 		&config.Config{
 			RateLimitAuth:         10,

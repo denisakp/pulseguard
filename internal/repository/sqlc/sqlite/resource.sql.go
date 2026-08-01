@@ -12,6 +12,15 @@ import (
 	"time"
 )
 
+const clearResourceHostIDByHost = `-- name: ClearResourceHostIDByHost :exec
+UPDATE resources SET host_id = NULL WHERE host_id = ?
+`
+
+func (q *Queries) ClearResourceHostIDByHost(ctx context.Context, hostID sql.NullString) error {
+	_, err := q.db.ExecContext(ctx, clearResourceHostIDByHost, hostID)
+	return err
+}
+
 const countResourcesByComponentID = `-- name: CountResourcesByComponentID :one
 SELECT COUNT(*) FROM resources
 WHERE component_id = ? AND is_active = 1
@@ -34,7 +43,8 @@ INSERT INTO resources (
     flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes,
     last_status_transition, flap_started_at, reminder_interval_minutes,
     heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at,
-    keyword, keyword_mode, protocol_type, protocol_port
+    keyword, keyword_mode, protocol_type, protocol_port,
+    host_id
 )
 VALUES (
     ?, ?, ?, ?, ?, ?, ?, ?,
@@ -44,7 +54,8 @@ VALUES (
     ?, ?, ?, ?,
     ?, ?, ?,
     ?, ?, ?, ?,
-    ?, ?, ?, ?
+    ?, ?, ?, ?,
+    ?
 )
 `
 
@@ -84,6 +95,7 @@ type CreateResourceParams struct {
 	KeywordMode             sql.NullString `json:"keyword_mode"`
 	ProtocolType            sql.NullString `json:"protocol_type"`
 	ProtocolPort            sql.NullInt64  `json:"protocol_port"`
+	HostID                  sql.NullString `json:"host_id"`
 }
 
 // PR1 of US1: CRUD without M2M and without 1-to-1 preloads.
@@ -126,12 +138,13 @@ func (q *Queries) CreateResource(ctx context.Context, arg CreateResourceParams) 
 		arg.KeywordMode,
 		arg.ProtocolType,
 		arg.ProtocolPort,
+		arg.HostID,
 	)
 	return err
 }
 
 const findMissedHeartbeatsSQLite = `-- name: FindMissedHeartbeatsSQLite :many
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources
 WHERE type = 'heartbeat'
   AND status = 'up'
   AND is_active = 1
@@ -191,6 +204,7 @@ func (q *Queries) FindMissedHeartbeatsSQLite(ctx context.Context, arg FindMissed
 			&i.KeywordMode,
 			&i.ProtocolType,
 			&i.ProtocolPort,
+			&i.HostID,
 		); err != nil {
 			return nil, err
 		}
@@ -206,7 +220,7 @@ func (q *Queries) FindMissedHeartbeatsSQLite(ctx context.Context, arg FindMissed
 }
 
 const findResourceByHeartbeatSlug = `-- name: FindResourceByHeartbeatSlug :one
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources
 WHERE heartbeat_slug = ?
   AND type = 'heartbeat'
   AND is_active = 1
@@ -251,12 +265,13 @@ func (q *Queries) FindResourceByHeartbeatSlug(ctx context.Context, heartbeatSlug
 		&i.KeywordMode,
 		&i.ProtocolType,
 		&i.ProtocolPort,
+		&i.HostID,
 	)
 	return i, err
 }
 
 const findResourceByID = `-- name: FindResourceByID :one
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources WHERE id = ? AND is_active = 1
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources WHERE id = ? AND is_active = 1
 `
 
 func (q *Queries) FindResourceByID(ctx context.Context, id string) (Resource, error) {
@@ -298,6 +313,7 @@ func (q *Queries) FindResourceByID(ctx context.Context, id string) (Resource, er
 		&i.KeywordMode,
 		&i.ProtocolType,
 		&i.ProtocolPort,
+		&i.HostID,
 	)
 	return i, err
 }
@@ -342,7 +358,7 @@ func (q *Queries) FindResourceIDsByTagName(ctx context.Context, arg FindResource
 }
 
 const findResourcesByComponentID = `-- name: FindResourcesByComponentID :many
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources
 WHERE component_id = ? AND is_active = 1
 ORDER BY created_at DESC
 `
@@ -392,6 +408,7 @@ func (q *Queries) FindResourcesByComponentID(ctx context.Context, componentID sq
 			&i.KeywordMode,
 			&i.ProtocolType,
 			&i.ProtocolPort,
+			&i.HostID,
 		); err != nil {
 			return nil, err
 		}
@@ -407,7 +424,7 @@ func (q *Queries) FindResourcesByComponentID(ctx context.Context, componentID sq
 }
 
 const findResourcesByIDs = `-- name: FindResourcesByIDs :many
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources WHERE id IN (/*SLICE:ids*/?)
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources WHERE id IN (/*SLICE:ids*/?)
 `
 
 func (q *Queries) FindResourcesByIDs(ctx context.Context, ids []string) ([]Resource, error) {
@@ -465,6 +482,7 @@ func (q *Queries) FindResourcesByIDs(ctx context.Context, ids []string) ([]Resou
 			&i.KeywordMode,
 			&i.ProtocolType,
 			&i.ProtocolPort,
+			&i.HostID,
 		); err != nil {
 			return nil, err
 		}
@@ -515,7 +533,7 @@ func (q *Queries) LinkResourceTag(ctx context.Context, arg LinkResourceTagParams
 }
 
 const listActiveResources = `-- name: ListActiveResources :many
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources
 WHERE is_active = 1
 ORDER BY created_at DESC
 LIMIT ? OFFSET ?
@@ -571,6 +589,7 @@ func (q *Queries) ListActiveResources(ctx context.Context, arg ListActiveResourc
 			&i.KeywordMode,
 			&i.ProtocolType,
 			&i.ProtocolPort,
+			&i.HostID,
 		); err != nil {
 			return nil, err
 		}
@@ -773,7 +792,7 @@ func (q *Queries) ListCredentialsByResourceIDs(ctx context.Context, resourceIds 
 }
 
 const listResources = `-- name: ListResources :many
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources
 WHERE is_active = 1
 ORDER BY created_at DESC
 LIMIT ? OFFSET ?
@@ -829,6 +848,7 @@ func (q *Queries) ListResources(ctx context.Context, arg ListResourcesParams) ([
 			&i.KeywordMode,
 			&i.ProtocolType,
 			&i.ProtocolPort,
+			&i.HostID,
 		); err != nil {
 			return nil, err
 		}
@@ -844,7 +864,7 @@ func (q *Queries) ListResources(ctx context.Context, arg ListResourcesParams) ([
 }
 
 const listScheduledResources = `-- name: ListScheduledResources :many
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources
 WHERE is_active = 1
 ORDER BY id ASC
 `
@@ -894,6 +914,7 @@ func (q *Queries) ListScheduledResources(ctx context.Context) ([]Resource, error
 			&i.KeywordMode,
 			&i.ProtocolType,
 			&i.ProtocolPort,
+			&i.HostID,
 		); err != nil {
 			return nil, err
 		}
@@ -991,6 +1012,24 @@ func (q *Queries) ListTagsByResourceIDs(ctx context.Context, resourceIds []strin
 		return nil, err
 	}
 	return items, nil
+}
+
+const setResourceHostID = `-- name: SetResourceHostID :execrows
+UPDATE resources SET host_id = ?, updated_at = ? WHERE id = ?
+`
+
+type SetResourceHostIDParams struct {
+	HostID    sql.NullString `json:"host_id"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	ID        string         `json:"id"`
+}
+
+func (q *Queries) SetResourceHostID(ctx context.Context, arg SetResourceHostIDParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, setResourceHostID, arg.HostID, arg.UpdatedAt, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const softDeleteResource = `-- name: SoftDeleteResource :execrows

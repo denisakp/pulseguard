@@ -435,3 +435,29 @@ func (r *ResourceFake) AddTag(resourceID string, tag *domain.Tags) error {
 
 	return nil
 }
+
+// SetResourceHostID links (or unlinks when hostID is nil) a monitor to a host.
+func (r *ResourceFake) SetResourceHostID(ctx context.Context, resourceID string, hostID *string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	resource, exists := r.resources[resourceID]
+	if !exists {
+		return ErrNotFound
+	}
+	resource.HostID = hostID
+	return nil
+}
+
+// ClearResourceHostIDByHost unlinks every monitor pointing at the given host.
+func (r *ResourceFake) ClearResourceHostIDByHost(ctx context.Context, hostID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, resource := range r.resources {
+		if resource.HostID != nil && *resource.HostID == hostID {
+			resource.HostID = nil
+		}
+	}
+	return nil
+}

@@ -61,6 +61,44 @@ type ResourceRepository interface {
 	UpdateMetadata(ctx context.Context, id string, req UpdateMetadataRequest) error
 	FindScheduledResources(ctx context.Context) ([]*domain.Resource, error)
 	ListResourcesByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error)
+	// Host link (spec 079) — additive. SetResourceHostID links a monitor to a
+	// host; ClearResourceHostIDByHost unlinks every monitor of a host (host delete).
+	SetResourceHostID(ctx context.Context, resourceID string, hostID *string) error
+	ClearResourceHostIDByHost(ctx context.Context, hostID string) error
+}
+
+// ---------------------------------------------------------------------------
+// Agent device monitoring (spec 079)
+// ---------------------------------------------------------------------------
+
+// HostRepository persists monitored hosts and their denormalized latest snapshot.
+type HostRepository interface {
+	Create(ctx context.Context, h *domain.Host) error
+	FindByID(ctx context.Context, id string) (*domain.Host, error)
+	List(ctx context.Context, limit, offset int) ([]*domain.Host, error)
+	Count(ctx context.Context) (int64, error)
+	Delete(ctx context.Context, id string) error
+	UpdateSnapshot(ctx context.Context, h *domain.Host) error
+}
+
+// HostCredentialRepository persists per-host bearer credentials (hash only).
+type HostCredentialRepository interface {
+	Create(ctx context.Context, c *domain.HostCredential) error
+	FindActiveByHash(ctx context.Context, hash string) (*domain.HostCredential, error)
+	ListByHost(ctx context.Context, hostID string) ([]*domain.HostCredential, error)
+	DeactivateByID(ctx context.Context, id string) error
+	DeactivateAllForHost(ctx context.Context, hostID string) error
+	TouchLastUsed(ctx context.Context, id string, at time.Time) error
+	DeleteByHost(ctx context.Context, hostID string) error
+}
+
+// HostMetricsRepository persists and prunes host metric samples.
+type HostMetricsRepository interface {
+	Insert(ctx context.Context, s *domain.HostMetricSample) error
+	ListInRange(ctx context.Context, hostID string, from, to time.Time) ([]*domain.HostMetricSample, error)
+	DeleteOlderThan(ctx context.Context, cutoff time.Time) (int64, error)
+	DeleteByHost(ctx context.Context, hostID string) error
+	Decimate(ctx context.Context, cutoff time.Time) (int64, error)
 }
 
 // ComponentRepository manages logical component groups.

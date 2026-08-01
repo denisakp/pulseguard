@@ -11,7 +11,8 @@ INSERT INTO resources (
     flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes,
     last_status_transition, flap_started_at, reminder_interval_minutes,
     heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at,
-    keyword, keyword_mode, protocol_type, protocol_port
+    keyword, keyword_mode, protocol_type, protocol_port,
+    host_id
 )
 VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8,
@@ -21,7 +22,8 @@ VALUES (
     $21, $22, $23, $24,
     $25, $26, $27,
     $28, $29, $30, $31,
-    $32, $33, $34, $35
+    $32, $33, $34, $35,
+    $36
 );
 
 -- name: FindResourceByID :one
@@ -167,3 +169,9 @@ WHERE type = 'heartbeat'
   AND EXTRACT(EPOCH FROM last_ping_at) + heartbeat_interval + heartbeat_grace < sqlc.arg('now_unix')::double precision
 ORDER BY last_ping_at ASC
 LIMIT sqlc.arg('row_limit')::int;
+
+-- name: SetResourceHostID :execrows
+UPDATE resources SET host_id = $2, updated_at = $3 WHERE id = $1;
+
+-- name: ClearResourceHostIDByHost :exec
+UPDATE resources SET host_id = NULL WHERE host_id = $1;

@@ -12,6 +12,7 @@ type MonitorResponse struct {
 	Status        string      `json:"status"`
 	LastCheckedAt interface{} `json:"last_checked_at"`
 	ComponentID   *string     `json:"component_id"`
+	HostID        *string     `json:"host_id"` // spec 079: optional link to a monitored host (null when unlinked)
 	Tags          []string    `json:"tags"`
 	CreatedAt     string      `json:"created_at"`
 	UpdatedAt     string      `json:"updated_at"`

@@ -36,6 +36,7 @@ func buildRouterForCoverage() http.Handler {
 		handler.NewAuthHandler(nil, nil),
 		handler.NewAccountHandler(nil, nil),
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, nil, // hostV1Handler, agentStreamV1Handler, hostCredentialService
 		false,
 		&config.Config{
 			RateLimitAuth:         10,
@@ -76,6 +77,11 @@ func TestOpenAPICoverage_AllV1RoutesInContract(t *testing.T) {
 		}
 		// Non-endpoint mounts (docs UI, spec file) are not contract operations.
 		if strings.Contains(route, "/docs") || strings.HasSuffix(route, "openapi.json") {
+			return nil
+		}
+		// The agent metrics ingestion route is a WebSocket upgrade (spec 079),
+		// not a REST operation, so it is not part of the OpenAPI contract.
+		if strings.HasPrefix(route, "/v1/agent/stream") {
 			return nil
 		}
 		contractPath := strings.TrimPrefix(route, "/v1")            // /v1/monitors → /monitors

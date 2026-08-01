@@ -4,6 +4,7 @@ go 1.25.1
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/coder/websocket v1.8.15
 	github.com/go-chi/cors v1.2.2
 	github.com/go-chi/httprate v0.15.0
 	github.com/go-sql-driver/mysql v1.10.0

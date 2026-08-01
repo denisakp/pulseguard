@@ -90,6 +90,15 @@ func InitDatabase(app *App) {
 	app.AnnouncementRepo = store.NewAnnouncementRepositorySQLC(rt)
 	app.AnnouncementService = service.NewAnnouncementService(app.AnnouncementRepo)
 
+	// Agent device monitoring (spec 079). Services built here (not InitServices)
+	// because InitWorker runs first and registers the metrics-retention job.
+	app.HostRepo = store.NewHostRepositorySQLC(rt)
+	app.HostCredentialRepo = store.NewHostCredentialRepositorySQLC(rt)
+	app.HostMetricsRepo = store.NewHostMetricRepositorySQLC(rt)
+	app.HostCredentialService = service.NewHostCredentialService(app.HostCredentialRepo)
+	app.HostService = service.NewHostService(app.HostRepo, app.HostCredentialService, app.HostMetricsRepo, app.ResourceRepo, cfg.HostFreshnessThreshold)
+	app.HostMetricsService = service.NewHostMetricsService(app.HostMetricsRepo, app.HostRepo, cfg.HostMetricsRawWindow, time.Duration(cfg.HostMetricsRetentionDays)*24*time.Hour)
+
 	// Config-derived observability integrations (spec 077) — read-only.
 	app.IntegrationsService = svcintegrations.NewIntegrationsService(app.ResourceRepo, app.ComponentRepo)
 

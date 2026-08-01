@@ -47,6 +47,18 @@ linked in the release notes.
   view and in enriched alert emails / webhook payloads.
 - **DB migration `0011_keyword_fields`** — additive nullable columns on
   `resources` and `incident_diagnostics` for both SQLite and PostgreSQL.
+- **Agent device monitoring — backend foundation (spec 079)** — a first-class
+  **Host** domain plus authenticated agent metrics ingestion. New operator
+  endpoints under `/api/v1/hosts` (register / list / get / delete, credential
+  rotate & revoke, metric history) and a `POST/DELETE /api/v1/monitors/{id}/host`
+  link. Agents stream CPU / memory / per-mount disk / network samples over a
+  WebSocket at `/api/v1/agent/stream`, authenticated by a per-host `ag_live_…`
+  bearer credential (hashed at rest, shown once). Bounded relational time-series
+  with a daily retention job (decimate beyond 48h to ≤1/min, purge beyond 7d) in
+  both TimingWheel and Asynq modes. DB migration `0028_hosts` adds `hosts`,
+  `host_credentials`, `host_metrics`, and a nullable `resources.host_id`. The
+  agent is strictly optional — no core monitoring path depends on a host. The
+  agent binary and UI are separate, forthcoming chantiers.
 
 ### Changed
 

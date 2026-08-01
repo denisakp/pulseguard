@@ -24,7 +24,7 @@ type Base struct {
 
 // EnsureID assigns a fresh ULID to b.ID when it is empty. No-op when ID is
 // already set. Pure: no I/O, idempotent. Called explicitly by sqlc Create
-// wrappers (post-spec-052; previously also wrapped by a GORM BeforeCreate hook).
+// wrappers (previously also wrapped by a GORM BeforeCreate hook).
 func (b *Base) EnsureID() {
 	if b.ID == "" {
 		t := time.Now()
@@ -126,6 +126,7 @@ type Resource struct {
 	ProtocolPort            *int                   `json:"protocol_port,omitempty"`
 	MetadataPending         bool                   `json:"metadata_pending"`
 	Credential              *ResourceCredential    `json:"credential,omitempty"`
+	HostID                  *string                `json:"host_id,omitempty"` // optional link to a monitored host
 }
 
 // IsHeartbeatWaiting reports whether a heartbeat resource has never been pinged.
@@ -859,4 +860,65 @@ type Announcement struct {
 	Description string
 	Dismissible bool
 	Active      bool
+}
+
+// ---------------------------------------------------------------------------
+// Agent device monitoring (spec 079)
+// ---------------------------------------------------------------------------
+
+// DiskUsage is a per-mount disk utilisation entry reported by an agent.
+type DiskUsage struct {
+	Mount   string  `json:"mount"`
+	UsedPct float64 `json:"used_pct"`
+}
+
+// Host is a machine that an optional agent runs on. The agent streams system
+// metrics; the latest values are denormalized onto the row for cheap listing.
+// The agent is strictly optional — no core capability depends on a Host.
+type Host struct {
+	Base
+	Name         string
+	OS           *string
+	AgentVersion *string
+	LastSeenAt   *time.Time
+	LastCPUPct   *float64
+	LastMemPct   *float64
+	LastDiskPct  *float64
+	LastNetIn    *int64
+	LastNetOut   *int64
+	LastDisks    []DiskUsage // decoded from last_disks JSON
+	Online       bool        // derived (not persisted): computed via IsOnline
+}
+
+// IsOnline reports whether the host has reported within the freshness threshold
+// of now. Pure: no I/O. A host that has never reported is offline.
+func (h *Host) IsOnline(now time.Time, threshold time.Duration) bool {
+	if h.LastSeenAt == nil {
+		return false
+	}
+	return now.Sub(*h.LastSeenAt) <= threshold
+}
+
+// HostCredential is a per-host bearer secret (ag_live_…) authorising an agent to
+// report for exactly one host. Only the hash is stored; the raw is shown once.
+type HostCredential struct {
+	Base
+	HostID     string
+	Hash       string
+	Prefix     string
+	IsActive   bool
+	LastUsedAt *time.Time
+}
+
+// HostMetricSample is a single point-in-time snapshot of host health. SampledAt
+// is server-assigned (the agent's clock is never trusted for storage).
+type HostMetricSample struct {
+	Base
+	HostID    string
+	SampledAt time.Time
+	CPUPct    float64
+	MemPct    float64
+	NetIn     int64
+	NetOut    int64
+	Disks     []DiskUsage
 }

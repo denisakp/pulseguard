@@ -28,6 +28,12 @@ func (s *stubResourceRepo) FindActive(ctx context.Context, limit, offset int) ([
 func (s *stubResourceRepo) Create(ctx context.Context, r *domain.Resource) (*domain.Resource, error) {
 	return nil, nil
 }
+func (s *stubResourceRepo) SetResourceHostID(ctx context.Context, resourceID string, hostID *string) error {
+	return nil
+}
+func (s *stubResourceRepo) ClearResourceHostIDByHost(ctx context.Context, hostID string) error {
+	return nil
+}
 func (s *stubResourceRepo) FindByID(ctx context.Context, id string) (*domain.Resource, error) {
 	return nil, nil
 }

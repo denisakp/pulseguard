@@ -581,6 +581,17 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.CreateHostCredentialResponse": {
+                "properties": {
+                    "credential": {
+                        "type": "string"
+                    },
+                    "prefix": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.CreateMonitorRequest": {
                 "properties": {
                     "component_id": {
@@ -828,6 +839,17 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.DiskUsageDTO": {
+                "properties": {
+                    "mount": {
+                        "type": "string"
+                    },
+                    "used_pct": {
+                        "type": "number"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.ErrorDetail": {
                 "properties": {
                     "code": {
@@ -868,6 +890,57 @@
             "github_com_denisakp_ogoune_internal_dto_v1.HeartbeatPingResponse": {
                 "properties": {
                     "received_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.HostResponse": {
+                "properties": {
+                    "agent_version": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "last_cpu_pct": {
+                        "type": "number"
+                    },
+                    "last_disk_pct": {
+                        "type": "number"
+                    },
+                    "last_disks": {
+                        "items": {
+                            "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.DiskUsageDTO"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "last_mem_pct": {
+                        "type": "number"
+                    },
+                    "last_net_in": {
+                        "type": "integer"
+                    },
+                    "last_net_out": {
+                        "type": "integer"
+                    },
+                    "last_seen_at": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "online": {
+                        "type": "boolean"
+                    },
+                    "os": {
+                        "type": "string"
+                    },
+                    "updated_at": {
                         "type": "string"
                     }
                 },
@@ -927,6 +1000,14 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.LinkHostRequest": {
+                "properties": {
+                    "host_id": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.MarkAllReadResponse": {
                 "properties": {
                     "marked": {
@@ -955,6 +1036,10 @@
                         "type": "string"
                     },
                     "created_at": {
+                        "type": "string"
+                    },
+                    "host_id": {
+                        "description": "spec 079: optional link to a monitored host (null when unlinked)",
                         "type": "string"
                     },
                     "id": {
@@ -1045,6 +1130,28 @@
                     },
                     "scanned_count": {
                         "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.RegisterHostRequest": {
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.RegisterHostResponse": {
+                "properties": {
+                    "credential": {
+                        "type": "string"
+                    },
+                    "host": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.HostResponse"
+                    },
+                    "prefix": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -1279,6 +1386,17 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CreateHostCredentialResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.CreateHostCredentialResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CredentialResponse": {
                 "properties": {
                     "data": {
@@ -1316,6 +1434,17 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.HeartbeatPingResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_HostResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.HostResponse"
                     },
                     "meta": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
@@ -1371,6 +1500,17 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.PortScanResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_RegisterHostResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.RegisterHostResponse"
                     },
                     "meta": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
@@ -2518,6 +2658,384 @@
                 ]
             }
         },
+        "/hosts": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "Page number (default 1)",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Items per page (1-100, default 20)",
+                        "in": "query",
+                        "name": "per_page",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "List hosts",
+                "tags": [
+                    "hosts"
+                ]
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.RegisterHostRequest",
+                                        "summary": "body",
+                                        "description": "Host payload"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Host payload",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_RegisterHostResponse"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Register a host",
+                "tags": [
+                    "hosts"
+                ]
+            }
+        },
+        "/hosts/{id}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "Host ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Delete a host",
+                "tags": [
+                    "hosts"
+                ]
+            },
+            "get": {
+                "parameters": [
+                    {
+                        "description": "Host ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_HostResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get a host",
+                "tags": [
+                    "hosts"
+                ]
+            }
+        },
+        "/hosts/{id}/credential/revoke": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "Host ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Revoke a host credential",
+                "tags": [
+                    "hosts"
+                ]
+            }
+        },
+        "/hosts/{id}/credential/rotate": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "Host ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CreateHostCredentialResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Rotate a host credential",
+                "tags": [
+                    "hosts"
+                ]
+            }
+        },
+        "/hosts/{id}/metrics": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "Host ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "RFC3339 start (default now-1h)",
+                        "in": "query",
+                        "name": "from",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "RFC3339 end (default now)",
+                        "in": "query",
+                        "name": "to",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Get host metric history",
+                "tags": [
+                    "hosts"
+                ]
+            }
+        },
         "/incidents": {
             "get": {
                 "parameters": [
@@ -3179,6 +3697,129 @@
                     }
                 ],
                 "summary": "Update a monitor",
+                "tags": [
+                    "monitors"
+                ]
+            }
+        },
+        "/monitors/{id}/host": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "Monitor ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Unlink a monitor from its host",
+                "tags": [
+                    "monitors"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "description": "Monitor ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.LinkHostRequest",
+                                        "summary": "body",
+                                        "description": "Host link payload"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Host link payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Link a monitor to a host",
                 "tags": [
                     "monitors"
                 ]

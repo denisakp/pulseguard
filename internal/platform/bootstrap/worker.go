@@ -95,6 +95,27 @@ func initTimingWheelWorker(app *App, enrichmentService *service.EnrichmentServic
 	startTimingWheelExpiryCheck(app, enrichmentService)
 	startTimingWheelNotificationRetention(app)
 	startTimingWheelReportCheck(app)
+	startTimingWheelHostMetricsRetention(app)
+}
+
+// startTimingWheelHostMetricsRetention runs the daily host-metrics retention
+// (decimate + purge) in-process (spec 079): once at startup, then daily.
+func startTimingWheelHostMetricsRetention(app *App) {
+	if app.HostMetricsService == nil {
+		return
+	}
+	handler := worker.NewHostMetricsRetentionHandler(app.HostMetricsService)
+	_ = handler.ProcessTask(context.Background(), asynq.NewTask(worker.TypeHostMetricsRetention, nil)) // startup catch-up
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := handler.ProcessTask(context.Background(), asynq.NewTask(worker.TypeHostMetricsRetention, nil)); err != nil {
+				slog.Error("TimingWheel host:metrics:retention failed", "error", err)
+			}
+		}
+	}()
+	slog.Info("TimingWheel daily host metrics retention scheduled")
 }
 
 // startTimingWheelReportCheck runs the monthly report catch-up scan in-process
@@ -286,7 +307,16 @@ func initAsynqProcessor(app *App, enrichmentService *service.EnrichmentService) 
 		}
 	}
 
-	app.Processor = worker.NewProcessor(app.RedisOpt, monitoringHandler, maintenanceTaskHandler, expiryTaskHandler, retentionHandler, reportHandler, worker.Config{
+	// Host metrics retention (spec 079) — daily decimate + purge.
+	var hostMetricsRetentionHandler *worker.HostMetricsRetentionHandler
+	if app.HostMetricsService != nil {
+		hostMetricsRetentionHandler = worker.NewHostMetricsRetentionHandler(app.HostMetricsService)
+		if _, err := app.AsynqScheduler.Register("@daily", asynq.NewTask(worker.TypeHostMetricsRetention, nil)); err != nil {
+			slog.Error("failed to register host:metrics:retention scheduler", "error", err)
+		}
+	}
+
+	app.Processor = worker.NewProcessor(app.RedisOpt, monitoringHandler, maintenanceTaskHandler, expiryTaskHandler, retentionHandler, reportHandler, hostMetricsRetentionHandler, worker.Config{
 		Concurrency: app.SchedulerCfg.Asynq.Concurrency,
 	})
 

@@ -11,7 +11,8 @@ INSERT INTO resources (
     flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes,
     last_status_transition, flap_started_at, reminder_interval_minutes,
     heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at,
-    keyword, keyword_mode, protocol_type, protocol_port
+    keyword, keyword_mode, protocol_type, protocol_port,
+    host_id
 )
 VALUES (
     ?, ?, ?, ?, ?, ?, ?, ?,
@@ -21,7 +22,8 @@ VALUES (
     ?, ?, ?, ?,
     ?, ?, ?,
     ?, ?, ?, ?,
-    ?, ?, ?, ?
+    ?, ?, ?, ?,
+    ?
 );
 
 -- name: FindResourceByID :one
@@ -167,3 +169,9 @@ WHERE type = 'heartbeat'
   AND (CAST(strftime('%s', substr(last_ping_at, 1, 19)) AS INTEGER) + heartbeat_interval + heartbeat_grace) < CAST(sqlc.arg('now_unix') AS INTEGER)
 ORDER BY last_ping_at ASC
 LIMIT CAST(sqlc.arg('row_limit') AS INTEGER);
+
+-- name: SetResourceHostID :execrows
+UPDATE resources SET host_id = ?, updated_at = ? WHERE id = ?;
+
+-- name: ClearResourceHostIDByHost :exec
+UPDATE resources SET host_id = NULL WHERE host_id = ?;
