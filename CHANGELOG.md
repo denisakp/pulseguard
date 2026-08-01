@@ -59,6 +59,18 @@ linked in the release notes.
   `host_credentials`, `host_metrics`, and a nullable `resources.host_id`. The
   agent is strictly optional — no core monitoring path depends on a host. The
   agent binary and UI are separate, forthcoming chantiers.
+- **Host agent binary (spec 080)** — `cmd/agent`, the Go daemon installed on a
+  monitored Linux host. Collects OS, CPU %, memory %, per-mount disk %, and
+  network counters via gopsutil and streams them to `/api/v1/agent/stream` every
+  ~10s, authenticated by the host's `ag_live_…` credential. Config from
+  `/etc/ogoune-agent.yaml` with env/flag overrides; a systemd unit is provided
+  (`packaging/agent/`). Fail-safe: reconnects with exponential back-off, and on a
+  revoked credential slows to a capped (~5 min) infinite back-off so it self-heals
+  when the credential is re-validated — never crashing the host, never
+  tight-looping. Build with `make build-agent`. The agent↔backend frame is a
+  single shared contract (`pkg/agentwire`, carrying `schema_version`) imported by
+  both sides so they cannot drift; the 079 ingestion handler adopts it
+  backward-compatibly (a frame with no `schema_version` is treated as v1).
 
 ### Changed
 
