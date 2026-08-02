@@ -69,7 +69,7 @@ func InitRouter(app *App) {
 	componentHandler := handler.NewComponentHandler(app.ComponentService)
 
 	// V1 handlers
-	monitorV1Handler := v1handler.NewMonitorHandler(app.ResourceService)
+	monitorV1Handler := v1handler.NewMonitorHandler(app.ResourceService, liveSnapshotService, activityService)
 	incidentV1Handler := v1handler.NewIncidentHandler(incidentAPIService)
 	searchV1Handler := v1handler.NewSearchHandler(service.NewSearchService(app.ResourceRepo, app.IncidentRepo))
 	channelV1Handler := v1handler.NewNotificationChannelHandler(notificationService)

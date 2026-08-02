@@ -330,6 +330,17 @@ func NewRouter(
 				// Monitor↔host link. Write-scoped.
 				r.With(middleware.RequireReadWrite).Post("/{id}/host", hostV1Handler.LinkMonitor)
 				r.With(middleware.RequireReadWrite).Delete("/{id}/host", hostV1Handler.UnlinkMonitor)
+				// Root→v1 parity additions (spec 085). Additive; reads open, writes scoped.
+				r.Get("/{id}/live", monitorV1Handler.GetLive)
+				r.Get("/{id}/uptime-stats", monitorV1Handler.GetUptimeStats)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", monitorV1Handler.Patch)
+				r.With(middleware.RequireReadWrite).Post("/{id}/tags", monitorV1Handler.AddTag)
+				r.With(middleware.RequireReadWrite).Delete("/{id}/tags/{tagID}", monitorV1Handler.RemoveTag)
+				// Resource credentials re-mounted under v1 (spec 085). Same handler as root.
+				r.Get(routeCredentials, credentialV1Handler.Get)
+				r.With(middleware.RequireReadWrite).Post(routeCredentials, credentialV1Handler.Set)
+				r.With(middleware.RequireReadWrite).Delete(routeCredentials, credentialV1Handler.Delete)
+				r.With(middleware.RequireReadWrite).With(middleware.PerUserRateLimit(10)).Post(routeCredentialsTest, credentialV1Handler.Test)
 			})
 			// Hosts — agent device monitoring. Read GET; writes scoped.
 			r.Route("/hosts", func(r chi.Router) {

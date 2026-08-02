@@ -34,15 +34,19 @@ type problemDetailResponse struct {
 // --- mock service ---
 
 type mockMonitorService struct {
-	resources []*domain.Resource
-	resource  *domain.Resource
-	listErr   error
-	getErr    error
-	createErr error
-	updateErr error
-	deleteErr error
-	pauseErr  error
-	resumeErr error
+	resources    []*domain.Resource
+	resource     *domain.Resource
+	listErr      error
+	getErr       error
+	createErr    error
+	updateErr    error
+	deleteErr    error
+	pauseErr     error
+	resumeErr    error
+	addTagsErr   error
+	removeTagErr error
+	lastUpdate   *dto.UpdateResourcePayload // captured by UpdateResource (spec 085 PATCH test)
+	lastTagIDs   []string                   // captured by AddTagsToResource
 }
 
 func (m *mockMonitorService) ListActiveResources(_ context.Context, limit, offset int) ([]*domain.Resource, error) {
@@ -109,11 +113,21 @@ func (m *mockMonitorService) CreateResource(_ context.Context, payload *dto.Crea
 	}, nil
 }
 
-func (m *mockMonitorService) UpdateResource(_ context.Context, id string, _ *dto.UpdateResourcePayload) (*domain.Resource, error) {
+func (m *mockMonitorService) UpdateResource(_ context.Context, id string, payload *dto.UpdateResourcePayload) (*domain.Resource, error) {
+	m.lastUpdate = payload
 	if m.updateErr != nil {
 		return nil, m.updateErr
 	}
 	return &domain.Resource{Base: domain.Base{ID: id, CreatedAt: time.Now(), UpdatedAt: time.Now()}}, nil
+}
+
+func (m *mockMonitorService) AddTagsToResource(_ context.Context, _ string, tagIDs []string) error {
+	m.lastTagIDs = tagIDs
+	return m.addTagsErr
+}
+
+func (m *mockMonitorService) RemoveTagFromResource(_ context.Context, _, _ string) error {
+	return m.removeTagErr
 }
 
 func (m *mockMonitorService) DeleteResource(_ context.Context, _ string) error {
@@ -132,7 +146,7 @@ func (m *mockMonitorService) ResumeMonitoring(_ context.Context, _ string) error
 
 func newMonitorRouter(svc v1.MonitorV1ServiceInterface) *chi.Mux {
 	r := chi.NewRouter()
-	h := v1.NewMonitorHandler(svc)
+	h := v1.NewMonitorHandler(svc, nil, nil)
 	r.Get("/api/v1/monitors", h.List)
 	r.With(middleware.RequireReadWrite).Post("/api/v1/monitors", h.Create)
 	r.Get("/api/v1/monitors/{id}", h.Get)
@@ -140,6 +154,10 @@ func newMonitorRouter(svc v1.MonitorV1ServiceInterface) *chi.Mux {
 	r.With(middleware.RequireReadWrite).Delete("/api/v1/monitors/{id}", h.Delete)
 	r.With(middleware.RequireReadWrite).Post("/api/v1/monitors/{id}/pause", h.Pause)
 	r.With(middleware.RequireReadWrite).Post("/api/v1/monitors/{id}/resume", h.Resume)
+	// spec 085 parity write routes (live/uptime reads need stubs — see monitor_parity_test.go)
+	r.With(middleware.RequireReadWrite).Patch("/api/v1/monitors/{id}", h.Patch)
+	r.With(middleware.RequireReadWrite).Post("/api/v1/monitors/{id}/tags", h.AddTag)
+	r.With(middleware.RequireReadWrite).Delete("/api/v1/monitors/{id}/tags/{tagID}", h.RemoveTag)
 	return r
 }
 
@@ -175,6 +193,9 @@ func TestMonitorHandler_ScopeEnforcement_ReadKeyOnWriteRoutes_Returns403(t *test
 		{"DELETE", "/api/v1/monitors/abc", nil},
 		{"POST", "/api/v1/monitors/abc/pause", nil},
 		{"POST", "/api/v1/monitors/abc/resume", nil},
+		{"PATCH", "/api/v1/monitors/abc", []byte(`{"name":"x"}`)},
+		{"POST", "/api/v1/monitors/abc/tags", []byte(`{"tag_ids":["t1"]}`)},
+		{"DELETE", "/api/v1/monitors/abc/tags/t1", nil},
 	}
 
 	for _, tc := range writeCases {

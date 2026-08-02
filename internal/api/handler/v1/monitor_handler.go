@@ -27,16 +27,32 @@ type MonitorV1ServiceInterface interface {
 	DeleteResource(ctx context.Context, resourceID string) error
 	PauseMonitoring(ctx context.Context, resourceID string) error
 	ResumeMonitoring(ctx context.Context, resourceID string) error
+	// spec 085 — parity with the root resources API
+	AddTagsToResource(ctx context.Context, resourceID string, tagIDs []string) error
+	RemoveTagFromResource(ctx context.Context, resourceID, tagID string) error
+}
+
+// monitorLiveProvider is the live-snapshot service subset (spec 085 parity).
+type monitorLiveProvider interface {
+	GetLiveSnapshot(ctx context.Context, resourceID string) (*dto.LiveSnapshotResponse, error)
+}
+
+// monitorUptimeProvider is the uptime-stats service subset (spec 085 parity).
+type monitorUptimeProvider interface {
+	GetUptimeStats(ctx context.Context, resourceID string) ([]dto.UptimeStatResponse, error)
 }
 
 // MonitorHandler handles v1 CRUD and lifecycle endpoints for monitors.
 type MonitorHandler struct {
 	service MonitorV1ServiceInterface
+	live    monitorLiveProvider
+	uptime  monitorUptimeProvider
 }
 
-// NewMonitorHandler creates a new MonitorHandler with the given service.
-func NewMonitorHandler(svc MonitorV1ServiceInterface) *MonitorHandler {
-	return &MonitorHandler{service: svc}
+// NewMonitorHandler creates a new MonitorHandler. live/uptime may be nil (their
+// endpoints then return 503); bootstrap injects the real services.
+func NewMonitorHandler(svc MonitorV1ServiceInterface, live monitorLiveProvider, uptime monitorUptimeProvider) *MonitorHandler {
+	return &MonitorHandler{service: svc, live: live, uptime: uptime}
 }
 
 // mapMonitorResponse maps a domain.Resource to a v1 MonitorResponse.
@@ -205,7 +221,7 @@ func (h *MonitorHandler) Create(w http.ResponseWriter, r *http.Request) {
 	respond(w, http.StatusCreated, mapMonitorResponse(created))
 }
 
-// Update handles PUT /api/v1/monitors/{id}
+// Update handles PUT /api/v1/monitors/{id} (full-shape update; partial semantics).
 //
 // @Summary     Update a monitor
 // @Tags        monitors
@@ -218,7 +234,28 @@ func (h *MonitorHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Router      /monitors/{id} [put]
-func (h *MonitorHandler) Update(w http.ResponseWriter, r *http.Request) {
+func (h *MonitorHandler) Update(w http.ResponseWriter, r *http.Request) { h.applyUpdate(w, r) }
+
+// Patch handles PATCH /api/v1/monitors/{id} — partial update; only supplied fields
+// change, unset fields are preserved (spec 085 parity with the root PATCH).
+//
+// @Summary     Partially update a monitor
+// @Tags        monitors
+// @Security    BearerAuth
+// @Accept      json
+// @Produce     json
+// @Param       id   path string true "Monitor ID"
+// @Param       body body dtoV1.UpdateMonitorRequest true "Partial update payload"
+// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MonitorResponse]
+// @Failure     404 {object} dtoV1.ErrorResponse
+// @Failure     403 {object} dtoV1.ErrorResponse
+// @Failure     422 {object} dtoV1.ErrorResponse
+// @Router      /monitors/{id} [patch]
+func (h *MonitorHandler) Patch(w http.ResponseWriter, r *http.Request) { h.applyUpdate(w, r) }
+
+// applyUpdate decodes the pointer-shaped UpdateMonitorRequest and applies it as a
+// partial update (shared by PUT + PATCH).
+func (h *MonitorHandler) applyUpdate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	var req dtoV1.UpdateMonitorRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -258,6 +295,116 @@ func (h *MonitorHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, http.StatusOK, mapMonitorResponse(updated))
+}
+
+// GetLive handles GET /api/v1/monitors/{id}/live — live snapshot (spec 085 parity).
+//
+// @Summary     Live snapshot of a monitor
+// @Tags        monitors
+// @Security    BearerAuth
+// @Produce     json
+// @Param       id path string true "Monitor ID"
+// @Success     200 {object} dtoV1.SingleResponse[dto.LiveSnapshotResponse]
+// @Failure     404 {object} dtoV1.ErrorResponse
+// @Router      /monitors/{id}/live [get]
+func (h *MonitorHandler) GetLive(w http.ResponseWriter, r *http.Request) {
+	if h.live == nil {
+		respondError(w, r, http.StatusServiceUnavailable, "UNAVAILABLE", "live snapshot service not available")
+		return
+	}
+	snapshot, err := h.live.GetLiveSnapshot(r.Context(), chi.URLParam(r, "id"))
+	if err != nil {
+		if errors.Is(err, service.ErrResourceNotFound) {
+			respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "monitor not found")
+			return
+		}
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to load live snapshot")
+		return
+	}
+	respond(w, http.StatusOK, snapshot)
+}
+
+// GetUptimeStats handles GET /api/v1/monitors/{id}/uptime-stats (spec 085 parity).
+//
+// @Summary     Hourly uptime statistics for a monitor
+// @Tags        monitors
+// @Security    BearerAuth
+// @Produce     json
+// @Param       id path string true "Monitor ID"
+// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MonitorUptimeStatsResponse]
+// @Failure     404 {object} dtoV1.ErrorResponse
+// @Router      /monitors/{id}/uptime-stats [get]
+func (h *MonitorHandler) GetUptimeStats(w http.ResponseWriter, r *http.Request) {
+	if h.uptime == nil {
+		respondError(w, r, http.StatusServiceUnavailable, "UNAVAILABLE", "uptime service not available")
+		return
+	}
+	id := chi.URLParam(r, "id")
+	stats, err := h.uptime.GetUptimeStats(r.Context(), id)
+	if err != nil {
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to load uptime stats")
+		return
+	}
+	out := dtoV1.MonitorUptimeStatsResponse{ResourceID: id, Stats: make([]dtoV1.MonitorUptimeStat, 0, len(stats))}
+	for _, s := range stats {
+		out.Stats = append(out.Stats, dtoV1.MonitorUptimeStat{
+			Hour: s.Hour, UptimePercent: s.UptimePercent, SuccessfulCount: s.SuccessfulCount, TotalCount: s.TotalCount,
+		})
+	}
+	respond(w, http.StatusOK, out)
+}
+
+// AddTag handles POST /api/v1/monitors/{id}/tags (spec 085 parity).
+//
+// @Summary     Attach tags to a monitor
+// @Tags        monitors
+// @Security    BearerAuth
+// @Accept      json
+// @Param       id   path string true "Monitor ID"
+// @Param       body body dtoV1.AddTagsRequest true "Tag IDs"
+// @Success     204
+// @Failure     403 {object} dtoV1.ErrorResponse
+// @Failure     404 {object} dtoV1.ErrorResponse
+// @Router      /monitors/{id}/tags [post]
+func (h *MonitorHandler) AddTag(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var req dtoV1.AddTagsRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "invalid request body")
+		return
+	}
+	if err := h.service.AddTagsToResource(r.Context(), id, req.TagIDs); err != nil {
+		if errors.Is(err, service.ErrResourceNotFound) {
+			respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "monitor not found")
+			return
+		}
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to attach tags")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RemoveTag handles DELETE /api/v1/monitors/{id}/tags/{tagID} (spec 085 parity).
+//
+// @Summary     Detach a tag from a monitor
+// @Tags        monitors
+// @Security    BearerAuth
+// @Param       id    path string true "Monitor ID"
+// @Param       tagID path string true "Tag ID"
+// @Success     204
+// @Failure     403 {object} dtoV1.ErrorResponse
+// @Failure     404 {object} dtoV1.ErrorResponse
+// @Router      /monitors/{id}/tags/{tagID} [delete]
+func (h *MonitorHandler) RemoveTag(w http.ResponseWriter, r *http.Request) {
+	if err := h.service.RemoveTagFromResource(r.Context(), chi.URLParam(r, "id"), chi.URLParam(r, "tagID")); err != nil {
+		if errors.Is(err, service.ErrResourceNotFound) {
+			respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "monitor or tag not found")
+			return
+		}
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to detach tag")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // Delete handles DELETE /api/v1/monitors/{id}
