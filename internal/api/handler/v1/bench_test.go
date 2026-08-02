@@ -64,6 +64,12 @@ func (s *benchMonitorService) DeleteResource(_ context.Context, _ string) error 
 func (s *benchMonitorService) PauseMonitoring(_ context.Context, _ string) error {
 	panic("bench harness: PauseMonitoring not used")
 }
+func (s *benchMonitorService) AddTagsToResource(_ context.Context, _ string, _ []string) error {
+	panic("bench harness: AddTagsToResource not used")
+}
+func (s *benchMonitorService) RemoveTagFromResource(_ context.Context, _, _ string) error {
+	panic("bench harness: RemoveTagFromResource not used")
+}
 func (s *benchMonitorService) ResumeMonitoring(_ context.Context, _ string) error {
 	panic("bench harness: ResumeMonitoring not used")
 }
@@ -146,7 +152,7 @@ func buildBenchRouter(b *testing.B, fx *internaltest.DialectFixture) http.Handle
 	b.Helper()
 	resourceRepo := store.NewResourceRepositorySQLC(fx.Runtime)
 	incidentRepo := store.NewIncidentRepositorySQLC(fx.Runtime)
-	monitorHandler := v1.NewMonitorHandler(&benchMonitorService{repo: resourceRepo})
+	monitorHandler := v1.NewMonitorHandler(&benchMonitorService{repo: resourceRepo}, nil, nil)
 	incidentHandler := v1.NewIncidentHandler(&benchIncidentService{repo: incidentRepo})
 
 	r := chi.NewRouter()

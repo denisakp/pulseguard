@@ -7,6 +7,13 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Monitors API parity with the root resources API (spec 085, Phase 1)** — additive
+  endpoints on `/api/v1/monitors` so the versioned API can become the single source of
+  truth: `GET /{id}/live` (live snapshot), `GET /{id}/uptime-stats`, `POST /{id}/tags`
+  + `DELETE /{id}/tags/{tagID}` (204), `PATCH /{id}` (partial update; `PUT` retained), and
+  the resource-credential routes re-mounted under `/api/v1/monitors/{id}/credentials*`. All
+  reuse the existing services (no new logic, no migration); writes are read/write-scoped.
+  The frontend repoint + root-handler deletion (Phase 2) is a deferred follow-up.
 - **Server-side search endpoint (spec 084)** — `GET /api/v1/search?q=&limit=&categories=`
   powering the ⌘K command palette beyond the client-side (in-memory) window. Aggregates
   case-insensitive substring/prefix matches across monitors (name/target), incidents
