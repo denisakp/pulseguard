@@ -93,6 +93,15 @@ linked in the release notes.
   config path moves to `/etc/ogoune/agent.cfg` (env-style, doubling as the systemd
   `EnvironmentFile` / `docker --env-file`), and it now logs a warning when
   connecting over plaintext `ws://` to a remote host (use `wss://` in production).
+- **Agent-down alerting (spec 083)** — the server now notifies you when an
+  agent-backed host stops reporting. A recurring liveness scan raises a single
+  in-app feed notification ("Host X went offline") once a host has been
+  continuously offline past `HOST_FRESHNESS_THRESHOLD`, and a matching "back
+  online" notification on recovery — one alert per offline episode (flap- and
+  restart-safe, tracked in a new `host_alert_state` table). Optional email
+  delivery via the oldest SMTP channel (`AGENT_DOWN_EXTERNAL_DELIVERY=true`).
+  Configurable via `AGENT_DOWN_ALERTS_ENABLED` / `AGENT_DOWN_SCAN_INTERVAL`;
+  fail-safe (alert/delivery failures never disturb monitoring).
 
 ### Changed
 

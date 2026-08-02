@@ -31,6 +31,17 @@ type NotificationPayload struct {
 	Flapping  *FlappingNotification
 	Reminder  *ReminderNotification
 	Report    *ReportNotification
+	Operator  *OperatorNotification
+}
+
+// OperatorNotification is a plain operator-facing message (spec 083): an
+// agent-down / recovery alert or an unread-notification digest. It carries no
+// monitoring-specific structure — the SMTP and webhook notifiers render it
+// generically. It is NOT a new channel type; existing channels deliver it.
+type OperatorNotification struct {
+	Title string   // subject / heading
+	Body  string   // one-line summary
+	Items []string // optional bullet list (e.g. offline hosts, unread entries)
 }
 
 // ExpiryNotification carries expiry-specific data for threshold alert dispatching.

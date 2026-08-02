@@ -81,6 +81,15 @@ type HostRepository interface {
 	UpdateSnapshot(ctx context.Context, h *domain.Host) error
 }
 
+// HostAlertStateRepository persists per-host agent-down alert state (spec 083)
+// so alerts fire once per offline episode and survive restarts.
+type HostAlertStateRepository interface {
+	// Get returns the state for a host, or repository.ErrNotFound if none exists.
+	Get(ctx context.Context, hostID string) (*domain.HostAlertState, error)
+	// Upsert inserts or updates the state row for a host.
+	Upsert(ctx context.Context, s *domain.HostAlertState) error
+}
+
 // HostCredentialRepository persists per-host bearer credentials (hash only).
 type HostCredentialRepository interface {
 	Create(ctx context.Context, c *domain.HostCredential) error

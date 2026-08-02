@@ -134,6 +134,7 @@ type Querier interface {
 	FindUptimeDailyAggRange(ctx context.Context, arg FindUptimeDailyAggRangeParams) ([]UptimeDailyAgg, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id string) (User, error)
+	GetHostAlertState(ctx context.Context, hostID string) (HostAlertState, error)
 	// Two aggregated counts in a single round-trip. CTE keeps the row scan
 	// to one pass over the window.
 	GetIncidentStatsPG(ctx context.Context, startedAt pgtype.Timestamptz) (GetIncidentStatsPGRow, error)
@@ -232,6 +233,7 @@ type Querier interface {
 	UpdateUserLastLogin(ctx context.Context, id string) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserTwoFactorSecret(ctx context.Context, arg UpdateUserTwoFactorSecretParams) error
+	UpsertHostAlertState(ctx context.Context, arg UpsertHostAlertStateParams) error
 	UpsertReportSettings(ctx context.Context, arg UpsertReportSettingsParams) (ReportSetting, error)
 	UpsertResourceCredential(ctx context.Context, arg UpsertResourceCredentialParams) error
 	UpsertUptimeDailyAgg(ctx context.Context, arg UpsertUptimeDailyAggParams) error

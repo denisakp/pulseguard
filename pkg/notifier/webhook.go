@@ -121,8 +121,16 @@ func (n *WebHookNotifier) Send(ctx context.Context, payload NotificationPayload)
 			}
 			body["failure_cause"] = incident.Cause
 		}
+	case payload.Operator != nil:
+		op := payload.Operator
+		body = map[string]any{
+			"type":  "operator",
+			"title": op.Title,
+			"body":  op.Body,
+			"items": op.Items,
+		}
 	default:
-		return fmt.Errorf("notification payload missing incident, component, expiry, flapping, or reminder")
+		return fmt.Errorf("notification payload missing incident, component, expiry, flapping, reminder, or operator")
 	}
 
 	payloadBytes, err := json.Marshal(body)

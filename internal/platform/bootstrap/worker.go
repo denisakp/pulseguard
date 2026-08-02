@@ -49,6 +49,20 @@ func InitWorker(app *App) {
 	}
 	slog.Info("heartbeat detector started", "interval", "60s")
 
+	// Agent-down alerting (spec 083). Edition-agnostic recurring scan; guarded by config.
+	if app.Cfg.AgentDownAlertsEnabled {
+		liveness := service.NewHostLivenessService(
+			app.HostRepo, app.HostAlertStateRepo, app.NotificationFeedService,
+			app.NotificationChannelRepo, app.Cfg.HostFreshnessThreshold, app.Cfg.AgentDownExternalDelivery,
+		)
+		if err := liveness.Start(context.Background(), app.Cfg.AgentDownScanInterval); err != nil {
+			slog.Error("failed to start host liveness scanner", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("host liveness scanner started", "interval", app.Cfg.AgentDownScanInterval.String(),
+			"external_delivery", app.Cfg.AgentDownExternalDelivery)
+	}
+
 	if app.SchedulerCfg.Mode == scheduler.ModeAsynq {
 		initAsynqProcessor(app, enrichmentService)
 	} else {

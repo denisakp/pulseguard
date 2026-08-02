@@ -107,6 +107,14 @@ type Host struct {
 	LastDisks    []byte             `json:"last_disks"`
 }
 
+type HostAlertState struct {
+	HostID       string             `json:"host_id"`
+	State        string             `json:"state"`
+	OfflineSince pgtype.Timestamptz `json:"offline_since"`
+	Alerted      bool               `json:"alerted"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
 type HostCredential struct {
 	ID         string             `json:"id"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`

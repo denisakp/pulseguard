@@ -125,11 +125,14 @@ func (n *SMTPNotifier) Send(ctx context.Context, payload NotificationPayload) er
 	case payload.Report != nil:
 		subject = n.reportSubject(payload.Report)
 		htmlBody = n.generateReportEmailHTML(payload.Report)
+	case payload.Operator != nil:
+		subject = payload.Operator.Title
+		htmlBody = n.generateOperatorEmailHTML(payload.Operator)
 	case payload.Incident != nil:
 		incident := *payload.Incident
 		subject, htmlBody = n.incidentEmailContent(incident)
 	default:
-		return fmt.Errorf("notification payload missing incident, component, expiry, flapping, reminder, or report")
+		return fmt.Errorf("notification payload missing incident, component, expiry, flapping, reminder, report, or operator")
 	}
 
 	message := gomail.NewMessage()
@@ -392,6 +395,23 @@ func (n *SMTPNotifier) generateExpiryEmailHTML(expiry *ExpiryNotification) strin
 	}
 
 	return buf.String()
+}
+
+// generateOperatorEmailHTML renders a generic operator message (agent-down alert
+// or unread digest). Inline HTML (no embedded template), like the report email.
+func (n *SMTPNotifier) generateOperatorEmailHTML(op *OperatorNotification) string {
+	list := ""
+	if len(op.Items) > 0 {
+		var items bytes.Buffer
+		for _, it := range op.Items {
+			items.WriteString(fmt.Sprintf("<li style=\"margin:2px 0\">%s</li>", template.HTMLEscapeString(it)))
+		}
+		list = fmt.Sprintf("<ul style=\"margin:12px 0 0;padding-left:20px;color:#334155\">%s</ul>", items.String())
+	}
+	return fmt.Sprintf(`<!DOCTYPE html><html><body style="font-family:system-ui,sans-serif;color:#0f172a">
+<h2 style="margin:0 0 8px">%s</h2>
+<p style="margin:0;color:#334155">%s</p>%s
+</body></html>`, template.HTMLEscapeString(op.Title), template.HTMLEscapeString(op.Body), list)
 }
 
 // reportSubject builds the subject line for a monthly report email.

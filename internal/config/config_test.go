@@ -27,6 +27,43 @@ func TestStaticDirOverride(t *testing.T) {
 	}
 }
 
+func TestAgentDownDefaults(t *testing.T) {
+	for _, k := range []string{"AGENT_DOWN_ALERTS_ENABLED", "AGENT_DOWN_SCAN_INTERVAL", "AGENT_DOWN_EXTERNAL_DELIVERY"} {
+		os.Unsetenv(k)
+	}
+	cfg := Load()
+	if !cfg.AgentDownAlertsEnabled {
+		t.Error("AgentDownAlertsEnabled should default true")
+	}
+	if cfg.AgentDownScanInterval != 20*time.Second {
+		t.Errorf("AgentDownScanInterval default = %s, want 20s", cfg.AgentDownScanInterval)
+	}
+	if cfg.AgentDownExternalDelivery {
+		t.Error("AgentDownExternalDelivery should default false")
+	}
+}
+
+func TestAgentDownOverrides(t *testing.T) {
+	os.Setenv("AGENT_DOWN_ALERTS_ENABLED", "false")
+	os.Setenv("AGENT_DOWN_SCAN_INTERVAL", "5s")
+	os.Setenv("AGENT_DOWN_EXTERNAL_DELIVERY", "true")
+	defer func() {
+		os.Unsetenv("AGENT_DOWN_ALERTS_ENABLED")
+		os.Unsetenv("AGENT_DOWN_SCAN_INTERVAL")
+		os.Unsetenv("AGENT_DOWN_EXTERNAL_DELIVERY")
+	}()
+	cfg := Load()
+	if cfg.AgentDownAlertsEnabled {
+		t.Error("AgentDownAlertsEnabled should be false")
+	}
+	if cfg.AgentDownScanInterval != 5*time.Second {
+		t.Errorf("AgentDownScanInterval = %s, want 5s", cfg.AgentDownScanInterval)
+	}
+	if !cfg.AgentDownExternalDelivery {
+		t.Error("AgentDownExternalDelivery should be true")
+	}
+}
+
 func TestEnableICMPDefaultFalse(t *testing.T) {
 	os.Unsetenv("ENABLE_ICMP")
 

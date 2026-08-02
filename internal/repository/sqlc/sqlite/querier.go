@@ -134,6 +134,7 @@ type Querier interface {
 	FindUptimeDailyAggForResource(ctx context.Context, arg FindUptimeDailyAggForResourceParams) ([]UptimeDailyAgg, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id string) (User, error)
+	GetHostAlertState(ctx context.Context, hostID string) (HostAlertState, error)
 	GetIncidentStatsSQLite(ctx context.Context, since time.Time) (GetIncidentStatsSQLiteRow, error)
 	GetIncidentUpdate(ctx context.Context, id string) (IncidentUpdate, error)
 	GetRecentResponseTimes(ctx context.Context, arg GetRecentResponseTimesParams) ([]GetRecentResponseTimesRow, error)
@@ -229,6 +230,7 @@ type Querier interface {
 	UpdateUserLastLogin(ctx context.Context, id string) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserTwoFactorSecret(ctx context.Context, arg UpdateUserTwoFactorSecretParams) error
+	UpsertHostAlertState(ctx context.Context, arg UpsertHostAlertStateParams) error
 	UpsertReportSettings(ctx context.Context, arg UpsertReportSettingsParams) (ReportSetting, error)
 	UpsertResourceCredential(ctx context.Context, arg UpsertResourceCredentialParams) error
 	UpsertUptimeDailyAgg(ctx context.Context, arg UpsertUptimeDailyAggParams) error

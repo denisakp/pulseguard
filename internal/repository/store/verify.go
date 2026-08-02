@@ -45,6 +45,7 @@ var (
 
 	// Spec 079 — Agent device monitoring
 	_ port.HostRepository           = (*HostRepositorySQLC)(nil)
+	_ port.HostAlertStateRepository = (*HostAlertStateRepositorySQLC)(nil)
 	_ port.HostCredentialRepository = (*HostCredentialRepositorySQLC)(nil)
 	_ port.HostMetricsRepository    = (*HostMetricRepositorySQLC)(nil)
 )

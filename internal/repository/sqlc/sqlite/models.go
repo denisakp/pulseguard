@@ -108,6 +108,14 @@ type Host struct {
 	LastDisks    sql.NullString  `json:"last_disks"`
 }
 
+type HostAlertState struct {
+	HostID       string       `json:"host_id"`
+	State        string       `json:"state"`
+	OfflineSince sql.NullTime `json:"offline_since"`
+	Alerted      int64        `json:"alerted"`
+	UpdatedAt    time.Time    `json:"updated_at"`
+}
+
 type HostCredential struct {
 	ID         string       `json:"id"`
 	CreatedAt  time.Time    `json:"created_at"`

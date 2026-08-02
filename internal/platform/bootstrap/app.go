@@ -58,6 +58,8 @@ type App struct {
 	HostRepo           port.HostRepository
 	HostCredentialRepo port.HostCredentialRepository
 	HostMetricsRepo    port.HostMetricsRepository
+	// Spec 083 — agent-down alert state
+	HostAlertStateRepo port.HostAlertStateRepository
 
 	// Metrics phase
 	MetricsRecorder       domain.MetricsRecorder
