@@ -40,7 +40,7 @@ services:
       timeout: 5s
       retries: 5
   ogoune:
-    image: ghcr.io/denisakp/ogoune:8f79287
+    image: ghcr.io/denisakp/ogoune:47d4944
     restart: unless-stopped
     ports:
       - "${APP_PORT:-9596}:9596"
@@ -64,7 +64,6 @@ services:
       STATIC_DIR: /app/static
     volumes:
       - ogoune-data:/data
-
   # Host monitoring agent (spec 082) — OPT-IN. A plain `docker compose up` does
   # NOT start it; it needs a per-host credential, so it would crash-loop without
   # one. Register a host (Hosts → Register host) to get an ag_live_ credential,
