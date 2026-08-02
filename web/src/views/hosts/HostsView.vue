@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * Hosts list page (spec 081, P1). Trouble-first table of the host fleet with a
+ * Hosts list page. Trouble-first table of the host fleet with a
  * register/onboarding flow and per-row rotate-credential / delete actions.
  * Read/write affordances are always shown; a backend 403 surfaces via the
  * shared error toast (there is no session read-only gate in this SPA).
  */
-import { computed, h, onMounted, onUnmounted, ref } from 'vue'
+import { computed, h, onMounted, onUnmounted, ref, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import { useHosts, type EnrichedHost } from '@/composables/useHosts'
 import { useConfirm } from '@/composables/useConfirm'
@@ -106,10 +106,10 @@ const columns: TableColumn<EnrichedHost>[] = [
   },
 ]
 
-// Resolve UButton lazily so the render functions don't crash in vitest stubs.
+// Resolve the globally-registered UButton so the render function uses the real
+// component (a bare 'UButton' string renders as an inert <ubutton> element).
 function resolveButton() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (globalThis as any).UButton ?? 'UButton'
+  return resolveComponent('UButton')
 }
 
 async function onAction(p: { action: RowAction; row: Host }) {
