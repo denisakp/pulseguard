@@ -2640,6 +2640,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search monitors, incidents, and pages
+         * @description Command-palette search across monitors (name/target), incidents (cause), and app pages. Read-only.
+         */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Search query (min 2 characters, matched literally) */
+                    q: string;
+                    /** @description Max results (default 30, max 100) */
+                    limit?: number;
+                    /** @description Comma-separated filter: resource,incident,page (default all) */
+                    categories?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_SearchResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/status": {
         parameters: {
             query?: never;
@@ -3883,6 +3947,23 @@ export interface components {
         "github_com_denisakp_ogoune_internal_dto_v1.SaveLayoutRequest": {
             widgets?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.WidgetInstance"][];
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SearchResponse": {
+            query_duration_ms?: number;
+            results?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SearchResult"][];
+            total?: number;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SearchResult": {
+            /** @description Category is one of: resource | incident | page. */
+            category?: string;
+            /** @description DeepLink is the in-app path that opens the item (e.g. /resources/<id>). */
+            deep_link?: string;
+            /** @description ID is a stable, category-prefixed id: "resource:<id>" | "incident:<id>" | "page:<label>". */
+            id?: string;
+            /** @description Label is the primary human-readable text (monitor name, incident cause, page name). */
+            label?: string;
+            /** @description Meta is short context (e.g. a monitor's target), omitted when empty. */
+            meta?: string;
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_AnnouncementResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.AnnouncementResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
@@ -3953,6 +4034,10 @@ export interface components {
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_SSLCheckResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SSLCheckResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_SearchResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SearchResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_TagResponse": {

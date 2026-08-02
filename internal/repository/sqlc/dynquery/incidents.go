@@ -7,13 +7,14 @@ import (
 	dtoV1 "github.com/denisakp/ogoune/internal/dto/v1"
 )
 
-// IncidentFilter holds parsed ?status=, ?monitor_id=, ?from=, ?to= filters
+// IncidentFilter holds parsed ?status=, ?monitor_id=, ?from=, ?to=, ?q= filters
 // for the v1 /incidents list endpoint. Pointer fields: nil means no filter.
 type IncidentFilter struct {
 	Status    *string
 	MonitorID *string
 	From      *time.Time
 	To        *time.Time
+	Q         *string // free-text search over the incident cause (spec 084)
 }
 
 // Validate returns field-level errors. Cross-field: if both From and To are
@@ -25,6 +26,9 @@ func (f *IncidentFilter) Validate() []dtoV1.FieldError {
 	}
 	if f.From != nil && f.To != nil && f.From.After(*f.To) {
 		errs = append(errs, dtoV1.FieldError{Field: "from", Message: "must be before or equal to 'to'"})
+	}
+	if f.Q != nil && len(*f.Q) > maxQLength {
+		errs = append(errs, dtoV1.FieldError{Field: "q", Message: "query too long"})
 	}
 	return errs
 }
@@ -75,6 +79,10 @@ func incidentPredicates(f IncidentFilter) sq.And {
 	}
 	if f.To != nil {
 		preds = append(preds, sq.LtOrEq{"started_at": *f.To})
+	}
+	if f.Q != nil {
+		like := "%" + likeEscape(*f.Q) + "%"
+		preds = append(preds, sq.Expr(`LOWER(cause) LIKE LOWER(?) ESCAPE '\'`, like))
 	}
 	if len(preds) == 0 {
 		// squirrel sq.And{} renders as `()` which is invalid; pass a tautology.
