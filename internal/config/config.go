@@ -50,6 +50,12 @@ type Config struct {
 	// ICMP configuration
 	EnableICMP bool
 
+	// AllowPrivateTargets, when true, lets monitors and toolbox tools reach
+	// private/loopback/link-local addresses (RFC1918 etc.). Default false keeps
+	// the SSRF guard on for public/SaaS instances; self-hosters monitoring their
+	// own LAN set ALLOW_PRIVATE_TARGETS=true.
+	AllowPrivateTargets bool
+
 	// Metrics configuration
 	MetricsEnabled bool
 	MetricsToken   string
@@ -106,6 +112,7 @@ func Load() Config {
 	reminderIntervalMinutes := parseInt(GetEnv("REMINDER_INTERVAL_MINUTES", "0"))
 	groupingWindowSeconds := parseInt(GetEnv("GROUPING_WINDOW_SECONDS", "30"))
 	enableICMP := parseBool(GetEnv("ENABLE_ICMP", "false"), false)
+	allowPrivateTargets := parseBool(GetEnv("ALLOW_PRIVATE_TARGETS", "false"), false)
 	metricsEnabled := parseBool(GetEnv("ENABLE_METRICS", "false"), false)
 	metricsToken := GetEnv("METRICS_TOKEN", "")
 	notificationRetentionDays := parseInt(GetEnv("NOTIFICATION_RETENTION_DAYS", "90"))
@@ -163,6 +170,7 @@ func Load() Config {
 		LogFormat:                      logFormat,
 		LogLevel:                       logLevel,
 		EnableICMP:                     enableICMP,
+		AllowPrivateTargets:            allowPrivateTargets,
 		MetricsEnabled:                 metricsEnabled,
 		MetricsToken:                   metricsToken,
 		NotificationRetentionDays:      notificationRetentionDays,
