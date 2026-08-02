@@ -21,8 +21,12 @@ async function normalizeError(error: unknown): Promise<never> {
     // run; the response stream is therefore already consumed. Use `error.data`.
     const body: unknown = (error as HTTPError).data ?? null
 
-    const message = (body as { message?: string } | null)?.message ?? response.statusText
-    const code = (body as { code?: string } | null)?.code
+    // Prefer the human-readable message. v1 uses RFC7807 problem+json, where the
+    // message lives in `detail`; the legacy root API uses `message`. Falling back
+    // to statusText produced the generic "Bad Request" that hid real reasons.
+    const b = body as { message?: string; detail?: string; code?: string } | null
+    const message = b?.detail ?? b?.message ?? response.statusText
+    const code = b?.code
 
     const retryAfterRaw = response.headers.get('retry-after')
     const retryAfterSec = retryAfterRaw

@@ -6,7 +6,27 @@ import (
 	"net"
 	"net/url"
 	"strings"
+	"sync/atomic"
 )
+
+// allowPrivate, when true, disables the private/loopback/link-local block so a
+// trusted self-hosted instance can monitor its own LAN (opt-in via
+// ALLOW_PRIVATE_TARGETS). Default false keeps public/SaaS instances SSRF-safe.
+// Set once at startup via SetAllowPrivate.
+var allowPrivate atomic.Bool
+
+// SetAllowPrivate configures whether private-network targets are permitted.
+func SetAllowPrivate(v bool) { allowPrivate.Store(v) }
+
+// AllowPrivate reports the current policy.
+func AllowPrivate() bool { return allowPrivate.Load() }
+
+// ShouldBlock reports whether a resolved IP must be rejected: it is in a blocked
+// range AND private targets are not permitted. This is the decision every SSRF
+// guard should use (IsBlockedIP stays a pure range predicate).
+func ShouldBlock(ip net.IP) bool {
+	return !allowPrivate.Load() && IsBlockedIP(ip)
+}
 
 // blockedCIDRs contains all private, loopback, and link-local CIDR ranges
 // that monitor targets must not resolve to.
@@ -53,7 +73,7 @@ func IsBlockedIP(ip net.IP) bool {
 func ValidateResolvedIPs(host string) error {
 	// Check if host is already an IP
 	if ip := net.ParseIP(host); ip != nil {
-		if IsBlockedIP(ip) {
+		if ShouldBlock(ip) {
 			return fmt.Errorf("internal/private network addresses are not permitted")
 		}
 		return nil
@@ -67,7 +87,7 @@ func ValidateResolvedIPs(host string) error {
 
 	for _, ipStr := range ips {
 		ip := net.ParseIP(ipStr)
-		if ip != nil && IsBlockedIP(ip) {
+		if ip != nil && ShouldBlock(ip) {
 			return fmt.Errorf("internal/private network addresses are not permitted")
 		}
 	}

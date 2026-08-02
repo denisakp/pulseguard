@@ -191,3 +191,41 @@ func TestValidateResolvedIPs_DirectIP(t *testing.T) {
 		})
 	}
 }
+
+func TestShouldBlock_RespectsAllowPrivate(t *testing.T) {
+	priv := net.ParseIP("192.168.1.10")
+	pub := net.ParseIP("8.8.8.8")
+
+	// Default: private is blocked, public is not.
+	SetAllowPrivate(false)
+	if !ShouldBlock(priv) {
+		t.Error("private IP should be blocked by default")
+	}
+	if ShouldBlock(pub) {
+		t.Error("public IP should never be blocked")
+	}
+
+	// Opt-in: private is allowed; public still fine.
+	SetAllowPrivate(true)
+	if ShouldBlock(priv) {
+		t.Error("private IP should be allowed when ALLOW_PRIVATE_TARGETS is set")
+	}
+	if ShouldBlock(pub) {
+		t.Error("public IP should never be blocked")
+	}
+
+	// IsBlockedIP stays a pure range predicate regardless of the flag.
+	if !IsBlockedIP(priv) {
+		t.Error("IsBlockedIP must remain a pure predicate (192.168/16 is private)")
+	}
+
+	SetAllowPrivate(false) // restore default for other tests
+}
+
+func TestValidateResolvedIPs_AllowPrivate(t *testing.T) {
+	SetAllowPrivate(true)
+	defer SetAllowPrivate(false)
+	if err := ValidateResolvedIPs("10.0.0.5"); err != nil {
+		t.Errorf("private IP should validate when allowed: %v", err)
+	}
+}

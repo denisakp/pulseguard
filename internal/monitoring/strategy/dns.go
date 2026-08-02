@@ -35,7 +35,7 @@ func (s *DNSStrategy) Execute(ctx context.Context, resource *domain.Resource) (d
 	// Informational SSRF warning: DNS strategy resolves but does not connect
 	for _, addr := range addrs {
 		ip := net.ParseIP(addr)
-		if ip != nil && safenet.IsBlockedIP(ip) {
+		if ip != nil && safenet.ShouldBlock(ip) {
 			slog.WarnContext(ctx, "SSRF warning: resolved to blocked IP range",
 				slog.String("event", "ssrf_warning"),
 				slog.String("strategy", "dns"),

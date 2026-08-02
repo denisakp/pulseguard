@@ -25,7 +25,7 @@ func SafeDial(ctx context.Context, network, addr string) (net.Conn, error) {
 	}
 
 	// Validate all resolved IPs — block if ANY is in a blocked range
-	if slices.ContainsFunc(ips, IsBlockedIP) {
+	if slices.ContainsFunc(ips, ShouldBlock) {
 		logSecurityEvent("ssrf_block_exec", "", addr, "internal/private network addresses are not permitted")
 		return nil, fmt.Errorf("safenet: connection to %s blocked: internal/private network addresses are not permitted", addr)
 	}
