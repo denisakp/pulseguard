@@ -9,7 +9,7 @@ _Nothing yet._
 
 ---
 
-## [1.0.0-beta] - 2026-07-06
+## [1.0.0-beta] - 2026-08-02
 
 First public release of Ogoune — uptime monitoring that **confirms failures
 before alerting** (N consecutive failures required before an incident is
