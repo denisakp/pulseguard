@@ -904,3 +904,13 @@ export type {
   WhoisResponse,
   DnsHistoryEntry,
 } from './toolbox'
+
+export type {
+  DiskUsage,
+  Host,
+  HostMetricSample,
+  HostCredentialResult,
+  RegisterHostResult,
+  HostMetricRange,
+  MonitorSummary,
+} from './host'

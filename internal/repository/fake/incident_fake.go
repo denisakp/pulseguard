@@ -256,7 +256,7 @@ func (r *IncidentFake) FindActiveByResourceID(ctx context.Context, resourceID st
 	return latest, nil
 }
 
-// ListIncidentsByFilter applies the dynamic filter in memory (spec 051 fake).
+// ListIncidentsByFilter applies the dynamic filter in memory.
 func (r *IncidentFake) ListIncidentsByFilter(ctx context.Context, f dynquery.IncidentFilter, page, perPage int) ([]*domain.Incident, int, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

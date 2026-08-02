@@ -92,6 +92,52 @@ type ExpiryNotificationLog struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
+type Host struct {
+	ID           string          `json:"id"`
+	CreatedAt    time.Time       `json:"created_at"`
+	UpdatedAt    time.Time       `json:"updated_at"`
+	Name         string          `json:"name"`
+	Os           sql.NullString  `json:"os"`
+	AgentVersion sql.NullString  `json:"agent_version"`
+	LastSeenAt   sql.NullTime    `json:"last_seen_at"`
+	LastCpuPct   sql.NullFloat64 `json:"last_cpu_pct"`
+	LastMemPct   sql.NullFloat64 `json:"last_mem_pct"`
+	LastDiskPct  sql.NullFloat64 `json:"last_disk_pct"`
+	LastNetIn    sql.NullInt64   `json:"last_net_in"`
+	LastNetOut   sql.NullInt64   `json:"last_net_out"`
+	LastDisks    sql.NullString  `json:"last_disks"`
+}
+
+type HostAlertState struct {
+	HostID       string       `json:"host_id"`
+	State        string       `json:"state"`
+	OfflineSince sql.NullTime `json:"offline_since"`
+	Alerted      int64        `json:"alerted"`
+	UpdatedAt    time.Time    `json:"updated_at"`
+}
+
+type HostCredential struct {
+	ID         string       `json:"id"`
+	CreatedAt  time.Time    `json:"created_at"`
+	UpdatedAt  time.Time    `json:"updated_at"`
+	HostID     string       `json:"host_id"`
+	Hash       string       `json:"hash"`
+	Prefix     string       `json:"prefix"`
+	IsActive   int64        `json:"is_active"`
+	LastUsedAt sql.NullTime `json:"last_used_at"`
+}
+
+type HostMetric struct {
+	ID        string         `json:"id"`
+	HostID    string         `json:"host_id"`
+	SampledAt time.Time      `json:"sampled_at"`
+	CpuPct    float64        `json:"cpu_pct"`
+	MemPct    float64        `json:"mem_pct"`
+	NetIn     int64          `json:"net_in"`
+	NetOut    int64          `json:"net_out"`
+	Disks     sql.NullString `json:"disks"`
+}
+
 type Incident struct {
 	ID         string       `json:"id"`
 	CreatedAt  time.Time    `json:"created_at"`
@@ -218,6 +264,13 @@ type NotificationChannel struct {
 	Failures24h      int64       `json:"failures_24h"`
 }
 
+type NotificationEscalationState struct {
+	ID                  string       `json:"id"`
+	LastDigestAt        sql.NullTime `json:"last_digest_at"`
+	WatermarkOccurredAt sql.NullTime `json:"watermark_occurred_at"`
+	UpdatedAt           time.Time    `json:"updated_at"`
+}
+
 type NotificationEvent struct {
 	ID          string         `json:"id"`
 	CreatedAt   time.Time      `json:"created_at"`
@@ -291,6 +344,7 @@ type Resource struct {
 	KeywordMode             sql.NullString `json:"keyword_mode"`
 	ProtocolType            sql.NullString `json:"protocol_type"`
 	ProtocolPort            sql.NullInt64  `json:"protocol_port"`
+	HostID                  sql.NullString `json:"host_id"`
 }
 
 type ResourceCredential struct {

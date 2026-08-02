@@ -21,6 +21,8 @@ type stubResourceRepo struct {
 func (s *stubResourceRepo) Create(context.Context, *domain.Resource) (*domain.Resource, error) {
 	return nil, nil
 }
+func (s *stubResourceRepo) SetResourceHostID(context.Context, string, *string) error { return nil }
+func (s *stubResourceRepo) ClearResourceHostIDByHost(context.Context, string) error  { return nil }
 func (s *stubResourceRepo) FindByID(_ context.Context, id string) (*domain.Resource, error) {
 	r, ok := s.byID[id]
 	if !ok {

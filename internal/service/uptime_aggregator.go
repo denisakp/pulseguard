@@ -1,4 +1,4 @@
-// Package service — daily uptime aggregator (spec 060 / T031).
+// Package service — daily uptime aggregator.
 package service
 
 import (

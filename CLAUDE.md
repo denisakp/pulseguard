@@ -86,7 +86,7 @@ Handlers never run checks or query DB directly. Scheduling goes through the Sche
 
 ### Key layers
 
-- **Entry point**: `cmd/api/main.go` — thin orchestrator (~26 lines), delegates to `internal/platform/bootstrap/`
+- **Entry point**: `cmd/api/main.go` — thin orchestrator (~35 lines), delegates to `internal/platform/bootstrap/`
 - **HTTP**: `internal/api/router.go` (Chi router), handlers in `internal/api/handler/`
 - **Domain models**: `internal/domain/models.go` — source of truth, IDs are ULIDs (set in `EnsureID()` called explicitly by sqlc Create wrappers)
 - **Services**: `internal/service/` — business logic, domain-level errors (not HTTP errors)
@@ -126,6 +126,25 @@ routes once the frontend service is repointed. New features are v1-only.
 
 ## Patterns to follow
 
+### Feature development flow (speckit — MANDATORY)
+
+Every new feature MUST go through the speckit SDD cycle in this exact order. Do
+not skip a step, do not reorder:
+
+1. **specify** (`/speckit-specify`) — draft the feature spec from the request
+2. **clarify** (`/speckit-clarify`) — resolve underspecified areas before planning
+3. **plan** (`/speckit-plan`) — design artifacts + Constitution Check
+4. **tasks** (`/speckit-tasks`) — dependency-ordered `tasks.md`
+5. **analyze** (`/speckit-analyze`) — cross-artifact consistency (spec/plan/tasks)
+6. **taskstoissues** (`/speckit-taskstoissues`) — turn tasks into GitHub issues
+7. **implement** (`/speckit-implement`) — execute the tasks
+
+Each step gates the next: don't plan on an unclarified spec, don't implement on
+tasks that failed analyze. Artifacts land under `specs/NNN-name/` (gitignored per
+the chantier convention). The bundled workflow is defined in
+`.specify/workflows/speckit/workflow.yml`; the order is enforced by the
+constitution's Delivery Workflow (`.specify/memory/constitution.md`).
+
 ### Adding a new monitor type
 
 1. Implement `CheckStrategy` in `internal/monitoring/strategy/yourtype.go`
@@ -160,7 +179,7 @@ sqlc-only workflow. Full walkthrough at `internal/repository/sqlc/README.md`; ca
 1. Handler in `internal/api/handler/v1/` (interface + impl pattern)
 2. DTOs in `internal/dto/v1/`
 3. Route in `internal/api/router.go` (v1 sub-group)
-4. Swaggo annotations, then `make swag` and commit `docs/`
+4. Swaggo annotations, then `make openapi` + `make gen-fe-types`, commit `api/openapi/v1.{yaml,json}`
 5. Test scope enforcement (read-only API key → 403 on writes)
 
 ### Database migrations
@@ -197,6 +216,7 @@ Dashboard: http://localhost:9009 (project `ogoune`). Block on CRITICAL/BLOCKER i
 
 - `APP_SECRET_KEY` env var is mandatory — app refuses to start without it
 - `.private/` is gitignored — drop personal scratch / strategy docs there. `specs/` is also gitignored per the chantier convention.
+- Two docs trees, don't confuse: `docs/` = internal engineering docs (adrs/architecture/runbooks); `nebula/` = public VitePress site (docs.ogoune.com, auto-deployed on Vercel). Public-facing changes go in `nebula/`
 - Repository errors: map `repository.ErrNotFound` to service-level errors, handlers map those to HTTP status
 - Incident event steps (`detected`, `resource_down_alert`, `resolved`, `resource_up_alert`) may not all be present
 - Never block on scheduler failures — log and return `ErrSchedulerSync`
@@ -209,5 +229,5 @@ Dashboard: http://localhost:9009 (project `ogoune`). Block on CRITICAL/BLOCKER i
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-`specs/078-bulk-resource-import/plan.md`
+`specs/083-operator-alerting/plan.md`
 <!-- SPECKIT END -->

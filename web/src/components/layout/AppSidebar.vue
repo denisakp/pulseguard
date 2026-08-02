@@ -15,9 +15,12 @@ interface NavItem {
   icon: string
 }
 
+// Hosts is always visible so operators can discover it and reach the
+// onboarding/register flow even before any host exists.
 const monitor: NavItem[] = [
   { label: 'Overview', to: '/overview', icon: 'i-lucide-gauge' },
   { label: 'Resources', to: '/resources', icon: 'i-lucide-radar' },
+  { label: 'Hosts', to: '/hosts', icon: 'i-lucide-server' },
   { label: 'Incidents', to: '/incidents', icon: 'i-lucide-zap' },
   { label: 'Maintenance', to: '/maintenance', icon: 'i-lucide-wrench' },
 ]

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Port Scanner tool (spec 071, US3).
+ * Port Scanner tool.
  * Target must be a registered monitor host (backend gates with 403). Presets
  * auto-populate the ports field; results show open/closed/filtered per port.
  */

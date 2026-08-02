@@ -49,7 +49,7 @@ function makeFakeFeed(initial?: Partial<ReportsFeed>): ReportsFeed {
   }
 }
 
-describe('useReports (spec 070 / US1)', () => {
+describe('useReports', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     __resetUseReportsForTests()

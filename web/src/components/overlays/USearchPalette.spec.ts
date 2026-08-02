@@ -54,7 +54,7 @@ const stubs = {
   UIcon: { template: '<span />', props: ['name'] },
 }
 
-describe('USearchPalette (spec 069 / US2)', () => {
+describe('USearchPalette', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     __resetSearchPaletteForTests()

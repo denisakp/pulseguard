@@ -8,6 +8,7 @@ import (
 	icmppkg "github.com/denisakp/ogoune/internal/icmp"
 	"github.com/denisakp/ogoune/pkg/crypto"
 	"github.com/denisakp/ogoune/pkg/logger"
+	"github.com/denisakp/ogoune/pkg/safenet"
 )
 
 // InitConfig loads configuration, initializes the logger, and validates the crypto key.
@@ -36,6 +37,12 @@ func InitConfig(app *App) {
 	// Detect ICMP capability at startup
 	icmpCapability := icmppkg.Detect()
 	logICMPCapabilityState(cfg.EnableICMP, icmpCapability)
+
+	// SSRF policy: allow private/LAN targets only when explicitly opted in.
+	safenet.SetAllowPrivate(cfg.AllowPrivateTargets)
+	if cfg.AllowPrivateTargets {
+		slog.Warn("ALLOW_PRIVATE_TARGETS enabled — monitors may reach private/loopback addresses; keep this off on public/multi-tenant instances")
+	}
 
 	slog.Info("authentication configured", "email", cfg.AuthEmail)
 }

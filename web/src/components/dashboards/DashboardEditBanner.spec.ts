@@ -13,7 +13,7 @@ const stubs = {
   },
 }
 
-describe('DashboardEditBanner (spec 070 / US4)', () => {
+describe('DashboardEditBanner', () => {
   it('renders banner copy + Save/Cancel buttons', () => {
     const wrapper = mount(DashboardEditBanner, { global: { stubs } })
     expect(wrapper.find('[data-testid="dashboard-edit-banner"]').exists()).toBe(true)

@@ -3,7 +3,7 @@ import { getAuthenticatedClient, request } from '@/core/http/client'
 import { NotFoundError } from '@/core/errors'
 
 /**
- * Dashboards feed — always backed by the real v1 API (spec 075).
+ * Dashboards feed — always backed by the real v1 API.
  *
  * Ownership (FR-025): read instance-wide, edit owner-only (backend returns 403
  * FORBIDDEN on non-owner mutation). The UI gates affordances so FORBIDDEN never

@@ -32,7 +32,7 @@ var (
 	validVisibility = map[string]bool{"private": true, "team": true, "public": true}
 )
 
-// DashboardService manages custom dashboards (spec 075). Reads are instance-wide;
+// DashboardService manages custom dashboards. Reads are instance-wide;
 // mutations are owner-only.
 type DashboardService struct {
 	repo port.DashboardRepository

@@ -449,15 +449,15 @@ All endpoints under `/api/v1/` form the stable public API surface. Changes to th
 2. Add request/response DTOs to `internal/dto/v1/`.
 3. Wire the route in `internal/api/router.go` inside the authenticated or unauthenticated v1 sub-group as appropriate.
 4. Add swaggo annotations (`@Summary`, `@Tags`, `@Security`, `@Router`) to the handler method.
-5. Run `make swag` to regenerate `docs/`.
+5. Run `make openapi` (and `make gen-fe-types` if DTOs changed) to regenerate the spec, then commit `api/openapi/v1.{yaml,json}`.
 6. Write tests for scope enforcement (read-only key must get 403 on write endpoints).
 
 ### Swagger / OpenAPI spec
 
-- The spec is generated from source annotations via `make swag`.
+- The spec is generated from source annotations via `make openapi` (OpenAPI 3.1, swag v2).
 - `GET /api/v1/openapi.json` always serves the spec (no auth required).
 - The Swagger UI at `GET /api/v1/docs/*` is gated by `ENABLE_SWAGGER=true` (default: false in production).
-- Always commit the generated `docs/` directory after running `make swag`.
+- Always commit the generated `api/openapi/v1.{yaml,json}` after running `make openapi`. Run `make lint-openapi` (Spectral) before pushing.
 
 ---
 

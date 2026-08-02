@@ -60,6 +60,7 @@ export default defineConfig({
             { text: 'Community (SQLite)', link: '/self-host/community' },
             { text: 'Production (Postgres + Redis)', link: '/self-host/production' },
             { text: 'Configuration', link: '/self-host/configuration' },
+            { text: 'Host agent', link: '/self-host/agent' },
           ],
         },
       ],

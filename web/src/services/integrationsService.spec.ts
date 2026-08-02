@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { createRemoteIntegrationsFeed } from './integrationsService'
 import { server } from '@/test/msw/server'
 
-describe('integrationsService (spec 077)', () => {
+describe('integrationsService', () => {
   it('fetchAlertRules reads the raw text/yaml body and forwards the threshold', async () => {
     let url = ''
     server.use(

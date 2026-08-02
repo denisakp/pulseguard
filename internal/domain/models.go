@@ -24,7 +24,7 @@ type Base struct {
 
 // EnsureID assigns a fresh ULID to b.ID when it is empty. No-op when ID is
 // already set. Pure: no I/O, idempotent. Called explicitly by sqlc Create
-// wrappers (post-spec-052; previously also wrapped by a GORM BeforeCreate hook).
+// wrappers (previously also wrapped by a GORM BeforeCreate hook).
 func (b *Base) EnsureID() {
 	if b.ID == "" {
 		t := time.Now()
@@ -126,6 +126,7 @@ type Resource struct {
 	ProtocolPort            *int                   `json:"protocol_port,omitempty"`
 	MetadataPending         bool                   `json:"metadata_pending"`
 	Credential              *ResourceCredential    `json:"credential,omitempty"`
+	HostID                  *string                `json:"host_id,omitempty"` // optional link to a monitored host
 }
 
 // IsHeartbeatWaiting reports whether a heartbeat resource has never been pinged.
@@ -671,7 +672,7 @@ type DNSRecord struct {
 	LastError *string `json:"last_error,omitempty"`
 }
 
-// --- In-app notification feed (spec 072) ---
+// --- In-app notification feed ---
 // Distinct from NotificationEvent / NotificationChannel (outbound dispatch).
 
 // Notification feed categories.
@@ -679,6 +680,9 @@ const (
 	NotificationCategoryIncident = "incident"
 	NotificationCategorySystem   = "system"
 	NotificationCategoryGeneral  = "general"
+	// NotificationCategoryHost marks agent-down / host-recovery feed entries
+	// (spec 083). Actionable — included in unread-escalation scope.
+	NotificationCategoryHost = "host"
 )
 
 // Notification feed severities.
@@ -689,7 +693,7 @@ const (
 	NotificationSeveritySuccess = "success"
 )
 
-// FeedNotification is a single in-app notification-feed item (spec 072).
+// FeedNotification is a single in-app notification-feed item.
 // user_id == nil means instance-wide (visible to all authenticated users).
 // Read state is global: a single ReadAt shared by all users.
 type FeedNotification struct {
@@ -709,7 +713,7 @@ type FeedNotification struct {
 func (n *FeedNotification) Unread() bool { return n.ReadAt == nil }
 
 // EmittedNotification is the producer-facing input to the notification feed
-// (spec 072), decoupled from storage. OccurredAt zero defaults to now.
+// decoupled from storage. OccurredAt zero defaults to now.
 type EmittedNotification struct {
 	UserID      *string
 	Category    string
@@ -760,7 +764,7 @@ type WidgetInstance struct {
 	Config       map[string]any `json:"config,omitempty"`
 }
 
-// Dashboard is a saved custom view (spec 075). Config-only: scope + widgets +
+// Dashboard is a saved custom view. Config-only: scope + widgets +
 // settings are persisted; widget metric data renders frontend-side. Ownership
 // governs mutation; read is instance-wide.
 type Dashboard struct {
@@ -859,4 +863,99 @@ type Announcement struct {
 	Description string
 	Dismissible bool
 	Active      bool
+}
+
+// ---------------------------------------------------------------------------
+// Agent device monitoring
+// ---------------------------------------------------------------------------
+
+// DiskUsage is a per-mount disk utilisation entry reported by an agent.
+type DiskUsage struct {
+	Mount   string  `json:"mount"`
+	UsedPct float64 `json:"used_pct"`
+}
+
+// Host is a machine that an optional agent runs on. The agent streams system
+// metrics; the latest values are denormalized onto the row for cheap listing.
+// The agent is strictly optional — no core capability depends on a Host.
+type Host struct {
+	Base
+	Name         string
+	OS           *string
+	AgentVersion *string
+	LastSeenAt   *time.Time
+	LastCPUPct   *float64
+	LastMemPct   *float64
+	LastDiskPct  *float64
+	LastNetIn    *int64
+	LastNetOut   *int64
+	LastDisks    []DiskUsage // decoded from last_disks JSON
+	Online       bool        // derived (not persisted): computed via IsOnline
+}
+
+// IsOnline reports whether the host has reported within the freshness threshold
+// of now. Pure: no I/O. A host that has never reported is offline.
+func (h *Host) IsOnline(now time.Time, threshold time.Duration) bool {
+	if h.LastSeenAt == nil {
+		return false
+	}
+	return now.Sub(*h.LastSeenAt) <= threshold
+}
+
+// Host alert states (spec 083 agent-down alerting).
+const (
+	HostAlertStateOnline  = "online"
+	HostAlertStateOffline = "offline"
+)
+
+// HostAlertState tracks the agent-down alert lifecycle for one host so that at
+// most one offline alert (and one recovery) is raised per offline episode, and
+// so the state survives restarts. Not derived — persisted per host (spec 083).
+type HostAlertState struct {
+	HostID       string     // PK, FK hosts(id) ON DELETE CASCADE
+	State        string     // HostAlertStateOnline | HostAlertStateOffline
+	OfflineSince *time.Time // start of the current offline episode (nil when online)
+	Alerted      bool       // whether the offline alert already fired this episode
+	UpdatedAt    time.Time
+}
+
+// NotificationEscalationStateID is the fixed primary key of the single-row
+// notification_escalation_state table.
+const NotificationEscalationStateID = "singleton"
+
+// NotificationEscalationState is the high-water mark for the unread-notification
+// digest (spec 083 US2): the newest occurred_at already covered by a sent digest,
+// used to avoid re-sending the digest while the unread set is unchanged.
+type NotificationEscalationState struct {
+	ID                  string
+	LastDigestAt        *time.Time
+	WatermarkOccurredAt *time.Time
+	UpdatedAt           time.Time
+}
+
+// Actionable notification categories escalated by the unread digest (spec 083 US2).
+var EscalationCategories = []string{NotificationCategoryIncident, NotificationCategoryHost}
+
+// HostCredential is a per-host bearer secret (ag_live_…) authorising an agent to
+// report for exactly one host. Only the hash is stored; the raw is shown once.
+type HostCredential struct {
+	Base
+	HostID     string
+	Hash       string
+	Prefix     string
+	IsActive   bool
+	LastUsedAt *time.Time
+}
+
+// HostMetricSample is a single point-in-time snapshot of host health. SampledAt
+// is server-assigned (the agent's clock is never trusted for storage).
+type HostMetricSample struct {
+	Base
+	HostID    string
+	SampledAt time.Time
+	CPUPct    float64
+	MemPct    float64
+	NetIn     int64
+	NetOut    int64
+	Disks     []DiskUsage
 }

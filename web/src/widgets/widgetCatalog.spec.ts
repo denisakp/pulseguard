@@ -7,7 +7,7 @@ import {
   __resetWidgetCatalogForTests,
 } from './widgetCatalog'
 
-describe('widgetCatalog (spec 070 / Foundational)', () => {
+describe('widgetCatalog', () => {
   it('exposes the 4 MVP widgets covering the 4 archetypes', () => {
     const widgets = listWidgets()
     expect(widgets.length).toBe(4)

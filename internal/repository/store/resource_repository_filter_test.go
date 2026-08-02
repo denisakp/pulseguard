@@ -19,7 +19,7 @@ func strP(s string) *string { return &s }
 func boolP(b bool) *bool    { return &b }
 
 // TestResourceRepository_ListByFilter exercises the dynamic-filter SQL path
-// (spec 051) against both SQLite and Postgres. Seeds a mix of monitors, then
+// against both SQLite and Postgres. Seeds a mix of monitors, then
 // validates each filter alone and in combination.
 func TestResourceRepository_ListByFilter(t *testing.T) {
 	internaltest.ForEachDialect(t, func(t *testing.T, fx *internaltest.DialectFixture) {

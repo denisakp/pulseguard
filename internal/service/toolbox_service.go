@@ -216,7 +216,7 @@ func (s *ToolboxService) buildResolver(name, custom string) (*net.Resolver, stri
 		if parsed == nil {
 			return nil, "", fmt.Errorf("%w: custom_resolver must be a valid IP", ErrToolboxValidation)
 		}
-		if safenet.IsBlockedIP(parsed) {
+		if safenet.ShouldBlock(parsed) {
 			return nil, "", fmt.Errorf("%w: custom resolver", ErrToolboxTargetBlocked)
 		}
 		ip = host

@@ -49,7 +49,7 @@ func (s *IncidentService) ListAll(ctx context.Context, limit, offset int) ([]*do
 	return incidents, nil
 }
 
-// ListByFilter passes the dynamic filter through to the repo (spec 051).
+// ListByFilter passes the dynamic filter through to the repo.
 func (s *IncidentService) ListByFilter(ctx context.Context, f dynquery.IncidentFilter, page, perPage int) ([]*domain.Incident, int, error) {
 	return s.incidents.ListIncidentsByFilter(ctx, f, page, perPage)
 }

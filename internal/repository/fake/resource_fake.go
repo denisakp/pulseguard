@@ -362,7 +362,7 @@ func (r *ResourceFake) FindByTag(ctx context.Context, tagName string, limit, off
 	return tagged[offset:end], nil
 }
 
-// ListResourcesByFilter applies the dynamic filter in memory (spec 051 fake).
+// ListResourcesByFilter applies the dynamic filter in memory.
 func (r *ResourceFake) ListResourcesByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -433,5 +433,31 @@ func (r *ResourceFake) AddTag(resourceID string, tag *domain.Tags) error {
 	// Store tag for reference
 	r.tags[tag.ID] = tag
 
+	return nil
+}
+
+// SetResourceHostID links (or unlinks when hostID is nil) a monitor to a host.
+func (r *ResourceFake) SetResourceHostID(ctx context.Context, resourceID string, hostID *string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	resource, exists := r.resources[resourceID]
+	if !exists {
+		return ErrNotFound
+	}
+	resource.HostID = hostID
+	return nil
+}
+
+// ClearResourceHostIDByHost unlinks every monitor pointing at the given host.
+func (r *ResourceFake) ClearResourceHostIDByHost(ctx context.Context, hostID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, resource := range r.resources {
+		if resource.HostID != nil && *resource.HostID == hostID {
+			resource.HostID = nil
+		}
+	}
 	return nil
 }

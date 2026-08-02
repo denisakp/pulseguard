@@ -19,7 +19,7 @@ const stubs = {
   },
 }
 
-describe('Error404View (spec 069 / US1)', () => {
+describe('Error404View', () => {
   it('renders the 404 headline and brand', () => {
     const wrapper = mount(Error404View, { global: { stubs } })
     expect(wrapper.text()).toContain('404')

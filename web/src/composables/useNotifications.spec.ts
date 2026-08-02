@@ -53,7 +53,7 @@ import {
   __resetNotificationsForTests,
 } from './useNotifications'
 
-describe('useNotifications (spec 069 / US4)', () => {
+describe('useNotifications', () => {
   beforeEach(() => {
     __resetNotificationsForTests()
   })

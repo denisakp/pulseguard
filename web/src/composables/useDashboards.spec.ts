@@ -79,7 +79,7 @@ function makeFakeFeed(initial: Dashboard[] = []): DashboardsFeed {
   }
 }
 
-describe('useDashboards (spec 070 / US2)', () => {
+describe('useDashboards', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     __resetUseDashboardsForTests()

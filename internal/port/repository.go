@@ -61,6 +61,53 @@ type ResourceRepository interface {
 	UpdateMetadata(ctx context.Context, id string, req UpdateMetadataRequest) error
 	FindScheduledResources(ctx context.Context) ([]*domain.Resource, error)
 	ListResourcesByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error)
+	// Host link — additive. SetResourceHostID links a monitor to a
+	// host; ClearResourceHostIDByHost unlinks every monitor of a host (host delete).
+	SetResourceHostID(ctx context.Context, resourceID string, hostID *string) error
+	ClearResourceHostIDByHost(ctx context.Context, hostID string) error
+}
+
+// ---------------------------------------------------------------------------
+// Agent device monitoring
+// ---------------------------------------------------------------------------
+
+// HostRepository persists monitored hosts and their denormalized latest snapshot.
+type HostRepository interface {
+	Create(ctx context.Context, h *domain.Host) error
+	FindByID(ctx context.Context, id string) (*domain.Host, error)
+	List(ctx context.Context, limit, offset int) ([]*domain.Host, error)
+	Count(ctx context.Context) (int64, error)
+	Delete(ctx context.Context, id string) error
+	UpdateSnapshot(ctx context.Context, h *domain.Host) error
+}
+
+// HostAlertStateRepository persists per-host agent-down alert state (spec 083)
+// so alerts fire once per offline episode and survive restarts.
+type HostAlertStateRepository interface {
+	// Get returns the state for a host, or repository.ErrNotFound if none exists.
+	Get(ctx context.Context, hostID string) (*domain.HostAlertState, error)
+	// Upsert inserts or updates the state row for a host.
+	Upsert(ctx context.Context, s *domain.HostAlertState) error
+}
+
+// HostCredentialRepository persists per-host bearer credentials (hash only).
+type HostCredentialRepository interface {
+	Create(ctx context.Context, c *domain.HostCredential) error
+	FindActiveByHash(ctx context.Context, hash string) (*domain.HostCredential, error)
+	ListByHost(ctx context.Context, hostID string) ([]*domain.HostCredential, error)
+	DeactivateByID(ctx context.Context, id string) error
+	DeactivateAllForHost(ctx context.Context, hostID string) error
+	TouchLastUsed(ctx context.Context, id string, at time.Time) error
+	DeleteByHost(ctx context.Context, hostID string) error
+}
+
+// HostMetricsRepository persists and prunes host metric samples.
+type HostMetricsRepository interface {
+	Insert(ctx context.Context, s *domain.HostMetricSample) error
+	ListInRange(ctx context.Context, hostID string, from, to time.Time) ([]*domain.HostMetricSample, error)
+	DeleteOlderThan(ctx context.Context, cutoff time.Time) (int64, error)
+	DeleteByHost(ctx context.Context, hostID string) error
+	Decimate(ctx context.Context, cutoff time.Time) (int64, error)
 }
 
 // ComponentRepository manages logical component groups.
@@ -214,7 +261,7 @@ type ExpiryNotificationLogRepository interface {
 	DeleteOlderThan(ctx context.Context, cutoff time.Time) error
 }
 
-// DashboardRepository persists custom dashboards (spec 075). Config-only.
+// DashboardRepository persists custom dashboards. Config-only.
 type DashboardRepository interface {
 	Create(ctx context.Context, d *domain.Dashboard) (*domain.Dashboard, error)
 	FindByID(ctx context.Context, id string) (*domain.Dashboard, error)
@@ -232,20 +279,20 @@ type AnnouncementRepository interface {
 }
 
 // ReportSettingsRepository persists the single instance-wide monthly-report
-// configuration (spec 076). Get returns repository.ErrNotFound when unsaved.
+// configuration. Get returns repository.ErrNotFound when unsaved.
 type ReportSettingsRepository interface {
 	Get(ctx context.Context) (*domain.ReportSettings, error)
 	Upsert(ctx context.Context, s *domain.ReportSettings) (*domain.ReportSettings, error)
 }
 
-// ReportHistoryRepository persists generated monthly reports (spec 076).
+// ReportHistoryRepository persists generated monthly reports.
 type ReportHistoryRepository interface {
 	Create(ctx context.Context, r *domain.ReportHistory) (*domain.ReportHistory, error)
 	ListRecent(ctx context.Context, limit int) ([]*domain.ReportHistory, error)
 	FindByPeriod(ctx context.Context, period string) (*domain.ReportHistory, error)
 }
 
-// NotificationFeedRepository persists in-app notification-feed items (spec 072).
+// NotificationFeedRepository persists in-app notification-feed items.
 // Distinct from NotificationRepository (outbound dispatch events).
 type NotificationFeedRepository interface {
 	Create(ctx context.Context, n *domain.FeedNotification) (*domain.FeedNotification, error)
@@ -254,6 +301,19 @@ type NotificationFeedRepository interface {
 	MarkRead(ctx context.Context, id string, at time.Time) (int64, error)
 	MarkAllRead(ctx context.Context, userID string, before, at time.Time) (int64, error)
 	DeleteOlderThan(ctx context.Context, cutoff time.Time) (int64, error)
+	// ListUnreadForEscalation returns instance-wide unread notifications in the
+	// given categories with occurred_at <= cutoff, newest first (spec 083 US2).
+	ListUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time, limit int) ([]*domain.FeedNotification, error)
+	// CountUnreadForEscalation counts the same qualifying set.
+	CountUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time) (int, error)
+}
+
+// NotificationEscalationStateRepository persists the unread-digest high-water
+// mark (single row) so the digest is not re-sent while unchanged (spec 083 US2).
+type NotificationEscalationStateRepository interface {
+	// Get returns the state, or repository.ErrNotFound if none exists yet.
+	Get(ctx context.Context) (*domain.NotificationEscalationState, error)
+	Upsert(ctx context.Context, s *domain.NotificationEscalationState) error
 }
 
 // SessionRepository — spec 059 FR-008/009/009a.

@@ -64,3 +64,25 @@ services:
       STATIC_DIR: /app/static
     volumes:
       - ogoune-data:/data
+
+  # Host monitoring agent (spec 082) — OPT-IN. A plain `docker compose up` does
+  # NOT start it; it needs a per-host credential, so it would crash-loop without
+  # one. Register a host (Hosts → Register host) to get an ag_live_ credential,
+  # then:
+  #   OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream \
+  #   OGOUNE_CREDENTIAL=ag_live_… docker compose --profile agent up -d
+  # No credential is committed here — both come from the operator's environment.
+  agent:
+    profiles: [agent]
+    image: ghcr.io/denisakp/ogoune-agent:latest
+    restart: unless-stopped
+    pid: host
+    environment:
+      # NB: plain refs (not ${VAR:?…}) — a required-var check here would abort even
+      # a plain `up` (compose interpolates every service before profile selection).
+      # Supply both when opting in; the agent fails fast with a clear message if
+      # they're missing.
+      OGOUNE_BACKEND_URL: ${OGOUNE_BACKEND_URL:-}
+      OGOUNE_CREDENTIAL: ${OGOUNE_CREDENTIAL:-}
+      OGOUNE_INTERVAL: ${OGOUNE_INTERVAL:-10s}
+      OGOUNE_LOG_LEVEL: ${OGOUNE_LOG_LEVEL:-info}

@@ -61,6 +61,7 @@ func mapMonitorResponse(r *domain.Resource) dtoV1.MonitorResponse {
 		Status:        string(r.Status),
 		LastCheckedAt: lastCheckedAt,
 		ComponentID:   r.ComponentID,
+		HostID:        r.HostID,
 		Tags:          tags,
 		CreatedAt:     r.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:     r.UpdatedAt.UTC().Format(time.RFC3339),

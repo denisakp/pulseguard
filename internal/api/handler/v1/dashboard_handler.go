@@ -22,7 +22,7 @@ type DashboardV1ServiceInterface interface {
 	Delete(ctx context.Context, userID, id string) error
 }
 
-// DashboardHandler exposes /api/v1/dashboards (spec 075).
+// DashboardHandler exposes /api/v1/dashboards.
 type DashboardHandler struct {
 	service DashboardV1ServiceInterface
 }

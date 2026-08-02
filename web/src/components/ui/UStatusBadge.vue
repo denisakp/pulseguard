@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Presentational status badge — STRICT isolation (spec 055 Q2).
+ * Presentational status badge — STRICT isolation.
  * No contextual composables (auth, router, licence, color-mode).
  */
 import { computed } from 'vue'

@@ -1,5 +1,5 @@
 /**
- * Cross-cutting EE upsell hygiene (spec 070 / US5 / T058).
+ * Cross-cutting EE upsell hygiene.
  *
  * Verifies the three CE-facing affordances that surface EE-only features:
  *   1. /reports — EE upsell banner + Upgrade CTA wires to /settings/account?tab=plan

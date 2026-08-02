@@ -49,7 +49,7 @@ function makeIncident(over: Partial<Incident>): Incident {
   }
 }
 
-describe('IncidentsListWidget (spec 070 / US3)', () => {
+describe('IncidentsListWidget', () => {
   it('renders empty-state copy when no incidents', () => {
     const wrapper = mount(IncidentsListWidget, {
       global: { stubs },

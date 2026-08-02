@@ -10,7 +10,7 @@ import (
 
 // JWTClaims represents the JWT claims structure with UserID and optional SessionID.
 // SessionID (sid) ties the token to a row in sessions; when present, the auth
-// middleware MUST consult sessions.revoked_at on every request (spec 059 FR-009).
+// middleware MUST consult sessions.revoked_at on every request.
 type JWTClaims struct {
 	Email     string `json:"email"`
 	UserID    string `json:"user_id"`

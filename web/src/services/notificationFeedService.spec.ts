@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw'
 import { __createFeedForTests } from './notificationFeedService'
 import { server } from '@/test/msw/server'
 
-describe('notificationFeedService (spec 072 — real backend)', () => {
+describe('notificationFeedService', () => {
   it('fetch unwraps the v1 {data} envelope into items', async () => {
     server.use(
       http.get('*/v1/notifications', () =>

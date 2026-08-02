@@ -1,6 +1,6 @@
 package v1
 
-// Reports DTOs (spec 076). camelCase, mirrors the frozen frontend
+// Reports DTOs. camelCase, mirrors the frozen frontend
 // `MonthlyReport` / `ReportHistoryEntry` / `ReportResourceBreakdown` shapes.
 
 // ReportSettingsResponse is the monthly-report configuration (MonthlyReport).

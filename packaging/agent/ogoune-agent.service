@@ -1,0 +1,33 @@
+[Unit]
+Description=Ogoune host monitoring agent
+Documentation=https://docs.ogoune.com
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# The service runs as an unprivileged DynamicUser, which cannot read a
+# root-owned 0600 config file. The agent's env-style config doubles as the
+# systemd EnvironmentFile: systemd reads it privileged (as PID 1) and injects
+# OGOUNE_* into the process, so no separate .env is needed.
+#   OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream
+#   OGOUNE_CREDENTIAL=ag_live_...
+# Keep /etc/ogoune/agent.cfg at mode 0600 (it holds the secret). The leading '-'
+# makes it optional so flags/other env still work.
+EnvironmentFile=-/etc/ogoune/agent.cfg
+ExecStart=/usr/local/bin/ogoune-agent
+Restart=on-failure
+RestartSec=5
+# The agent self-heals internally (it retries and slow-backs-off on a revoked
+# credential), so restarts are rare; this mainly covers unexpected crashes.
+
+# Hardening — the agent only reads system metrics and makes an outbound
+# connection; it needs no privileges beyond that.
+DynamicUser=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

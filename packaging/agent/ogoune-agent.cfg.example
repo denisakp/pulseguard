@@ -1,0 +1,22 @@
+# Ogoune host agent — configuration (spec 082)
+# Install to /etc/ogoune/agent.cfg (mode 0600 — it contains a secret).
+# Env-style KEY=value: the SAME file works as the agent's config, as systemd
+# EnvironmentFile=, and as `docker run --env-file`.
+# Precedence: command-line flags > environment variables > this file > defaults.
+
+# Backend WebSocket URL (REQUIRED). Point at the /api/v1/agent/stream route.
+# Use wss:// (TLS) in production; ws:// to a remote host logs a warning.
+OGOUNE_BACKEND_URL=wss://ogoune.example.com/api/v1/agent/stream
+
+# Per-host agent credential (REQUIRED). Shown once when you register the host
+# (POST /api/v1/hosts). Starts with "ag_live_".
+OGOUNE_CREDENTIAL=ag_live_replace_me
+
+# Sample interval (optional, default 10s). Go duration syntax.
+#OGOUNE_INTERVAL=10s
+
+# Log level: debug | info | warn | error (optional, default info).
+#OGOUNE_LOG_LEVEL=info
+
+# Skip TLS verification — DEV / self-signed only. Leave unset in production.
+#OGOUNE_INSECURE=false

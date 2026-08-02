@@ -20,6 +20,8 @@ const TwoFactorRecoverView = () => import('@/views/auth/TwoFactorRecoverView.vue
 const TwoFactorResetView = () => import('@/views/auth/TwoFactorResetView.vue')
 const Verify2FAView = () => import('@/views/auth/Verify2FAView.vue')
 const IncidentsView = () => import('@/views/incidents/IncidentsView.vue')
+const HostsView = () => import('@/views/hosts/HostsView.vue')
+const HostDetailView = () => import('@/views/hosts/HostDetailView.vue')
 const IncidentView = () => import('@/views/incidents/IncidentView.vue')
 const LoginView = () => import('@/views/auth/LoginView.vue')
 const RegisterView = () => import('@/views/auth/RegisterView.vue')
@@ -132,6 +134,18 @@ const routes: RouteRecordRaw[] = [
     name: 'Components',
     component: ComponentsView,
     meta: { requiresAuth: true, requiresLayout: true, breadcrumbLabel: 'Components' },
+  },
+  {
+    path: '/hosts',
+    name: 'Hosts',
+    component: HostsView,
+    meta: { requiresAuth: true, requiresLayout: true, breadcrumbLabel: 'Hosts' },
+  },
+  {
+    path: '/hosts/:id',
+    name: 'HostDetail',
+    component: HostDetailView,
+    meta: { requiresAuth: true, requiresLayout: true, breadcrumbLabel: 'Host' },
   },
   {
     path: '/incidents',

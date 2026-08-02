@@ -1,6 +1,6 @@
 // Package middleware — HostRouter routes requests reaching the configured
 // custom status-page hostname to the public status bundle and blocks
-// admin endpoints on that host (spec 060 / US6).
+// admin endpoints on that host.
 package middleware
 
 import (

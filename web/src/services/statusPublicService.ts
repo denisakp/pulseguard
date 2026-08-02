@@ -8,7 +8,7 @@ import type {
 } from '@/types'
 
 /**
- * Public status API (spec 060). All endpoints are unauthenticated and
+ * Public status API. All endpoints are unauthenticated and
  * short-cached by the public_status_cache middleware on the server.
  */
 

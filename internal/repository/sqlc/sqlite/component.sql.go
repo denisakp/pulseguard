@@ -116,7 +116,7 @@ func (q *Queries) ListComponents(ctx context.Context, arg ListComponentsParams) 
 }
 
 const listResourcesByComponentID = `-- name: ListResourcesByComponentID :many
-SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port FROM resources WHERE component_id = ? ORDER BY created_at
+SELECT id, created_at, updated_at, name, type, interval, timeout, target, last_checked, status, is_active, failure_count, ssl_expiration_date, ssl_issuer, domain_expiration_date, domain_registrar, component_id, confirmation_checks, confirmation_interval, expiry_alert_thresholds, flap_detection_enabled, flap_threshold, flap_window_seconds, flap_max_duration_minutes, last_status_transition, flap_started_at, reminder_interval_minutes, heartbeat_slug, heartbeat_interval, heartbeat_grace, last_ping_at, keyword, keyword_mode, protocol_type, protocol_port, host_id FROM resources WHERE component_id = ? ORDER BY created_at
 `
 
 func (q *Queries) ListResourcesByComponentID(ctx context.Context, componentID sql.NullString) ([]Resource, error) {
@@ -164,6 +164,7 @@ func (q *Queries) ListResourcesByComponentID(ctx context.Context, componentID sq
 			&i.KeywordMode,
 			&i.ProtocolType,
 			&i.ProtocolPort,
+			&i.HostID,
 		); err != nil {
 			return nil, err
 		}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * WHOIS tool (spec 071, US4).
+ * WHOIS tool.
  * Domain registration lookup + "Create monitor" CTA to track expiry.
  */
 import { reactive, ref } from 'vue'

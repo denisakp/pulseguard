@@ -49,6 +49,35 @@ func InitWorker(app *App) {
 	}
 	slog.Info("heartbeat detector started", "interval", "60s")
 
+	// Agent-down alerting (spec 083). Edition-agnostic recurring scan; guarded by config.
+	if app.Cfg.AgentDownAlertsEnabled {
+		liveness := service.NewHostLivenessService(
+			app.HostRepo, app.HostAlertStateRepo, app.NotificationFeedService,
+			app.NotificationChannelRepo, app.Cfg.HostFreshnessThreshold, app.Cfg.AgentDownExternalDelivery,
+		)
+		if err := liveness.Start(context.Background(), app.Cfg.AgentDownScanInterval); err != nil {
+			slog.Error("failed to start host liveness scanner", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("host liveness scanner started", "interval", app.Cfg.AgentDownScanInterval.String(),
+			"external_delivery", app.Cfg.AgentDownExternalDelivery)
+	}
+
+	// Unread-notification escalation (spec 083 US2). Edition-agnostic; guarded by config.
+	if app.Cfg.NotificationEscalationEnabled {
+		esc := service.NewNotificationEscalationService(
+			app.NotificationFeedRepo, app.NotificationEscalationStateRepo,
+			app.NotificationChannelRepo, app.Cfg.NotificationEscalationUnreadAge,
+		)
+		if err := esc.Start(context.Background(), app.Cfg.NotificationEscalationScanInterval); err != nil {
+			slog.Error("failed to start notification escalation scanner", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("notification escalation scanner started",
+			"interval", app.Cfg.NotificationEscalationScanInterval.String(),
+			"unread_age", app.Cfg.NotificationEscalationUnreadAge.String())
+	}
+
 	if app.SchedulerCfg.Mode == scheduler.ModeAsynq {
 		initAsynqProcessor(app, enrichmentService)
 	} else {
@@ -95,10 +124,31 @@ func initTimingWheelWorker(app *App, enrichmentService *service.EnrichmentServic
 	startTimingWheelExpiryCheck(app, enrichmentService)
 	startTimingWheelNotificationRetention(app)
 	startTimingWheelReportCheck(app)
+	startTimingWheelHostMetricsRetention(app)
+}
+
+// startTimingWheelHostMetricsRetention runs the daily host-metrics retention
+// (decimate + purge) in-process: once at startup, then daily.
+func startTimingWheelHostMetricsRetention(app *App) {
+	if app.HostMetricsService == nil {
+		return
+	}
+	handler := worker.NewHostMetricsRetentionHandler(app.HostMetricsService)
+	_ = handler.ProcessTask(context.Background(), asynq.NewTask(worker.TypeHostMetricsRetention, nil)) // startup catch-up
+	go func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := handler.ProcessTask(context.Background(), asynq.NewTask(worker.TypeHostMetricsRetention, nil)); err != nil {
+				slog.Error("TimingWheel host:metrics:retention failed", "error", err)
+			}
+		}
+	}()
+	slog.Info("TimingWheel daily host metrics retention scheduled")
 }
 
 // startTimingWheelReportCheck runs the monthly report catch-up scan in-process
-// (spec 076): once at startup (self-heals a missed month on restart) then daily.
+// once at startup (self-heals a missed month on restart) then daily.
 func startTimingWheelReportCheck(app *App) {
 	if app.ReportService == nil {
 		return
@@ -115,7 +165,7 @@ func startTimingWheelReportCheck(app *App) {
 	slog.Info("TimingWheel daily report check scheduled")
 }
 
-// startTimingWheelNotificationRetention runs the daily feed-retention prune in-process (spec 072).
+// startTimingWheelNotificationRetention runs the daily feed-retention prune in-process.
 func startTimingWheelNotificationRetention(app *App) {
 	if app.NotificationFeedRepo == nil {
 		return
@@ -277,7 +327,7 @@ func initAsynqProcessor(app *App, enrichmentService *service.EnrichmentService) 
 		}
 	}
 
-	// Monthly report catch-up scan (spec 076) — daily tick, idempotent per period.
+	// Monthly report catch-up scan — daily tick, idempotent per period.
 	var reportHandler *worker.ReportTaskHandler
 	if app.ReportService != nil {
 		reportHandler = worker.NewReportTaskHandler(app.ReportService)
@@ -286,7 +336,16 @@ func initAsynqProcessor(app *App, enrichmentService *service.EnrichmentService) 
 		}
 	}
 
-	app.Processor = worker.NewProcessor(app.RedisOpt, monitoringHandler, maintenanceTaskHandler, expiryTaskHandler, retentionHandler, reportHandler, worker.Config{
+	// Host metrics retention — daily decimate + purge.
+	var hostMetricsRetentionHandler *worker.HostMetricsRetentionHandler
+	if app.HostMetricsService != nil {
+		hostMetricsRetentionHandler = worker.NewHostMetricsRetentionHandler(app.HostMetricsService)
+		if _, err := app.AsynqScheduler.Register("@daily", asynq.NewTask(worker.TypeHostMetricsRetention, nil)); err != nil {
+			slog.Error("failed to register host:metrics:retention scheduler", "error", err)
+		}
+	}
+
+	app.Processor = worker.NewProcessor(app.RedisOpt, monitoringHandler, maintenanceTaskHandler, expiryTaskHandler, retentionHandler, reportHandler, hostMetricsRetentionHandler, worker.Config{
 		Concurrency: app.SchedulerCfg.Asynq.Concurrency,
 	})
 

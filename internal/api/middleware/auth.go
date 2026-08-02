@@ -17,7 +17,6 @@ const problemUnauthorized = "/problems/unauthorized"
 // AuthMiddleware creates a middleware that validates JWT tokens.
 // When the JWT carries a sid claim, the middleware also consults
 // sessions.revoked_at and refuses the request if the session has been revoked
-// (spec 059 FR-009 — effective immediately, no cache).
 func AuthMiddleware(authService *service.AuthService, apiKeyService *service.APIKeyService, sessionService *service.SessionService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

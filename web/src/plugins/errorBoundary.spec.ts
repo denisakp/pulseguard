@@ -8,7 +8,7 @@ vi.mock('vue-router', () => ({
 
 import { installErrorBoundary, __resetErrorBoundaryForTests } from './errorBoundary'
 
-describe('installErrorBoundary (spec 069 / US1)', () => {
+describe('installErrorBoundary', () => {
   const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
   beforeEach(() => {

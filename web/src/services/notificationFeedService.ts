@@ -2,7 +2,7 @@ import type { NotificationFeedItem } from '@/types'
 import { getAuthenticatedClient, request } from '@/core/http/client'
 
 /**
- * In-app notification feed — always backed by the real v1 API (spec 072).
+ * In-app notification feed — always backed by the real v1 API.
  *
  * The bell UI (`useNotifications` / `UNotificationDropdown`) imports only the
  * `NotificationFeed` interface + the default export. The v1 endpoints wrap the

@@ -2,6 +2,9 @@ name: ogoune
 
 volumes:
   ogoune-data:
+  # Shared between agent-init (writer) and agent (reader). Holds the dev host's
+  # credential — never committed, lives only in this volume.
+  agent-cfg:
 
 services:
   ogoune:
@@ -32,3 +35,54 @@ services:
       STATIC_DIR: /app/static
     volumes:
       - ogoune-data:/data
+
+  # Zero-touch dogfood (spec 082): after the API is up, register a "local" host
+  # and write its credential to the shared volume as /shared/agent.cfg.
+  # Idempotent — skips if the cfg already exists. The credential never leaves the
+  # volume (not in the repo, not in the image).
+  agent-init:
+    image: alpine:3.20
+    restart: "no"
+    depends_on:
+      - ogoune
+    environment:
+      AUTH_EMAIL: ${AUTH_EMAIL:-admin@ogoune.test}
+      AUTH_PASSWORD: ${AUTH_PASSWORD:?AUTH_PASSWORD is required}
+    volumes:
+      - agent-cfg:/shared
+    entrypoint: ["/bin/sh", "-euc"]
+    command:
+      - |
+        apk add --no-cache curl jq >/dev/null
+        if [ -f /shared/agent.cfg ]; then
+          echo "agent-init: /shared/agent.cfg already present — nothing to do"
+          exit 0
+        fi
+        echo "agent-init: waiting for API health…"
+        until curl -fsS http://ogoune:9596/api/health >/dev/null 2>&1; do sleep 2; done
+        echo "agent-init: logging in as $$AUTH_EMAIL"
+        TOKEN=$$(curl -fsS -X POST http://ogoune:9596/api/auth/login \
+          -H 'Content-Type: application/json' \
+          -d "{\"email\":\"$$AUTH_EMAIL\",\"password\":\"$$AUTH_PASSWORD\"}" | jq -r .token)
+        if [ -z "$$TOKEN" ] || [ "$$TOKEN" = null ]; then echo "agent-init: login failed"; exit 1; fi
+        echo "agent-init: registering host 'local'"
+        CRED=$$(curl -fsS -X POST http://ogoune:9596/api/v1/hosts \
+          -H "Authorization: Bearer $$TOKEN" -H 'Content-Type: application/json' \
+          -d '{"name":"local"}' | jq -r .data.credential)
+        if [ -z "$$CRED" ] || [ "$$CRED" = null ]; then echo "agent-init: host registration failed"; exit 1; fi
+        printf 'OGOUNE_BACKEND_URL=ws://ogoune:9596/api/v1/agent/stream\nOGOUNE_CREDENTIAL=%s\nOGOUNE_LOG_LEVEL=info\n' "$$CRED" > /shared/agent.cfg
+        echo "agent-init: wrote /shared/agent.cfg — host 'local' provisioned"
+
+  # The agent reads the shared cfg at its default path (/etc/ogoune/agent.cfg) and
+  # streams this machine's metrics. pid:host lets it read the host's real metrics.
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    restart: unless-stopped
+    pid: host
+    depends_on:
+      agent-init:
+        condition: service_completed_successfully
+    volumes:
+      - agent-cfg:/etc/ogoune:ro

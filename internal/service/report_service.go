@@ -2,11 +2,9 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
-	"sort"
 	"strings"
 	"time"
 
@@ -231,26 +229,11 @@ func (s *ReportService) aggregate(ctx context.Context, from, to time.Time) (upti
 
 // smtpDeliver resolves an SMTP notification channel and sends the report to recipient.
 func (s *ReportService) smtpDeliver(ctx context.Context, recipient, period string, uptimePct float64, incidentCount int, downtime int64, breakdown []domain.ReportBreakdownLine) error {
-	channels, err := s.channels.FindByType(ctx, domain.NotificationChannelTypeSMTP)
+	_, cfg, err := resolveOldestSMTP(ctx, s.channels)
 	if err != nil {
-		return fmt.Errorf("list smtp channels: %w", err)
+		return err
 	}
-	if len(channels) == 0 {
-		return fmt.Errorf("no smtp notification channel configured")
-	}
-	// Oldest by creation time.
-	sort.Slice(channels, func(i, j int) bool { return channels[i].CreatedAt.Before(channels[j].CreatedAt) })
-	ch := channels[0]
-
-	var cfg notifier.SMTPConfig
-	if err := json.Unmarshal(ch.Config, &cfg); err != nil {
-		return fmt.Errorf("parse smtp channel config: %w", err)
-	}
-	user := cfg.User
-	if user == "" {
-		user = cfg.Username
-	}
-	n := notifier.NewSMTPNotifier(recipient, cfg.Sender, cfg.Host, string(cfg.Port), user, cfg.Password)
+	n := notifier.NewSMTPNotifier(recipient, cfg.Sender, cfg.Host, string(cfg.Port), smtpUser(cfg), cfg.Password)
 
 	lines := make([]notifier.ReportBreakdownLine, 0, len(breakdown))
 	for _, b := range breakdown {

@@ -11,7 +11,7 @@ import (
 // Export lists all current resources and returns a round-trippable manifest.
 // Only declaration-shaped fields are emitted (name, type, target, timing,
 // type-specific fields, and by-name tag/component/channel references); IDs,
-// timestamps, status, and derived metrics are omitted (spec 078 FR-015/016).
+// timestamps, status, and derived metrics are omitted.
 func (s *Service) Export(ctx context.Context) (*Manifest, error) {
 	all, err := s.resources.ListAll(ctx)
 	if err != nil {

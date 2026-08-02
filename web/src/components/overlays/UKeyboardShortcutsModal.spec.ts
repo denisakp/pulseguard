@@ -52,7 +52,7 @@ const stubs = {
   UIcon: { template: '<span />', props: ['name'] },
 }
 
-describe('UKeyboardShortcutsModal (spec 069 / US3)', () => {
+describe('UKeyboardShortcutsModal', () => {
   let uninstall: () => void = () => undefined
   let wrapper: ReturnType<typeof mount> | null = null
 

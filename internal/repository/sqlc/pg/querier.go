@@ -16,8 +16,10 @@ type Querier interface {
 	// enrich each resource with its avg response time over a sliding window (30d).
 	AvgResponseTimeByResourcesSince(ctx context.Context, arg AvgResponseTimeByResourcesSinceParams) ([]AvgResponseTimeByResourcesSinceRow, error)
 	ClaimNotificationEventForUpdate(ctx context.Context, id string) (string, error)
+	ClearResourceHostIDByHost(ctx context.Context, hostID pgtype.Text) error
 	CountAPIKeysByUserID(ctx context.Context, userID string) (int64, error)
 	CountExpiryNotificationLogsByKey(ctx context.Context, arg CountExpiryNotificationLogsByKeyParams) (int64, error)
+	CountHosts(ctx context.Context) (int64, error)
 	CountIncidentsByResourceID(ctx context.Context, resourceID string) (int64, error)
 	// One round-trip count grouped by resource. Used by the list path to enrich
 	// each resource with its incident count over a sliding window (e.g. 30d).
@@ -29,6 +31,7 @@ type Querier interface {
 	CountNotificationsForUser(ctx context.Context, arg CountNotificationsForUserParams) (int64, error)
 	CountRecentTwoFactorResetTokensByUser(ctx context.Context, arg CountRecentTwoFactorResetTokensByUserParams) (int64, error)
 	CountResourcesByComponentID(ctx context.Context, componentID pgtype.Text) (int64, error)
+	CountUnreadForEscalation(ctx context.Context, arg CountUnreadForEscalationParams) (int64, error)
 	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) error
 	CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) (Announcement, error)
 	CreateComponent(ctx context.Context, arg CreateComponentParams) error
@@ -36,6 +39,8 @@ type Querier interface {
 	CreateEscalationPolicy(ctx context.Context, arg CreateEscalationPolicyParams) error
 	CreateEscalationStep(ctx context.Context, arg CreateEscalationStepParams) error
 	CreateExpiryNotificationLog(ctx context.Context, arg CreateExpiryNotificationLogParams) error
+	CreateHost(ctx context.Context, arg CreateHostParams) error
+	CreateHostCredential(ctx context.Context, arg CreateHostCredentialParams) error
 	// US2 of spec 048: incident_repository sqlc migration. No M2M;
 	// controlled-N+1 preload for Resource and IncidentDiagnostics
 	// (1-to-1, FK uniqueIndex on incident_id).
@@ -58,6 +63,11 @@ type Querier interface {
 	CreateTag(ctx context.Context, arg CreateTagParams) (Tag, error)
 	CreateTwoFactorResetToken(ctx context.Context, arg CreateTwoFactorResetTokenParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeactivateAllHostCredentialsForHost(ctx context.Context, arg DeactivateAllHostCredentialsForHostParams) error
+	DeactivateHostCredentialByID(ctx context.Context, arg DeactivateHostCredentialByIDParams) (int64, error)
+	// Keep at most one sample per (host, minute) for rows older than the cutoff,
+	// deleting the rest. MIN(id) is the earliest ULID in each minute bucket.
+	DecimateHostMetrics(ctx context.Context, sampledAt pgtype.Timestamptz) (int64, error)
 	DeleteAnnouncement(ctx context.Context, id string) (int64, error)
 	DeleteComponent(ctx context.Context, id string) (int64, error)
 	DeleteDashboard(ctx context.Context, id string) (int64, error)
@@ -66,6 +76,10 @@ type Querier interface {
 	DeleteExpiredTwoFactorResetTokens(ctx context.Context, expiresAt pgtype.Timestamptz) error
 	DeleteExpiryNotificationLogsByResourceIDAndType(ctx context.Context, arg DeleteExpiryNotificationLogsByResourceIDAndTypeParams) error
 	DeleteExpiryNotificationLogsOlderThan(ctx context.Context, sentAt pgtype.Timestamptz) error
+	DeleteHost(ctx context.Context, id string) (int64, error)
+	DeleteHostCredentialsByHost(ctx context.Context, hostID string) error
+	DeleteHostMetricsByHost(ctx context.Context, hostID string) error
+	DeleteHostMetricsOlderThan(ctx context.Context, sampledAt pgtype.Timestamptz) (int64, error)
 	DeleteIncident(ctx context.Context, id string) (int64, error)
 	DeleteIncidentDiagnostics(ctx context.Context, id string) (int64, error)
 	DeleteIncidentEventStep(ctx context.Context, id string) (int64, error)
@@ -79,6 +93,7 @@ type Querier interface {
 	DeleteUser(ctx context.Context, id string) error
 	FindAPIKeyByIDForUser(ctx context.Context, arg FindAPIKeyByIDForUserParams) (ApiKey, error)
 	FindAPIKeyByKeyHash(ctx context.Context, keyHash string) (ApiKey, error)
+	FindActiveHostCredentialByHash(ctx context.Context, hash string) (HostCredential, error)
 	FindActiveIncidentByResourceID(ctx context.Context, resourceID string) (Incident, error)
 	FindActiveMaintenancesForResource(ctx context.Context, arg FindActiveMaintenancesForResourceParams) ([]Maintenance, error)
 	FindActiveTwoFactorResetToken(ctx context.Context, arg FindActiveTwoFactorResetTokenParams) (TwoFactorResetToken, error)
@@ -87,6 +102,7 @@ type Querier interface {
 	FindDefaultNotificationChannels(ctx context.Context) ([]NotificationChannel, error)
 	FindEarliestUptimeDailyAggDay(ctx context.Context) (interface{}, error)
 	FindEscalationPolicyByID(ctx context.Context, id string) (EscalationPolicy, error)
+	FindHostByID(ctx context.Context, id string) (Host, error)
 	FindIncidentByID(ctx context.Context, id string) (Incident, error)
 	FindIncidentDiagnosticsByIncidentID(ctx context.Context, incidentID string) (IncidentDiagnostic, error)
 	// Single JOIN preload (Clarification Q1) — incident embedded into event step.
@@ -119,15 +135,18 @@ type Querier interface {
 	FindUptimeDailyAggRange(ctx context.Context, arg FindUptimeDailyAggRangeParams) ([]UptimeDailyAgg, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id string) (User, error)
+	GetHostAlertState(ctx context.Context, hostID string) (HostAlertState, error)
 	// Two aggregated counts in a single round-trip. CTE keeps the row scan
 	// to one pass over the window.
 	GetIncidentStatsPG(ctx context.Context, startedAt pgtype.Timestamptz) (GetIncidentStatsPGRow, error)
 	GetIncidentUpdate(ctx context.Context, id string) (IncidentUpdate, error)
+	GetNotificationEscalationState(ctx context.Context, id string) (NotificationEscalationState, error)
 	GetRecentResponseTimes(ctx context.Context, arg GetRecentResponseTimesParams) ([]GetRecentResponseTimesRow, error)
 	GetReportSettings(ctx context.Context) (ReportSetting, error)
 	GetResourceCredentialByResourceID(ctx context.Context, resourceID string) (ResourceCredential, error)
 	GetStatusPageSettings(ctx context.Context) (StatusPageSetting, error)
 	HasActiveIncident(ctx context.Context) (bool, error)
+	InsertHostMetric(ctx context.Context, arg InsertHostMetricParams) error
 	LinkMaintenanceResource(ctx context.Context, arg LinkMaintenanceResourceParams) error
 	// M2M: resource_notification_channels ---------------------------------------
 	LinkResourceChannel(ctx context.Context, arg LinkResourceChannelParams) error
@@ -146,6 +165,9 @@ type Querier interface {
 	ListDashboards(ctx context.Context, arg ListDashboardsParams) ([]ListDashboardsRow, error)
 	ListEscalationPolicies(ctx context.Context) ([]EscalationPolicy, error)
 	ListEscalationStepsByPolicy(ctx context.Context, policyID string) ([]EscalationStep, error)
+	ListHostCredentialsByHost(ctx context.Context, hostID string) ([]HostCredential, error)
+	ListHostMetricsInRange(ctx context.Context, arg ListHostMetricsInRangeParams) ([]HostMetric, error)
+	ListHosts(ctx context.Context, arg ListHostsParams) ([]Host, error)
 	ListIncidentDiagnosticsByIncidentIDs(ctx context.Context, dollar_1 []string) ([]IncidentDiagnostic, error)
 	ListIncidentEventSteps(ctx context.Context, arg ListIncidentEventStepsParams) ([]IncidentEventStep, error)
 	ListIncidentUpdates(ctx context.Context, incidentID string) ([]IncidentUpdate, error)
@@ -164,6 +186,7 @@ type Querier interface {
 	ListTagIDsByResourceID(ctx context.Context, resourceID string) ([]string, error)
 	ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, error)
 	ListTagsByResourceIDs(ctx context.Context, dollar_1 []string) ([]ListTagsByResourceIDsRow, error)
+	ListUnreadForEscalation(ctx context.Context, arg ListUnreadForEscalationParams) ([]Notification, error)
 	MarkAllNotificationsReadForUser(ctx context.Context, arg MarkAllNotificationsReadForUserParams) (int64, error)
 	MarkNotificationChannelFailure(ctx context.Context, arg MarkNotificationChannelFailureParams) error
 	MarkNotificationChannelSent(ctx context.Context, arg MarkNotificationChannelSentParams) error
@@ -179,10 +202,12 @@ type Querier interface {
 	SelectMonitoringActivityHourlyAggregateInputs(ctx context.Context, arg SelectMonitoringActivityHourlyAggregateInputsParams) ([]SelectMonitoringActivityHourlyAggregateInputsRow, error)
 	SelectMonitoringActivitySuccessInWindow(ctx context.Context, arg SelectMonitoringActivitySuccessInWindowParams) ([]bool, error)
 	SetEscalationPolicyPriority(ctx context.Context, arg SetEscalationPolicyPriorityParams) (int64, error)
+	SetResourceHostID(ctx context.Context, arg SetResourceHostIDParams) (int64, error)
 	SoftDeleteResource(ctx context.Context, id string) (int64, error)
 	// One round-trip bulk aggregation grouped by resource. Used by the list path
 	// to enrich each resource with its uptime ratio over a sliding window (30d).
 	SumUptimeAggByResourcesSince(ctx context.Context, arg SumUptimeAggByResourcesSinceParams) ([]SumUptimeAggByResourcesSinceRow, error)
+	TouchHostCredentialLastUsed(ctx context.Context, arg TouchHostCredentialLastUsedParams) error
 	UnlinkMaintenanceResource(ctx context.Context, arg UnlinkMaintenanceResourceParams) error
 	UnlinkResourceChannel(ctx context.Context, arg UnlinkResourceChannelParams) error
 	UnlinkResourceTag(ctx context.Context, arg UnlinkResourceTagParams) error
@@ -192,6 +217,7 @@ type Querier interface {
 	UpdateDashboard(ctx context.Context, arg UpdateDashboardParams) (int64, error)
 	UpdateDashboardWidgets(ctx context.Context, arg UpdateDashboardWidgetsParams) (int64, error)
 	UpdateEscalationPolicy(ctx context.Context, arg UpdateEscalationPolicyParams) (int64, error)
+	UpdateHostSnapshot(ctx context.Context, arg UpdateHostSnapshotParams) (int64, error)
 	UpdateIncident(ctx context.Context, arg UpdateIncidentParams) (int64, error)
 	UpdateIncidentDiagnostics(ctx context.Context, arg UpdateIncidentDiagnosticsParams) (int64, error)
 	UpdateIncidentEventStep(ctx context.Context, arg UpdateIncidentEventStepParams) (int64, error)
@@ -210,6 +236,8 @@ type Querier interface {
 	UpdateUserLastLogin(ctx context.Context, id string) error
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserTwoFactorSecret(ctx context.Context, arg UpdateUserTwoFactorSecretParams) error
+	UpsertHostAlertState(ctx context.Context, arg UpsertHostAlertStateParams) error
+	UpsertNotificationEscalationState(ctx context.Context, arg UpsertNotificationEscalationStateParams) error
 	UpsertReportSettings(ctx context.Context, arg UpsertReportSettingsParams) (ReportSetting, error)
 	UpsertResourceCredential(ctx context.Context, arg UpsertResourceCredentialParams) error
 	UpsertUptimeDailyAgg(ctx context.Context, arg UpsertUptimeDailyAggParams) error

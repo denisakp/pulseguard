@@ -42,4 +42,12 @@ var (
 
 	// Announcements (operator banners)
 	_ port.AnnouncementRepository = (*AnnouncementRepositorySQLC)(nil)
+
+	// Spec 079 — Agent device monitoring
+	_ port.HostRepository           = (*HostRepositorySQLC)(nil)
+	_ port.HostAlertStateRepository = (*HostAlertStateRepositorySQLC)(nil)
+
+	_ port.NotificationEscalationStateRepository = (*NotificationEscalationStateRepositorySQLC)(nil)
+	_ port.HostCredentialRepository = (*HostCredentialRepositorySQLC)(nil)
+	_ port.HostMetricsRepository    = (*HostMetricRepositorySQLC)(nil)
 )

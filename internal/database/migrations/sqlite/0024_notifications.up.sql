@@ -1,4 +1,4 @@
--- 0024: In-app notification feed (spec 072). Single-tenant: user_id NULL = instance-wide.
+-- 0024: In-app notification feed. Single-tenant: user_id NULL = instance-wide.
 -- Global read state: a single read_at per row (shared by all users).
 CREATE TABLE IF NOT EXISTS notifications (
     id          TEXT PRIMARY KEY,

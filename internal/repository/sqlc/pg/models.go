@@ -91,6 +91,52 @@ type ExpiryNotificationLog struct {
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
+type Host struct {
+	ID           string             `json:"id"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	Name         string             `json:"name"`
+	Os           pgtype.Text        `json:"os"`
+	AgentVersion pgtype.Text        `json:"agent_version"`
+	LastSeenAt   pgtype.Timestamptz `json:"last_seen_at"`
+	LastCpuPct   pgtype.Float8      `json:"last_cpu_pct"`
+	LastMemPct   pgtype.Float8      `json:"last_mem_pct"`
+	LastDiskPct  pgtype.Float8      `json:"last_disk_pct"`
+	LastNetIn    pgtype.Int8        `json:"last_net_in"`
+	LastNetOut   pgtype.Int8        `json:"last_net_out"`
+	LastDisks    []byte             `json:"last_disks"`
+}
+
+type HostAlertState struct {
+	HostID       string             `json:"host_id"`
+	State        string             `json:"state"`
+	OfflineSince pgtype.Timestamptz `json:"offline_since"`
+	Alerted      bool               `json:"alerted"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type HostCredential struct {
+	ID         string             `json:"id"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+	HostID     string             `json:"host_id"`
+	Hash       string             `json:"hash"`
+	Prefix     string             `json:"prefix"`
+	IsActive   bool               `json:"is_active"`
+	LastUsedAt pgtype.Timestamptz `json:"last_used_at"`
+}
+
+type HostMetric struct {
+	ID        string             `json:"id"`
+	HostID    string             `json:"host_id"`
+	SampledAt pgtype.Timestamptz `json:"sampled_at"`
+	CpuPct    float64            `json:"cpu_pct"`
+	MemPct    float64            `json:"mem_pct"`
+	NetIn     int64              `json:"net_in"`
+	NetOut    int64              `json:"net_out"`
+	Disks     []byte             `json:"disks"`
+}
+
 type Incident struct {
 	ID         string             `json:"id"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
@@ -217,6 +263,13 @@ type NotificationChannel struct {
 	Failures24h      int32              `json:"failures_24h"`
 }
 
+type NotificationEscalationState struct {
+	ID                  string             `json:"id"`
+	LastDigestAt        pgtype.Timestamptz `json:"last_digest_at"`
+	WatermarkOccurredAt pgtype.Timestamptz `json:"watermark_occurred_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+}
+
 type NotificationEvent struct {
 	ID          string             `json:"id"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
@@ -290,6 +343,7 @@ type Resource struct {
 	KeywordMode             pgtype.Text        `json:"keyword_mode"`
 	ProtocolType            pgtype.Text        `json:"protocol_type"`
 	ProtocolPort            pgtype.Int4        `json:"protocol_port"`
+	HostID                  pgtype.Text        `json:"host_id"`
 }
 
 type ResourceCredential struct {

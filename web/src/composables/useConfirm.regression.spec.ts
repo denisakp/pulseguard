@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 /**
- * FR-036 regression — every destructive flow in Settings (spec 059) must route
+ * FR-036 regression — every destructive flow in Settings must route
  * through `useConfirm`. Failing this test means a destructive action is
  * silently skipping the confirm modal.
  */
@@ -217,14 +217,14 @@ describe('FR-036 destructive flows route through useConfirm', () => {
     expect(confirmMock).toHaveBeenCalled()
   })
 
-  // Custom-domain flow folded into Status Page settings (spec 059 v2):
+  // Custom-domain flow folded into Status Page settings:
   // domain config has no standalone delete confirm — the user just clears
   // the field and saves. Test removed.
 
   // Tag CRUD UI dropped from spec 059 — tag management is deferred to a
   // resource-form inline flow + a future light hygiene panel.
 
-  it('Remove status page logo → confirm modal mounted (spec 060 / T084)', async () => {
+  it('Remove status page logo → confirm modal mounted', async () => {
     confirmMock.mockResolvedValue(false)
     vi.doMock('@/services/statusPageSettingsService', () => ({
       uploadStatusPageLogo: vi.fn(),

@@ -24,7 +24,7 @@ installErrorBoundary(app, router)
 installKeyboardShortcuts(router)
 
 // Prefetch runtime config (SSL provider + edition) so first paint can render
-// the correct UI wording (spec 059 FR-030). Failure falls back to safe defaults.
+// the correct UI wording. Failure falls back to safe defaults.
 loadRuntimeConfig().finally(() => {
   app.mount('#app')
 })

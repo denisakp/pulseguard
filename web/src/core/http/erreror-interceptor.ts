@@ -6,7 +6,7 @@
  *  - Success toast on 2xx mutating methods (POST/PUT/PATCH/DELETE)
  *  - Error toast on 4xx/5xx with status-specific wording
  *  - 401 single-flight: clear stored credentials + redirect to /login,
- *    exactly once per concurrent burst (spec 054 FR-006, clarification Q1)
+ *    exactly once per concurrent burst
  *
  * Per-call opt-outs via request headers:
  *  - `x-skip-success-toast: '1'`

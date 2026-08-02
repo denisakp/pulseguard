@@ -18,19 +18,19 @@ import (
 )
 
 // TestResourceRepository_Update_ConcurrentSoak — 1000 paired concurrent
-// updates per dialect (spec 049 §FR-008 / SC-003 / wave 3 T023).
+// updates per dialect.
 //
 // Assertions:
-//   1. No deadlock (wall-clock budget enforced via time.AfterFunc).
-//   2. Persisted final state matches at least one writer's full intent
-//      (no half-applied diff, no orphan junction row).
-//   3. resource_tags has no orphan rows referencing missing tag_id /
-//      resource_id (FK enforced by schema, asserted here as belt-and-
-//      suspenders).
-//   4. Informational only: log whether the persisted state matches the
-//      highest-seq writer (post-commit atomic counter). Hard determinism
-//      would require an in-tx commit_seq column (schema change, out of
-//      scope) — see Clarification Q1 of spec 049 and the test docstring.
+//  1. No deadlock (wall-clock budget enforced via time.AfterFunc).
+//  2. Persisted final state matches at least one writer's full intent
+//     (no half-applied diff, no orphan junction row).
+//  3. resource_tags has no orphan rows referencing missing tag_id /
+//     resource_id (FK enforced by schema, asserted here as belt-and-
+//     suspenders).
+//  4. Informational only: log whether the persisted state matches the
+//     highest-seq writer (post-commit atomic counter). Hard determinism
+//     would require an in-tx commit_seq column (schema change, out of
+//     scope) — see Clarification Q1 of spec 049 and the test docstring.
 func TestResourceRepository_Update_ConcurrentSoak(t *testing.T) {
 	t.Setenv("APP_SECRET_KEY", roundtripTestKey)
 

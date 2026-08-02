@@ -4,7 +4,7 @@ import { createRemoteReportsFeed } from './reportsService'
 import { server } from '@/test/msw/server'
 import type { MonthlyReport } from '@/types'
 
-describe('reportsService (spec 076 — real backend)', () => {
+describe('reportsService', () => {
   it('fetchMonthly unwraps the {data} envelope', async () => {
     server.use(
       http.get('*/v1/reports/settings', () =>

@@ -9,7 +9,7 @@ _Nothing yet._
 
 ---
 
-## [1.0.0-beta] - 2026-07-06
+## [1.0.0-beta] - 2026-08-02
 
 First public release of Ogoune — uptime monitoring that **confirms failures
 before alerting** (N consecutive failures required before an incident is
@@ -47,6 +47,72 @@ linked in the release notes.
   view and in enriched alert emails / webhook payloads.
 - **DB migration `0011_keyword_fields`** — additive nullable columns on
   `resources` and `incident_diagnostics` for both SQLite and PostgreSQL.
+- **Agent device monitoring — backend foundation (spec 079)** — a first-class
+  **Host** domain plus authenticated agent metrics ingestion. New operator
+  endpoints under `/api/v1/hosts` (register / list / get / delete, credential
+  rotate & revoke, metric history) and a `POST/DELETE /api/v1/monitors/{id}/host`
+  link. Agents stream CPU / memory / per-mount disk / network samples over a
+  WebSocket at `/api/v1/agent/stream`, authenticated by a per-host `ag_live_…`
+  bearer credential (hashed at rest, shown once). Bounded relational time-series
+  with a daily retention job (decimate beyond 48h to ≤1/min, purge beyond 7d) in
+  both TimingWheel and Asynq modes. DB migration `0028_hosts` adds `hosts`,
+  `host_credentials`, `host_metrics`, and a nullable `resources.host_id`. The
+  agent is strictly optional — no core monitoring path depends on a host. The
+  agent binary and UI are separate, forthcoming chantiers.
+- **Host agent binary (spec 080)** — `cmd/agent`, the Go daemon installed on a
+  monitored Linux host. Collects OS, CPU %, memory %, per-mount disk %, and
+  network counters via gopsutil and streams them to `/api/v1/agent/stream` every
+  ~10s, authenticated by the host's `ag_live_…` credential. Config from
+  `/etc/ogoune/agent.cfg` (env-style `KEY=value`) with env/flag overrides; a
+  systemd unit is provided (`packaging/agent/`). Fail-safe: reconnects with
+  exponential back-off, and on a revoked credential slows to a capped (~5 min)
+  infinite back-off so it self-heals when the credential is re-validated — never
+  crashing the host, never tight-looping. The agent↔backend frame is a single
+  shared contract (`pkg/agentwire`, carrying `schema_version`) imported by both
+  sides so they cannot drift; the 079 ingestion handler adopts it
+  backward-compatibly (a frame with no `schema_version` is treated as v1).
+- **Hosts UI (spec 081)** — the operator frontend for agent device monitoring. A
+  **Hosts** nav section, a list page (online/offline,
+  live CPU/memory/disk, hosted-service count, last-seen; trouble-first sort), a
+  detail page (identity + install helper, CPU/memory/per-mount-disk/network graphs
+  over 1h/6h/24h/7d, and the linked-monitors list), an in-app register/onboard flow
+  that shows the `ag_live_…` credential once plus rotate/revoke/delete, and a Host
+  context panel + link/unlink control on the monitor page. Frontend-only, no
+  backend change (host metrics graphs are hand-rolled SVG — no charting dependency);
+  monitor↔host data is read from the versioned `/api/v1/monitors` endpoint.
+- **Agent packaging & distribution (spec 082)** — the host agent ships as real
+  artifacts instead of a build-from-source step. A multi-arch
+  (`linux/amd64,arm64`) container image `ghcr.io/denisakp/ogoune-agent` (distroless
+  static, nonroot) plus static release binaries (`ogoune-agent-linux-{amd64,arm64}`
+  + `SHA256SUMS`) are built and published by `release.yml` on every tag, versioned
+  in lockstep with the API image. Docker Compose gains an agent service: the dev
+  stack auto-registers a `local` host and hands the agent its credential
+  (zero-touch dogfood), while the prod stack keeps it opt-in behind
+  `profiles: [agent]` with an operator-supplied credential — no secret is ever
+  baked into an image, layer, or committed compose file. The agent's default
+  config path moves to `/etc/ogoune/agent.cfg` (env-style, doubling as the systemd
+  `EnvironmentFile` / `docker --env-file`), and it now logs a warning when
+  connecting over plaintext `ws://` to a remote host (use `wss://` in production).
+- **Agent-down alerting (spec 083)** — the server now notifies you when an
+  agent-backed host stops reporting. A recurring liveness scan raises a single
+  in-app feed notification ("Host X went offline") once a host has been
+  continuously offline past `HOST_FRESHNESS_THRESHOLD`, and a matching "back
+  online" notification on recovery — one alert per offline episode (flap- and
+  restart-safe, tracked in a new `host_alert_state` table). Optional email
+  delivery via the oldest SMTP channel (`AGENT_DOWN_EXTERNAL_DELIVERY=true`).
+  Configurable via `AGENT_DOWN_ALERTS_ENABLED` / `AGENT_DOWN_SCAN_INTERVAL`;
+  fail-safe (alert/delivery failures never disturb monitoring).
+- **Unread-notification escalation (spec 083)** — the server now escalates
+  actionable feed notifications (incidents and agent-down alerts) that stay
+  **unread** too long. A recurring scan emails a single grouped digest ("N unread
+  notifications need attention" plus a short list) via the oldest SMTP channel,
+  batched (one digest, not one email per notification) and deduplicated — re-sent
+  only when a newer qualifying notification appears, never once the operator has
+  read them; purely informational entries are ignored. Configurable via
+  `NOTIFICATION_ESCALATION_ENABLED` (default `true`),
+  `NOTIFICATION_ESCALATION_SCAN_INTERVAL` (`15m`), and
+  `NOTIFICATION_ESCALATION_UNREAD_AGE` (`30m`). Fail-safe: with no SMTP channel it
+  silently no-ops, and a send failure never disturbs monitoring.
 
 ### Changed
 
@@ -72,6 +138,10 @@ linked in the release notes.
   binary. They are silently ignored — leaving them in your `.env` is safe and
   has no effect. The regression test `TestLegacyFlagsSilentlyIgnored` guards
   this behaviour going forward.
+- **Agent YAML config at `/etc/ogoune-agent.yaml`** — replaced by the env-style
+  `/etc/ogoune/agent.cfg` (spec 082). Existing installs keep working via
+  environment variables and flags; point `--config` / `OGOUNE_CONFIG` at the old
+  file if you must. Docs and the shipped example now use the new path/format.
 
 ### Performance
 

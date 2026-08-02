@@ -24,7 +24,7 @@ function makeEntry(): ReportHistoryEntry {
   }
 }
 
-describe('ReportPreviewInline (spec 070 / US1)', () => {
+describe('ReportPreviewInline', () => {
   it('renders the brand + period header', () => {
     const wrapper = mount(ReportPreviewInline, { global: { stubs }, props: { entry: makeEntry() } })
     expect(wrapper.text()).toContain('Ogoune')

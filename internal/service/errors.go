@@ -52,4 +52,13 @@ var (
 
 	// ErrCredentialInvalid is returned when the supplied credential payload fails validation.
 	ErrCredentialInvalid = errors.New("invalid credential payload")
+
+	// Agent device monitoring
+
+	// ErrHostNotFound is returned when a host does not exist.
+	ErrHostNotFound = errors.New("host not found")
+
+	// ErrHostCredentialInvalid is returned when an agent credential is missing,
+	// malformed, unknown, or revoked.
+	ErrHostCredentialInvalid = errors.New("invalid or revoked host credential")
 )

@@ -1,5 +1,15 @@
 <!--
 Sync Impact Report
+Version change: 1.0.0 -> 1.1.0 (MINOR — Delivery Workflow now mandates the full
+7-step speckit cycle: specify → clarify → plan → tasks → analyze →
+taskstoissues → implement)
+Dependent files updated in same change:
+- .specify/workflows/speckit/workflow.yml (added clarify, analyze,
+  taskstoissues steps + gates; version 1.0.0 -> 1.1.0)
+- .specify/workflows/workflow-registry.json (description + version)
+- CLAUDE.md ("Feature development flow (speckit — MANDATORY)" section)
+
+Prior report (initial ratification):
 Version change: template -> 1.0.0
 Modified principles:
 - Template principle 1 -> I. Layered Boundary Integrity
@@ -64,7 +74,7 @@ Rationale: Ogoune work spans runtime behavior, operational docs, and UI/API boun
 
 ## Delivery Workflow
 
-- Non-trivial work MUST proceed in this order: spec, clarified assumptions, plan, tasks, implementation, verification.
+- Non-trivial work MUST proceed through the speckit SDD cycle in this exact order: **specify → clarify → plan → tasks → analyze → taskstoissues → implement**. No step may be skipped or reordered. Each step gates the next: planning requires a clarified spec, task generation requires an approved plan, and issue creation plus implementation require a passing cross-artifact analysis. The bundled workflow definition lives at `.specify/workflows/speckit/workflow.yml`.
 - Constitution Check in every plan MUST explicitly evaluate all five core principles and list any justified exceptions.
 - Runtime or infrastructure changes MUST include: automated test tasks, negative-path validation, deployment/config documentation tasks, and final verification evidence.
 - Reviews MUST confirm architecture boundaries, non-regression coverage, operator-facing documentation updates, and traceability from requirements to tasks.
@@ -74,4 +84,4 @@ Rationale: Ogoune work spans runtime behavior, operational docs, and UI/API boun
 
 This constitution supersedes conflicting local planning habits and template defaults. Amendments MUST update this file and any affected templates or guidance documents in the same change. Versioning follows semantic versioning: MAJOR for incompatible principle or governance changes, MINOR for new principles or materially expanded mandates, PATCH for wording clarifications that do not change obligations. Every plan and review MUST include a constitution compliance check. `README.md`, `QUICKSTART.md`, backend architecture guidance, and `.github/copilot-instructions.md` remain the authoritative companion references for runtime and codebase-specific practices.
 
-**Version**: 1.0.0 | **Ratified**: 2026-03-23 | **Last Amended**: 2026-03-23
+**Version**: 1.1.0 | **Ratified**: 2026-03-23 | **Last Amended**: 2026-07-30
