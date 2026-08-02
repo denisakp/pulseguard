@@ -74,15 +74,18 @@ function onClose() {
     <div class="rounded-md border border-default p-4 text-sm space-y-2">
       <p class="font-medium">Install the agent on your host</p>
       <ol class="list-decimal list-inside text-muted space-y-1">
-        <li>Build the agent: <code class="font-mono">make build-agent</code></li>
         <li>
-          Set <code class="font-mono">backend_url</code> and the
-          <code class="font-mono">credential</code> above in
-          <code class="font-mono">/etc/ogoune-agent.yaml</code>
-          (or <code class="font-mono">OGOUNE_CREDENTIAL</code>).
+          Run the image (or a release binary):
+          <code class="font-mono">docker run --pid=host --network=host …
+            ghcr.io/denisakp/ogoune-agent:latest</code>
         </li>
         <li>
-          Enable the service:
+          Set <code class="font-mono">OGOUNE_BACKEND_URL</code> and the
+          <code class="font-mono">OGOUNE_CREDENTIAL</code> above (env, or
+          <code class="font-mono">/etc/ogoune/agent.cfg</code>).
+        </li>
+        <li>
+          Or as a service:
           <code class="font-mono">sudo systemctl enable --now ogoune-agent</code>
         </li>
       </ol>
