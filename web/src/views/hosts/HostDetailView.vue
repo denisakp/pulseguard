@@ -244,12 +244,14 @@ defineExpose({ host, monitors, loading, notFound, range, setRange, metrics })
         <p class="text-muted mb-2 font-medium text-default">Binary + systemd:</p>
         <pre
           class="overflow-x-auto rounded-md bg-default p-3 text-xs font-mono text-default"
-        ># download ogoune-agent for your platform from the Ogoune releases page
-sudo install -m755 ogoune-agent /usr/local/bin/ogoune-agent
-sudo tee /etc/ogoune-agent.yaml &gt;/dev/null &lt;&lt;'EOF'
-backend_url: wss://your-ogoune/api/v1/agent/stream
-credential: &lt;this host's credential&gt;
+        ># download the release binary for your arch (amd64 / arm64) + verify
+sudo install -m755 ogoune-agent-linux-arm64 /usr/local/bin/ogoune-agent
+sudo mkdir -p /etc/ogoune
+sudo tee /etc/ogoune/agent.cfg &gt;/dev/null &lt;&lt;'EOF'
+OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream
+OGOUNE_CREDENTIAL=&lt;this host's credential&gt;
 EOF
+sudo chmod 600 /etc/ogoune/agent.cfg
 sudo systemctl enable --now ogoune-agent</pre>
         <p class="text-muted mt-3">
           Within ~15 seconds the host reports live metrics and shows as <strong>online</strong>.
