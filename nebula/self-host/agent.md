@@ -11,31 +11,92 @@ slows down (rather than hammering) when a credential is revoked.
 
 ## 1. Register the host
 
-From Ogoune (operator API key), register the host to get a one-time credential:
+In Ogoune, open **Hosts → Register host**, enter a name, and copy the
+`ag_live_…` credential — it is shown **once**. (You can also register via the API:
+`POST /api/v1/hosts` with `{"name":"web-1"}` using an operator API key.)
+
+## 2. Install the agent
+
+Two ways to run it — a container, or a native binary managed by systemd. Both use
+the host's credential from step 1.
+
+### Option A — Docker
 
 ```bash
-curl -sS -X POST https://your-ogoune/api/v1/hosts \
-  -H "Authorization: Bearer <operator-api-key>" \
-  -H "Content-Type: application/json" -d '{"name":"web-1"}'
-# → { "data": { "host": {...}, "credential": "ag_live_…" } }
+docker run -d --name ogoune-agent --restart unless-stopped \
+  --pid=host --network=host \
+  -e OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream \
+  -e OGOUNE_CREDENTIAL=ag_live_… \
+  ghcr.io/denisakp/ogoune-agent:latest
 ```
 
-Copy the `credential` — it is shown **once**.
+`--pid=host --network=host` let the containerised agent read the host's real
+metrics and reach Ogoune.
 
-## 2. Install and run
+### Option B — Native binary + systemd service
+
+For hosts where you'd rather run the Go binary directly (no Docker), install it as
+a systemd service so it starts on boot and restarts on failure.
+
+**1. Get the binary.** Download `ogoune-agent` for your platform (`linux/amd64` or
+`linux/arm64`) from the Ogoune releases, or build it from source
+(`make build-agent` → `dist/ogoune-agent`). Then install it:
 
 ```bash
-make build-agent   # → dist/ogoune-agent
+sudo install -m755 ogoune-agent /usr/local/bin/ogoune-agent
+```
 
-sudo install -m755 dist/ogoune-agent /usr/local/bin/ogoune-agent
-sudo install -m600 packaging/agent/ogoune-agent.example.yaml /etc/ogoune-agent.yaml
-# edit /etc/ogoune-agent.yaml: set backend_url + credential
-sudo install -m644 packaging/agent/ogoune-agent.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now ogoune-agent
-journalctl -u ogoune-agent -f
+**2. Write the config** at `/etc/ogoune-agent.yaml` (mode `0600` — it holds the
+secret):
+
+```bash
+sudo tee /etc/ogoune-agent.yaml >/dev/null <<'EOF'
+backend_url: wss://your-ogoune/api/v1/agent/stream
+credential: ag_live_…
+EOF
+sudo chmod 600 /etc/ogoune-agent.yaml
+```
+
+**3. Install the systemd unit** (shipped in `packaging/agent/ogoune-agent.service`,
+or create it):
+
+```ini
+# /etc/systemd/system/ogoune-agent.service
+[Unit]
+Description=Ogoune host monitoring agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ogoune-agent      # reads /etc/ogoune-agent.yaml by default
+Restart=on-failure
+RestartSec=5
+DynamicUser=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**4. Enable and start it:**
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now ogoune-agent
+journalctl -u ogoune-agent -f          # should log "agent: connected"
 ```
 
 Within ~15 seconds the host reports live metrics and shows as **online**.
+
+Manage the service the usual way: `systemctl status ogoune-agent`,
+`systemctl restart ogoune-agent` (e.g. after rotating the credential),
+`systemctl stop ogoune-agent` (closes the connection cleanly).
+
+---
 
 Open the **Hosts** section in Ogoune to see your fleet: each host's live CPU /
 memory / disk, the services running on it, and per-host metric graphs. Link a
