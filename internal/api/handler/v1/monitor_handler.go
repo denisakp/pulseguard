@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +24,7 @@ type MonitorV1ServiceInterface interface {
 	ListAll(ctx context.Context) ([]*domain.Resource, error)
 	ListByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error)
 	GetResourceByID(ctx context.Context, id string) (*domain.Resource, error)
+	GetResourceByIDWithResponseTimes(ctx context.Context, id string, limit int) (*dto.ResourceResponse, error)
 	CreateResource(ctx context.Context, payload *dto.CreateResourcePayload) (*domain.Resource, error)
 	UpdateResource(ctx context.Context, id string, payload *dto.UpdateResourcePayload) (*domain.Resource, error)
 	DeleteResource(ctx context.Context, resourceID string) error
@@ -55,7 +58,9 @@ func NewMonitorHandler(svc MonitorV1ServiceInterface, live monitorLiveProvider, 
 	return &MonitorHandler{service: svc, live: live, uptime: uptime}
 }
 
-// mapMonitorResponse maps a domain.Resource to a v1 MonitorResponse.
+// mapMonitorResponse maps a domain.Resource to a thin v1 MonitorResponse. Still used
+// by the monitor↔host link/unlink endpoints (host_handler.go); the CRUD/list endpoints
+// now return the rich dto.ResourceResponse (spec 085 Phase 2a).
 func mapMonitorResponse(r *domain.Resource) dtoV1.MonitorResponse {
 	tags := make([]string, 0, len(r.Tags))
 	for _, t := range r.Tags {
@@ -120,9 +125,11 @@ func (h *MonitorHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := make([]dtoV1.MonitorResponse, 0, len(items))
+	data := make([]dto.ResourceResponse, 0, len(items))
 	for _, res := range items {
-		data = append(data, mapMonitorResponse(res))
+		if res != nil {
+			data = append(data, dto.ToResourceListResponse(*res))
+		}
 	}
 
 	respondPaginated(w, data, dtoV1.MetaResponse{
@@ -139,12 +146,19 @@ func (h *MonitorHandler) List(w http.ResponseWriter, r *http.Request) {
 // @Security    BearerAuth
 // @Produce     json
 // @Param       id path string true "Monitor ID"
-// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MonitorResponse]
+// @Param       limit query int false "Number of recent response-time points to include (default 60)"
+// @Success     200 {object} dtoV1.SingleResponse[dto.ResourceResponse]
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Router      /monitors/{id} [get]
 func (h *MonitorHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	res, err := h.service.GetResourceByID(r.Context(), id)
+	limit := 60
+	if v := r.URL.Query().Get("limit"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			limit = n
+		}
+	}
+	res, err := h.service.GetResourceByIDWithResponseTimes(r.Context(), id, limit)
 	if err != nil {
 		if errors.Is(err, service.ErrResourceNotFound) {
 			respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "monitor not found")
@@ -153,7 +167,7 @@ func (h *MonitorHandler) Get(w http.ResponseWriter, r *http.Request) {
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to get monitor")
 		return
 	}
-	respond(w, http.StatusOK, mapMonitorResponse(res))
+	respond(w, http.StatusOK, res)
 }
 
 // Create handles POST /api/v1/monitors
@@ -163,53 +177,40 @@ func (h *MonitorHandler) Get(w http.ResponseWriter, r *http.Request) {
 // @Security    BearerAuth
 // @Accept      json
 // @Produce     json
-// @Param       body body dtoV1.CreateMonitorRequest true "Monitor payload"
-// @Success     201 {object} dtoV1.SingleResponse[dtoV1.MonitorResponse]
+// @Param       body body dto.CreateResourcePayload true "Monitor payload"
+// @Success     201 {object} dtoV1.SingleResponse[dto.ResourceResponse]
 // @Failure     422 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Router      /monitors [post]
 func (h *MonitorHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req dtoV1.CreateMonitorRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	var payload dto.CreateResourcePayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "invalid request body")
 		return
 	}
 
 	var fieldErrs []dtoV1.FieldError
-	if strings.TrimSpace(req.Name) == "" {
+	if strings.TrimSpace(payload.Name) == "" {
 		fieldErrs = append(fieldErrs, dtoV1.FieldError{Field: "name", Message: "required"})
 	}
-	if strings.TrimSpace(req.Type) == "" {
+	if strings.TrimSpace(string(payload.Type)) == "" {
 		fieldErrs = append(fieldErrs, dtoV1.FieldError{Field: "type", Message: "required"})
 	}
-	if strings.TrimSpace(req.Target) == "" {
+	// target is required except for heartbeat monitors (parity with the root handler).
+	if strings.TrimSpace(payload.Target) == "" && payload.Type != domain.ResourceHeartbeat {
 		fieldErrs = append(fieldErrs, dtoV1.FieldError{Field: "target", Message: "required"})
 	}
-	if req.Interval <= 0 {
-		fieldErrs = append(fieldErrs, dtoV1.FieldError{Field: "interval", Message: "must be greater than 0"})
-	}
-	if req.Timeout <= 0 {
-		fieldErrs = append(fieldErrs, dtoV1.FieldError{Field: "timeout", Message: "must be greater than 0"})
+	if payload.ExpiryAlertThresholds != nil {
+		if err := validateExpiryThresholds(*payload.ExpiryAlertThresholds); err != nil {
+			fieldErrs = append(fieldErrs, dtoV1.FieldError{Field: "expiry_alert_thresholds", Message: err.Error()})
+		}
 	}
 	if len(fieldErrs) > 0 {
 		respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "validation failed", fieldErrs...)
 		return
 	}
 
-	payload := &dto.CreateResourcePayload{
-		Name:         req.Name,
-		Type:         domain.ResourceType(req.Type),
-		Target:       req.Target,
-		Interval:     req.Interval,
-		Timeout:      req.Timeout,
-		Tags:         req.Tags,
-		ComponentID:  req.ComponentID,
-		Keyword:      req.Keyword,
-		ProtocolType: req.ProtocolType,
-		ProtocolPort: req.ProtocolPort,
-	}
-
-	created, err := h.service.CreateResource(r.Context(), payload)
+	created, err := h.service.CreateResource(r.Context(), &payload)
 	if err != nil {
 		if errors.Is(err, service.ErrValidationFailed) {
 			respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", err.Error())
@@ -218,7 +219,7 @@ func (h *MonitorHandler) Create(w http.ResponseWriter, r *http.Request) {
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to create monitor")
 		return
 	}
-	respond(w, http.StatusCreated, mapMonitorResponse(created))
+	respond(w, http.StatusCreated, dto.ToResourceDetailResponse(*created))
 }
 
 // Update handles PUT /api/v1/monitors/{id} (full-shape update; partial semantics).
@@ -229,8 +230,8 @@ func (h *MonitorHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept      json
 // @Produce     json
 // @Param       id   path string true "Monitor ID"
-// @Param       body body dtoV1.UpdateMonitorRequest true "Update payload"
-// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MonitorResponse]
+// @Param       body body dto.UpdateResourcePayload true "Update payload"
+// @Success     200 {object} dtoV1.SingleResponse[dto.ResourceResponse]
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Router      /monitors/{id} [put]
@@ -245,43 +246,32 @@ func (h *MonitorHandler) Update(w http.ResponseWriter, r *http.Request) { h.appl
 // @Accept      json
 // @Produce     json
 // @Param       id   path string true "Monitor ID"
-// @Param       body body dtoV1.UpdateMonitorRequest true "Partial update payload"
-// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MonitorResponse]
+// @Param       body body dto.UpdateResourcePayload true "Partial update payload"
+// @Success     200 {object} dtoV1.SingleResponse[dto.ResourceResponse]
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Failure     422 {object} dtoV1.ErrorResponse
 // @Router      /monitors/{id} [patch]
 func (h *MonitorHandler) Patch(w http.ResponseWriter, r *http.Request) { h.applyUpdate(w, r) }
 
-// applyUpdate decodes the pointer-shaped UpdateMonitorRequest and applies it as a
-// partial update (shared by PUT + PATCH).
+// applyUpdate decodes the full pointer-shaped UpdateResourcePayload and applies it as
+// a partial update (shared by PUT + PATCH). Only supplied fields change.
 func (h *MonitorHandler) applyUpdate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	var req dtoV1.UpdateMonitorRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	var payload dto.UpdateResourcePayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "invalid request body")
 		return
 	}
-
-	payload := &dto.UpdateResourcePayload{
-		Name:         req.Name,
-		Target:       req.Target,
-		Interval:     req.Interval,
-		Timeout:      req.Timeout,
-		ComponentID:  req.ComponentID,
-		Keyword:      req.Keyword,
-		ProtocolType: req.ProtocolType,
-		ProtocolPort: req.ProtocolPort,
-	}
-	if req.Type != nil {
-		t := domain.ResourceType(*req.Type)
-		payload.Type = &t
-	}
-	if req.Tags != nil {
-		payload.Tags = &req.Tags
+	if payload.ExpiryAlertThresholds != nil {
+		if err := validateExpiryThresholds(*payload.ExpiryAlertThresholds); err != nil {
+			respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "validation failed",
+				dtoV1.FieldError{Field: "expiry_alert_thresholds", Message: err.Error()})
+			return
+		}
 	}
 
-	updated, err := h.service.UpdateResource(r.Context(), id, payload)
+	updated, err := h.service.UpdateResource(r.Context(), id, &payload)
 	if err != nil {
 		if errors.Is(err, service.ErrResourceNotFound) {
 			respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "monitor not found")
@@ -294,7 +284,28 @@ func (h *MonitorHandler) applyUpdate(w http.ResponseWriter, r *http.Request) {
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to update monitor")
 		return
 	}
-	respond(w, http.StatusOK, mapMonitorResponse(updated))
+	respond(w, http.StatusOK, dto.ToResourceDetailResponse(*updated))
+}
+
+// validateExpiryThresholds mirrors the root handler's check: CSV of integers 1–365.
+func validateExpiryThresholds(s string) error {
+	if s == "" {
+		return nil
+	}
+	for _, p := range strings.Split(s, ",") {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
+		}
+		v, err := strconv.Atoi(p)
+		if err != nil {
+			return fmt.Errorf("invalid threshold value %q: must be an integer", p)
+		}
+		if v <= 0 || v > 365 {
+			return fmt.Errorf("threshold value %d is out of range (must be 1–365)", v)
+		}
+	}
+	return nil
 }
 
 // GetLive handles GET /api/v1/monitors/{id}/live — live snapshot (spec 085 parity).
@@ -436,7 +447,7 @@ func (h *MonitorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Tags        monitors
 // @Security    BearerAuth
 // @Param       id path string true "Monitor ID"
-// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MonitorResponse]
+// @Success     200 {object} dtoV1.SingleResponse[dto.ResourceResponse]
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Router      /monitors/{id}/pause [post]
@@ -455,7 +466,7 @@ func (h *MonitorHandler) Pause(w http.ResponseWriter, r *http.Request) {
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to get updated monitor")
 		return
 	}
-	respond(w, http.StatusOK, mapMonitorResponse(res))
+	respond(w, http.StatusOK, dto.ToResourceDetailResponse(*res))
 }
 
 // Resume handles POST /api/v1/monitors/{id}/resume
@@ -464,7 +475,7 @@ func (h *MonitorHandler) Pause(w http.ResponseWriter, r *http.Request) {
 // @Tags        monitors
 // @Security    BearerAuth
 // @Param       id path string true "Monitor ID"
-// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MonitorResponse]
+// @Success     200 {object} dtoV1.SingleResponse[dto.ResourceResponse]
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Router      /monitors/{id}/resume [post]
@@ -483,5 +494,5 @@ func (h *MonitorHandler) Resume(w http.ResponseWriter, r *http.Request) {
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to get updated monitor")
 		return
 	}
-	respond(w, http.StatusOK, mapMonitorResponse(res))
+	respond(w, http.StatusOK, dto.ToResourceDetailResponse(*res))
 }

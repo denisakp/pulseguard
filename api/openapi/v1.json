@@ -47,6 +47,21 @@
                     "ComponentStatusDown"
                 ]
             },
+            "github_com_denisakp_ogoune_internal_domain.ExpiryStatus": {
+                "enum": [
+                    "ok",
+                    "warning",
+                    "critical",
+                    "expired"
+                ],
+                "type": "string",
+                "x-enum-varnames": [
+                    "ExpiryStatusOK",
+                    "ExpiryStatusWarning",
+                    "ExpiryStatusCritical",
+                    "ExpiryStatusExpired"
+                ]
+            },
             "github_com_denisakp_ogoune_internal_domain.Incident": {
                 "properties": {
                     "cause": {
@@ -617,6 +632,98 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto.CreateResourcePayload": {
+                "properties": {
+                    "component_id": {
+                        "type": "string"
+                    },
+                    "confirmation_checks": {
+                        "type": "integer"
+                    },
+                    "confirmation_interval": {
+                        "type": "integer"
+                    },
+                    "expiry_alert_thresholds": {
+                        "type": "string"
+                    },
+                    "flap_detection_enabled": {
+                        "type": "boolean"
+                    },
+                    "flap_max_duration_minutes": {
+                        "type": "integer"
+                    },
+                    "flap_threshold": {
+                        "type": "integer"
+                    },
+                    "flap_window_seconds": {
+                        "type": "integer"
+                    },
+                    "heartbeat_grace": {
+                        "type": "integer"
+                    },
+                    "heartbeat_interval": {
+                        "type": "integer"
+                    },
+                    "interval": {
+                        "maximum": 3600,
+                        "minimum": 10,
+                        "type": "integer"
+                    },
+                    "keyword": {
+                        "type": "string"
+                    },
+                    "keyword_mode": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "notification_channel_names": {
+                        "description": "NotificationChannelNames are channel names to attach; resolved to IDs at create time.\nChannels must already exist (they hold secrets and are never created here). Used by the\nbulk import path; missing name is a validation error.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "protocol_port": {
+                        "type": "integer"
+                    },
+                    "protocol_type": {
+                        "type": "string"
+                    },
+                    "reminder_interval_minutes": {
+                        "type": "integer"
+                    },
+                    "tags": {
+                        "description": "Tag names - will be created if they don't exist",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "target": {
+                        "type": "string"
+                    },
+                    "timeout": {
+                        "maximum": 60,
+                        "minimum": 1,
+                        "type": "integer"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.ResourceType"
+                    }
+                },
+                "required": [
+                    "interval",
+                    "name",
+                    "target",
+                    "timeout",
+                    "type"
+                ],
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto.LiveActiveIncident": {
                 "properties": {
                     "cause": {
@@ -1105,6 +1212,279 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto.ResourceMetaDataResponse": {
+                "properties": {
+                    "domain_days_remaining": {
+                        "type": "integer"
+                    },
+                    "domain_expiration_date": {
+                        "type": "string"
+                    },
+                    "domain_registrar": {
+                        "type": "string"
+                    },
+                    "ssl_days_remaining": {
+                        "type": "integer"
+                    },
+                    "ssl_expiration_date": {
+                        "type": "string"
+                    },
+                    "ssl_issuer": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto.ResourceResponse": {
+                "properties": {
+                    "component": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.Component"
+                    },
+                    "component_id": {
+                        "type": "string"
+                    },
+                    "confirmation_checks": {
+                        "type": "integer"
+                    },
+                    "confirmation_interval": {
+                        "type": "integer"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "credential": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.ResourceCredential"
+                    },
+                    "expiry_alert_thresholds": {
+                        "type": "string"
+                    },
+                    "expiry_status": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.ExpiryStatus"
+                    },
+                    "failure_count": {
+                        "type": "integer"
+                    },
+                    "flap_detection_enabled": {
+                        "type": "boolean"
+                    },
+                    "flap_max_duration_minutes": {
+                        "type": "integer"
+                    },
+                    "flap_started_at": {
+                        "type": "string"
+                    },
+                    "flap_threshold": {
+                        "type": "integer"
+                    },
+                    "flap_window_seconds": {
+                        "type": "integer"
+                    },
+                    "heartbeat_grace": {
+                        "type": "integer"
+                    },
+                    "heartbeat_interval": {
+                        "type": "integer"
+                    },
+                    "heartbeat_slug": {
+                        "type": "string"
+                    },
+                    "host_id": {
+                        "description": "optional link to a monitored host",
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "incident_count_30d": {
+                        "type": "integer"
+                    },
+                    "incidents": {
+                        "items": {
+                            "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.Incident"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "interval": {
+                        "description": "in seconds",
+                        "type": "integer"
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "keyword": {
+                        "type": "string"
+                    },
+                    "keyword_mode": {
+                        "type": "string"
+                    },
+                    "last_checked": {
+                        "type": "string"
+                    },
+                    "last_ping_at": {
+                        "type": "string"
+                    },
+                    "last_status_transition": {
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto.ResourceMetaDataResponse"
+                    },
+                    "metadata_pending": {
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "notification_channels": {
+                        "items": {
+                            "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.NotificationChannel"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "protocol_port": {
+                        "type": "integer"
+                    },
+                    "protocol_type": {
+                        "type": "string"
+                    },
+                    "reminder_interval_minutes": {
+                        "type": "integer"
+                    },
+                    "response_time": {
+                        "type": "integer"
+                    },
+                    "response_times": {
+                        "items": {
+                            "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto.ResponseTimePoint"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.ResourceStatus"
+                    },
+                    "tags": {
+                        "items": {
+                            "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.Tags"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "target": {
+                        "type": "string"
+                    },
+                    "timeout": {
+                        "description": "in seconds",
+                        "type": "integer"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.ResourceType"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    },
+                    "uptime_30d": {
+                        "type": "number"
+                    },
+                    "uptime_7d": {
+                        "type": "number"
+                    },
+                    "waiting": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto.ResponseTimePoint": {
+                "properties": {
+                    "response_time": {
+                        "description": "in milliseconds",
+                        "type": "integer"
+                    },
+                    "timestamp": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto.UpdateResourcePayload": {
+                "properties": {
+                    "component_id": {
+                        "type": "string"
+                    },
+                    "confirmation_checks": {
+                        "type": "integer"
+                    },
+                    "confirmation_interval": {
+                        "type": "integer"
+                    },
+                    "expiry_alert_thresholds": {
+                        "type": "string"
+                    },
+                    "flap_detection_enabled": {
+                        "type": "boolean"
+                    },
+                    "flap_max_duration_minutes": {
+                        "type": "integer"
+                    },
+                    "flap_threshold": {
+                        "type": "integer"
+                    },
+                    "flap_window_seconds": {
+                        "type": "integer"
+                    },
+                    "heartbeat_grace": {
+                        "type": "integer"
+                    },
+                    "heartbeat_interval": {
+                        "type": "integer"
+                    },
+                    "interval": {
+                        "type": "integer"
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "keyword": {
+                        "type": "string"
+                    },
+                    "keyword_mode": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "protocol_port": {
+                        "type": "integer"
+                    },
+                    "protocol_type": {
+                        "type": "string"
+                    },
+                    "reminder_interval_minutes": {
+                        "type": "integer"
+                    },
+                    "tags": {
+                        "description": "Tag IDs (ULIDs) - must reference existing tags",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "target": {
+                        "type": "string"
+                    },
+                    "timeout": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.ResourceType"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.AddTagsRequest": {
                 "properties": {
                     "tag_ids": {
@@ -1276,45 +1656,6 @@
                         "type": "string"
                     },
                     "prefix": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
-            "github_com_denisakp_ogoune_internal_dto_v1.CreateMonitorRequest": {
-                "properties": {
-                    "component_id": {
-                        "type": "string"
-                    },
-                    "interval": {
-                        "type": "integer"
-                    },
-                    "keyword": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "protocol_port": {
-                        "type": "integer"
-                    },
-                    "protocol_type": {
-                        "type": "string"
-                    },
-                    "tags": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "uniqueItems": false
-                    },
-                    "target": {
-                        "type": "string"
-                    },
-                    "timeout": {
-                        "type": "integer"
-                    },
-                    "type": {
                         "type": "string"
                     }
                 },
@@ -2128,6 +2469,17 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto.ResourceResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_AnnouncementResponse": {
                 "properties": {
                     "data": {
@@ -2448,45 +2800,6 @@
                         },
                         "type": "array",
                         "uniqueItems": false
-                    }
-                },
-                "type": "object"
-            },
-            "github_com_denisakp_ogoune_internal_dto_v1.UpdateMonitorRequest": {
-                "properties": {
-                    "component_id": {
-                        "type": "string"
-                    },
-                    "interval": {
-                        "type": "integer"
-                    },
-                    "keyword": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "protocol_port": {
-                        "type": "integer"
-                    },
-                    "protocol_type": {
-                        "type": "string"
-                    },
-                    "tags": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": "array",
-                        "uniqueItems": false
-                    },
-                    "target": {
-                        "type": "string"
-                    },
-                    "timeout": {
-                        "type": "integer"
-                    },
-                    "type": {
-                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -4161,7 +4474,7 @@
                                         "type": "object"
                                     },
                                     {
-                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.CreateMonitorRequest",
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto.CreateResourcePayload",
                                         "summary": "body",
                                         "description": "Monitor payload"
                                     }
@@ -4177,7 +4490,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"
                                 }
                             }
                         },
@@ -4390,6 +4703,14 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "description": "Number of recent response-time points to include (default 60)",
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
@@ -4397,7 +4718,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"
                                 }
                             }
                         },
@@ -4445,7 +4766,7 @@
                                         "type": "object"
                                     },
                                     {
-                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.UpdateMonitorRequest",
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto.UpdateResourcePayload",
                                         "summary": "body",
                                         "description": "Partial update payload"
                                     }
@@ -4461,7 +4782,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"
                                 }
                             }
                         },
@@ -4529,7 +4850,7 @@
                                         "type": "object"
                                     },
                                     {
-                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.UpdateMonitorRequest",
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto.UpdateResourcePayload",
                                         "summary": "body",
                                         "description": "Update payload"
                                     }
@@ -4545,7 +4866,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"
                                 }
                             }
                         },
@@ -5033,7 +5354,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"
                                 }
                             }
                         },
@@ -5089,7 +5410,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"
                                 }
                             }
                         },
