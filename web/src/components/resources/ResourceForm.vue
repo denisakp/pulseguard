@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 import {
   resourceSchema,
@@ -71,6 +71,33 @@ function removeTag(id: string) {
   const tags = (state as unknown as { tags?: string[] }).tags
   if (tags) (state as unknown as { tags: string[] }).tags = tags.filter((t) => t !== id)
 }
+
+function addExistingTag(tag: Tag) {
+  const tags = ((state as unknown as { tags?: string[] }).tags ??= [])
+  if (!tags.includes(tag.id)) tags.push(tag.id)
+  tagInput.value = ''
+}
+
+// Live suggestions of existing tags matching what the operator types, so an
+// existing tag is picked (deduped) instead of silently recreated. A "Create …"
+// row appears only when there's no exact match.
+const tagSuggestions = computed<Tag[]>(() => {
+  const q = tagInput.value.trim().toLowerCase()
+  if (!q) return []
+  const selected = new Set(((state as unknown as { tags?: string[] }).tags ?? []))
+  return availableTags.value
+    .filter((t) => t.name.toLowerCase().includes(q) && !selected.has(t.id))
+    .slice(0, 8)
+})
+const hasExactTag = computed(() => {
+  const q = tagInput.value.trim().toLowerCase()
+  return q !== '' && availableTags.value.some((t) => t.name.toLowerCase() === q)
+})
+
+// Load tags eagerly so matching/dedup works as soon as the operator types.
+onMounted(() => {
+  void loadTags()
+})
 
 type FormState = Record<string, unknown> & { type: ResourceInput['type'] }
 
@@ -409,23 +436,61 @@ defineExpose({ state, onSubmit, formRef, stripExtras })
               />
             </UBadge>
           </div>
-          <div class="flex items-center gap-2">
-            <UInput
-              v-model="tagInput"
-              placeholder="Type a tag name and press Enter"
-              size="sm"
-              class="flex-1"
-              @keydown.enter.prevent="addTagFromInput"
-            />
-            <UButton
-              color="neutral"
-              variant="outline"
-              size="xs"
-              icon="i-lucide-plus"
-              @click="addTagFromInput"
+          <div>
+            <div class="flex items-center gap-2">
+              <UInput
+                v-model="tagInput"
+                placeholder="Search or create a tag…"
+                size="sm"
+                class="flex-1"
+                @keydown.enter.prevent="addTagFromInput"
+              />
+              <UButton
+                color="neutral"
+                variant="outline"
+                size="xs"
+                icon="i-lucide-plus"
+                :disabled="!tagInput.trim()"
+                @click="addTagFromInput"
+              >
+                Add
+              </UButton>
+            </div>
+
+            <!-- Live suggestions: pick an existing tag (deduped) or create a new one. -->
+            <div
+              v-if="tagInput.trim()"
+              class="mt-1 overflow-hidden rounded-md border border-default bg-default shadow-sm"
+              data-testid="tag-suggestions"
             >
-              Add
-            </UButton>
+              <button
+                v-for="t in tagSuggestions"
+                :key="t.id"
+                type="button"
+                class="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm hover:bg-elevated"
+                @click="addExistingTag(t)"
+              >
+                <UIcon name="i-lucide-tag" class="size-3.5 text-muted" />
+                <span class="truncate">{{ t.name }}</span>
+                <span class="ml-auto text-xs text-muted">existing</span>
+              </button>
+              <button
+                v-if="!hasExactTag"
+                type="button"
+                class="flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm text-primary hover:bg-elevated"
+                data-testid="tag-create"
+                @click="addTagFromInput"
+              >
+                <UIcon name="i-lucide-plus" class="size-3.5" />
+                Create “{{ tagInput.trim() }}”
+              </button>
+              <div
+                v-else-if="tagSuggestions.length === 0"
+                class="px-2 py-1.5 text-xs text-muted"
+              >
+                This tag is already added.
+              </div>
+            </div>
           </div>
         </div>
       </template>
