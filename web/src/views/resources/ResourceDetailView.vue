@@ -9,6 +9,9 @@ import { fetchActivities } from '@/services/activityService'
 import { fetchUptimeStats } from '@/services/resourceService'
 import ResourceModal from '@/components/resources/ResourceModal.vue'
 import IncidentsListBody from '@/components/incidents/IncidentsListBody.vue'
+import LinkHostControl from '@/components/hosts/LinkHostControl.vue'
+import MonitorHostPanel from '@/components/hosts/MonitorHostPanel.vue'
+import { listMonitors } from '@/services/hostsService'
 import type { Resource, MonitoringActivity, HourlyUptimeStat } from '@/types'
 
 const route = useRoute()
@@ -431,10 +434,27 @@ async function onDelete() {
   }
 }
 
+// Host link. host_id lives on the v1 monitor, not the root resource,
+// so derive the current monitor's host from the v1 monitors list.
+const monitorId = computed(() => String(route.params.id))
+const currentHostId = ref<string | null>(null)
+async function loadHostLink() {
+  try {
+    const mons = await listMonitors()
+    currentHostId.value = mons.find((m) => m.id === monitorId.value)?.hostId ?? null
+  } catch {
+    currentHostId.value = null
+  }
+}
+function onHostChanged(hostId: string | null) {
+  currentHostId.value = hostId
+}
+
 onMounted(async () => {
   await loadDetail()
   void loadActivity()
   void loadUptimeWindows()
+  void loadHostLink()
 })
 
 defineExpose({ resource, activeTab, loadDetail, loadActivity, togglePause, onDelete })
@@ -519,6 +539,27 @@ defineExpose({ resource, activeTab, loadDetail, loadActivity, togglePause, onDel
 
       <div v-if="activeTab === 'overview'" class="grid grid-cols-[1fr_320px] gap-6 items-start">
         <div class="flex flex-col gap-5 min-w-0">
+          <!-- Host link. The context panel shows only when linked. -->
+          <div class="bg-default rounded-lg border border-default p-5 flex flex-col gap-4">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-base font-semibold text-highlighted">Host</h3>
+              <LinkHostControl
+                :monitor-id="monitorId"
+                :current-host-id="currentHostId"
+                @changed="onHostChanged"
+              />
+            </div>
+            <MonitorHostPanel
+              v-if="currentHostId"
+              :host-id="currentHostId"
+              :monitor-id="monitorId"
+            />
+            <p v-else class="text-sm text-muted">
+              This monitor is not linked to a host. Link it to see the machine's live
+              CPU, memory and disk alongside its checks.
+            </p>
+          </div>
+
           <div class="grid grid-cols-4 gap-3">
             <div class="bg-default rounded-lg border border-default p-4">
               <div class="text-xs text-muted mb-1">Status</div>

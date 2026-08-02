@@ -9,7 +9,7 @@ import (
 )
 
 // TypeNotificationRetention is the Asynq task type for the daily notification
-// feed retention job (spec 072).
+// feed retention job.
 const TypeNotificationRetention = "notification:retention"
 
 // notificationPruner is the narrow slice of NotificationFeedRepository the job needs.

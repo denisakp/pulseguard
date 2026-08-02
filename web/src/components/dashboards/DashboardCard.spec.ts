@@ -52,7 +52,7 @@ function makeHealth(): DashboardHealth {
   return { status: 'operational', summary: 'All healthy', resourceCount: 4 }
 }
 
-describe('DashboardCard (spec 070 / US2)', () => {
+describe('DashboardCard', () => {
   beforeEach(() => {
     pushMock.mockClear()
     toggleStarMock.mockClear()

@@ -13,7 +13,7 @@ import (
 )
 
 // InitDatabase opens the database runtime and wires all sqlc-backed
-// repositories onto the App struct. Post-decom (spec 052), the legacy
+// repositories onto the App struct. Post-decom, the legacy
 // `SQLC_*` env flags are gone; sqlc is the sole impl. Unknown `SQLC_*` vars
 // in the operator's environment are silently ignored (FR-004).
 func InitDatabase(app *App) {
@@ -67,13 +67,13 @@ func InitDatabase(app *App) {
 	app.IncidentUpdateRepo = store.NewIncidentUpdateRepositorySQLC(rt)
 	app.NotificationFeedRepo = store.NewNotificationFeedRepositorySQLC(rt)
 	// Built here (not InitServices) because InitWorker runs first and wires this
-	// as the incident notification emitter (spec 072).
+	// as the incident notification emitter.
 	app.NotificationFeedService = service.NewNotificationFeedService(app.NotificationFeedRepo)
 
 	app.DashboardRepo = store.NewDashboardRepositorySQLC(rt)
 	app.DashboardService = service.NewDashboardService(app.DashboardRepo)
 
-	// Reports (spec 076): built here (not InitServices) because InitWorker runs
+	// Reports: built here (not InitServices) because InitWorker runs
 	// first and registers the scheduled report generator.
 	app.ReportSettingsRepo = store.NewReportSettingsRepositorySQLC(rt)
 	app.ReportHistoryRepo = store.NewReportHistoryRepositorySQLC(rt)
@@ -90,7 +90,7 @@ func InitDatabase(app *App) {
 	app.AnnouncementRepo = store.NewAnnouncementRepositorySQLC(rt)
 	app.AnnouncementService = service.NewAnnouncementService(app.AnnouncementRepo)
 
-	// Agent device monitoring (spec 079). Services built here (not InitServices)
+	// Agent device monitoring. Services built here (not InitServices)
 	// because InitWorker runs first and registers the metrics-retention job.
 	app.HostRepo = store.NewHostRepositorySQLC(rt)
 	app.HostCredentialRepo = store.NewHostCredentialRepositorySQLC(rt)
@@ -99,7 +99,7 @@ func InitDatabase(app *App) {
 	app.HostService = service.NewHostService(app.HostRepo, app.HostCredentialService, app.HostMetricsRepo, app.ResourceRepo, cfg.HostFreshnessThreshold)
 	app.HostMetricsService = service.NewHostMetricsService(app.HostMetricsRepo, app.HostRepo, cfg.HostMetricsRawWindow, time.Duration(cfg.HostMetricsRetentionDays)*24*time.Hour)
 
-	// Config-derived observability integrations (spec 077) — read-only.
+	// Config-derived observability integrations — read-only.
 	app.IntegrationsService = svcintegrations.NewIntegrationsService(app.ResourceRepo, app.ComponentRepo)
 
 	// Seed-time services that the worker layer depends on must be built

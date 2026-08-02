@@ -13,10 +13,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/denisakp/ogoune/internal/domain"
 	"github.com/denisakp/ogoune/internal/port"
 	"github.com/denisakp/ogoune/internal/repository"
-	sq "github.com/Masterminds/squirrel"
 	"github.com/denisakp/ogoune/internal/repository/sqlc/dynquery"
 	pgsqlc "github.com/denisakp/ogoune/internal/repository/sqlc/pg"
 	sqlitesqlc "github.com/denisakp/ogoune/internal/repository/sqlc/sqlite"
@@ -24,12 +24,12 @@ import (
 
 // ResourceRepositorySQLC implements port.ResourceRepository via sqlc.
 //
-// PR1 of US1 (spec 048) — CRUD only, no M2M, no preloads. The following
+// PR1 of US1 — CRUD only, no M2M, no preloads. The following
 // methods are stubs that return an "unimplemented" error and will land in
 // follow-up PRs:
 //
 //   - Update     : implements main columns only; Tags / NotificationChannels
-//                  diff is deferred to PR2 / PR3.
+//     diff is deferred to PR2 / PR3.
 //   - FindByTag  : requires resource_tags JOIN (PR2).
 //   - UpdateMonitoringState / UpdateMetadata : require dynamic SQL (PR4).
 //
@@ -1701,7 +1701,7 @@ func ptrIntFromNullInt64(t sql.NullInt64) *int {
 }
 
 // ListResourcesByFilter implements dynamic filtering for the v1 monitors
-// list endpoint (spec 051). Builds the ID + COUNT queries via squirrel,
+// list endpoint. Builds the ID + COUNT queries via squirrel,
 // executes via the raw pool/db handle, then reuses FindResourcesByIDs +
 // attachPreloads to materialise full domain rows with preloads.
 func (r *ResourceRepositorySQLC) ListResourcesByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error) {

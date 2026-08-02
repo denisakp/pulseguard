@@ -92,11 +92,11 @@ func InitRouter(app *App) {
 	announcementV1Handler := v1handler.NewAnnouncementHandler(app.AnnouncementService)
 	integrationsV1Handler := v1handler.NewIntegrationsHandler(app.IntegrationsService)
 
-	// Bulk resource import/export (spec 078)
+	// Bulk resource import/export
 	resourceImportService := resourceimport.NewService(app.ResourceService, app.ComponentRepo, app.NotificationChannelRepo)
 	resourceImportV1Handler := v1handler.NewResourceImportHandler(resourceImportService)
 
-	// Agent device monitoring (spec 079)
+	// Agent device monitoring
 	hostV1Handler := v1handler.NewHostHandler(app.HostService, app.HostMetricsService)
 	agentStreamV1Handler := v1handler.NewAgentStreamHandler(app.HostMetricsService)
 

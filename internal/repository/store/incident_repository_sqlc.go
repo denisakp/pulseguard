@@ -541,7 +541,7 @@ func incidentsFromSQLite(rows []sqlitesqlc.Incident) []*domain.Incident {
 }
 
 // ListIncidentsByFilter implements dynamic filtering for the v1 incidents
-// list endpoint (spec 051). Builds the SELECT + COUNT via squirrel, executes
+// list endpoint. Builds the SELECT + COUNT via squirrel, executes
 // via the raw pool/db, and scans the typed sqlc row representations using
 // existing mappers. Preloads (Resource, Diagnostics) are NOT attached — the
 // v1 handler's mapIncidentResponse only needs incident columns.

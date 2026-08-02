@@ -52,7 +52,7 @@ function setup(overrides: {
   return useDashboardData({ scope, timeRange, refreshInterval })
 }
 
-describe('useDashboardData (spec 070 / US3)', () => {
+describe('useDashboardData', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     resourcesRef.value = [

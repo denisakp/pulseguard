@@ -1,4 +1,4 @@
--- 0025: Custom dashboards (spec 075). Single-tenant: instance-wide read; owner_id governs mutation.
+-- 0025: Custom dashboards. Single-tenant: instance-wide read; owner_id governs mutation.
 -- Config-only: scope + widgets are JSON config; widget data renders frontend-side.
 CREATE TABLE IF NOT EXISTS dashboards (
     id                 TEXT PRIMARY KEY,

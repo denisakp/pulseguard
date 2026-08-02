@@ -71,6 +71,15 @@ linked in the release notes.
   single shared contract (`pkg/agentwire`, carrying `schema_version`) imported by
   both sides so they cannot drift; the 079 ingestion handler adopts it
   backward-compatibly (a frame with no `schema_version` is treated as v1).
+- **Hosts UI (spec 081)** — the operator frontend for agent device monitoring. A
+  **Hosts** nav section (hidden until a host exists), a list page (online/offline,
+  live CPU/memory/disk, hosted-service count, last-seen; trouble-first sort), a
+  detail page (identity + install helper, CPU/memory/per-mount-disk/network graphs
+  over 1h/6h/24h/7d, and the linked-monitors list), an in-app register/onboard flow
+  that shows the `ag_live_…` credential once plus rotate/revoke/delete, and a Host
+  context panel + link/unlink control on the monitor page. Frontend-only, no
+  backend change (host metrics graphs are hand-rolled SVG — no charting dependency);
+  monitor↔host data is read from the versioned `/api/v1/monitors` endpoint.
 
 ### Changed
 

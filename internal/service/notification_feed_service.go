@@ -12,7 +12,7 @@ import (
 // ErrNotificationNotFound is returned when a notification id does not exist.
 var ErrNotificationNotFound = errors.New("notification not found")
 
-// NotificationFeedService is the in-app notification feed (spec 072).
+// NotificationFeedService is the in-app notification feed.
 // Distinct from NotificationService (outbound channel dispatch).
 type NotificationFeedService struct {
 	repo port.NotificationFeedRepository

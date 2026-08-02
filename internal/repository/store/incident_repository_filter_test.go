@@ -17,7 +17,7 @@ import (
 func timePtr(t time.Time) *time.Time { return &t }
 
 // TestIncidentRepository_ListByFilter exercises the dynamic-filter SQL path
-// (spec 051) against both SQLite and Postgres. Seeds incidents across 3
+// against both SQLite and Postgres. Seeds incidents across 3
 // monitors with varied resolved states + timestamps.
 func TestIncidentRepository_ListByFilter(t *testing.T) {
 	internaltest.ForEachDialect(t, func(t *testing.T, fx *internaltest.DialectFixture) {
@@ -50,14 +50,14 @@ func TestIncidentRepository_ListByFilter(t *testing.T) {
 			startedAt time.Time
 			resolved  bool
 		}{
-			{"i1", mon1, base, false},                            // open, day 1
-			{"i2", mon1, base.AddDate(0, 0, 5), true},            // resolved, day 6
-			{"i3", mon2, base.AddDate(0, 0, 10), false},          // open, day 11
-			{"i4", mon2, base.AddDate(0, 0, 15), true},           // resolved, day 16
-			{"i5", mon3, base.AddDate(0, 0, 20), false},          // open, day 21
-			{"i6", mon3, base.AddDate(0, 0, 25), true},           // resolved, day 26
-			{"i7", mon1, base.AddDate(0, 0, -5), true},           // resolved, before window
-			{"i8", mon2, base.AddDate(0, 1, 5), false},           // open, after window
+			{"i1", mon1, base, false},                   // open, day 1
+			{"i2", mon1, base.AddDate(0, 0, 5), true},   // resolved, day 6
+			{"i3", mon2, base.AddDate(0, 0, 10), false}, // open, day 11
+			{"i4", mon2, base.AddDate(0, 0, 15), true},  // resolved, day 16
+			{"i5", mon3, base.AddDate(0, 0, 20), false}, // open, day 21
+			{"i6", mon3, base.AddDate(0, 0, 25), true},  // resolved, day 26
+			{"i7", mon1, base.AddDate(0, 0, -5), true},  // resolved, before window
+			{"i8", mon2, base.AddDate(0, 1, 5), false},  // open, after window
 		}
 		now := time.Now()
 		for i, s := range seed {

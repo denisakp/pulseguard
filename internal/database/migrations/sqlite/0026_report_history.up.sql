@@ -1,4 +1,4 @@
--- 0026: Generated monthly reports (spec 076). One row per period (idempotency), terminal status only.
+-- 0026: Generated monthly reports. One row per period (idempotency), terminal status only.
 CREATE TABLE IF NOT EXISTS report_history (
     id                 TEXT PRIMARY KEY,
     period             TEXT NOT NULL,

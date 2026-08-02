@@ -79,13 +79,13 @@ func TestOpenAPICoverage_AllV1RoutesInContract(t *testing.T) {
 		if strings.Contains(route, "/docs") || strings.HasSuffix(route, "openapi.json") {
 			return nil
 		}
-		// The agent metrics ingestion route is a WebSocket upgrade (spec 079),
+		// The agent metrics ingestion route is a WebSocket upgrade,
 		// not a REST operation, so it is not part of the OpenAPI contract.
 		if strings.HasPrefix(route, "/v1/agent/stream") {
 			return nil
 		}
-		contractPath := strings.TrimPrefix(route, "/v1")            // /v1/monitors → /monitors
-		contractPath = strings.TrimSuffix(contractPath, "/")        // chi trailing slash
+		contractPath := strings.TrimPrefix(route, "/v1")     // /v1/monitors → /monitors
+		contractPath = strings.TrimSuffix(contractPath, "/") // chi trailing slash
 		if contractPath == "" {
 			return nil
 		}

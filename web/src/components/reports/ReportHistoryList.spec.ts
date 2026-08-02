@@ -51,7 +51,7 @@ function makeEntries(): ReportHistoryEntry[] {
   ]
 }
 
-describe('ReportHistoryList (spec 070 / US1)', () => {
+describe('ReportHistoryList', () => {
   it('renders one row per entry with uptime + incidents + downtime', () => {
     const wrapper = mount(ReportHistoryList, {
       global: { stubs },

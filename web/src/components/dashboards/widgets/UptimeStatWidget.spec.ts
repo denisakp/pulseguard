@@ -33,7 +33,7 @@ function makeResource(over: Partial<Resource>): Resource {
   }
 }
 
-describe('UptimeStatWidget (spec 070 / US3)', () => {
+describe('UptimeStatWidget', () => {
   it('renders skeleton while loading and no data', () => {
     const wrapper = mount(UptimeStatWidget, {
       global: { stubs },

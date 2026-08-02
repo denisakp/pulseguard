@@ -65,7 +65,7 @@ const stubs = {
   UIcon: { template: '<span />', props: ['name'] },
 }
 
-describe('UNotificationDropdown (spec 069 / US4)', () => {
+describe('UNotificationDropdown', () => {
   let wrapper: ReturnType<typeof mount> | null = null
 
   beforeEach(() => {

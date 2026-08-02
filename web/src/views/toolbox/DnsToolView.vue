@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * DNS Lookup tool (spec 071, US1).
+ * DNS Lookup tool.
  * Form (domain + record types + resolver) → results table + session history.
  */
 import { reactive, ref, computed } from 'vue'

@@ -59,13 +59,26 @@ OGOUNE_CREDENTIAL=ag_live_… ./dist/ogoune-agent
 As a service (systemd), using
 [`packaging/agent/ogoune-agent.service`](../../packaging/agent/ogoune-agent.service):
 
+The unit runs as a `DynamicUser` (unprivileged), which cannot read a root-owned
+`0600` config file — so it takes its settings from `/etc/ogoune-agent.env`, which
+systemd reads privileged and injects into the process:
+
 ```bash
 sudo install -m755 dist/ogoune-agent /usr/local/bin/ogoune-agent
-sudo install -m600 packaging/agent/ogoune-agent.example.yaml /etc/ogoune-agent.yaml   # then edit
+
+sudo tee /etc/ogoune-agent.env >/dev/null <<'EOF'
+OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream
+OGOUNE_CREDENTIAL=ag_live_…
+EOF
+sudo chmod 600 /etc/ogoune-agent.env
+
 sudo install -m644 packaging/agent/ogoune-agent.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now ogoune-agent
 journalctl -u ogoune-agent -f
 ```
+
+(Prefer a YAML config file? Drop `DynamicUser=yes` from the unit so the process
+runs as root and can read `/etc/ogoune-agent.yaml`.)
 
 ## Behaviour
 

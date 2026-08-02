@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// SSL checker form schema (spec 071, US2).
+// SSL checker form schema.
 
 const domain = z
   .string()

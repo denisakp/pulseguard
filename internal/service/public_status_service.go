@@ -1,4 +1,4 @@
-// Package service — public status aggregator (spec 060 / US1).
+// Package service — public status aggregator.
 package service
 
 import (

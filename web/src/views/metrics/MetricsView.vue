@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Prometheus Metrics documentation page (spec 071, US5).
+ * Prometheus Metrics documentation page.
  * Static reference for the existing GET /metrics endpoint — no live stats
  * (out of scope, FR-022). Describes endpoint, auth, catalog, scrape config.
  */
@@ -77,7 +77,7 @@ function download(filename: string, content: string, mime: string) {
 }
 
 // Both downloads try the config-derived endpoint first; on any error they fall
-// back to the bundled static template so the button is never dead (spec 077 US3).
+// back to the bundled static template so the button is never dead.
 async function importGrafanaDashboard() {
   try {
     const dash = await integrationsService.fetchGrafanaDashboard()

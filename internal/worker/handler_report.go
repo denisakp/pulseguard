@@ -16,7 +16,7 @@ type reportGenerator interface {
 	GenerateAndDeliver(ctx context.Context, period string) error
 }
 
-// ReportTaskHandler runs the monthly report catch-up scan (spec 076). On each
+// ReportTaskHandler runs the monthly report catch-up scan. On each
 // tick it generates the previous completed calendar month if it has no report
 // row yet (idempotency + enablement live in the service). A missed run (instance
 // down on the 1st) self-heals on the next tick/startup.

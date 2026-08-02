@@ -24,7 +24,7 @@ vi.mock('@/composables/useRuntimeConfig', () => ({
   loadRuntimeConfig: vi.fn().mockResolvedValue(undefined),
 }))
 
-describe('cross-cutting routes (spec 069)', () => {
+describe('cross-cutting routes', () => {
   beforeEach(() => {
     vi.unstubAllEnvs()
   })

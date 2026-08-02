@@ -19,7 +19,7 @@ const stubs = {
   },
 }
 
-describe('Error500View (spec 069 / US1)', () => {
+describe('Error500View', () => {
   beforeEach(() => {
     replaceMock.mockClear()
     window.history.replaceState(

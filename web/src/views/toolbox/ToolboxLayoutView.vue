@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Toolbox shell (spec 071) — route-synced tabs over <RouterView/>.
+ * Toolbox shell — route-synced tabs over <RouterView/>.
  * Four one-shot network tools: DNS / Port / SSL / WHOIS.
  * Pattern mirrors SettingsLayoutView (RouterLink tab bar + useRoute active state).
  */

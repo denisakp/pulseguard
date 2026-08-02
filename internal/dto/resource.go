@@ -23,7 +23,7 @@ type CreateResourcePayload struct {
 	Tags              []string            `json:"tags"` // Tag names - will be created if they don't exist
 	// NotificationChannelNames are channel names to attach; resolved to IDs at create time.
 	// Channels must already exist (they hold secrets and are never created here). Used by the
-	// bulk import path (spec 078); missing name is a validation error.
+	// bulk import path; missing name is a validation error.
 	NotificationChannelNames []string `json:"notification_channel_names,omitempty"`
 	ComponentID              *string  `json:"component_id,omitempty"`
 	ConfirmationChecks       *int     `json:"confirmation_checks,omitempty"`

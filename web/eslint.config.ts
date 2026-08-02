@@ -39,11 +39,11 @@ export default defineConfigWithVueTs(
         'error',
         {
           paths: [
-            { name: 'ant-design-vue', message: 'Ant Design Vue was removed (spec 073). Use NuxtUI components.' },
-            { name: 'axios', message: 'Axios was removed (spec 073). Use the Ky client at @/core/http/client.' },
+            { name: 'ant-design-vue', message: 'Ant Design Vue was removed. Use NuxtUI components.' },
+            { name: 'axios', message: 'Axios was removed. Use the Ky client at @/core/http/client.' },
           ],
           patterns: [
-            { group: ['ant-design-vue', 'ant-design-vue/*', '@ant-design/*'], message: 'Ant Design Vue / its icons were removed (spec 073). Use NuxtUI + Iconify.' },
+            { group: ['ant-design-vue', 'ant-design-vue/*', '@ant-design/*'], message: 'Ant Design Vue / its icons were removed. Use NuxtUI + Iconify.' },
           ],
         },
       ],

@@ -20,7 +20,7 @@ type ReportV1ServiceInterface interface {
 	GeneratePreview(ctx context.Context) (*domain.ReportHistory, error)
 }
 
-// ReportHandler exposes /api/v1/reports (spec 076).
+// ReportHandler exposes /api/v1/reports.
 type ReportHandler struct {
 	service ReportV1ServiceInterface
 }

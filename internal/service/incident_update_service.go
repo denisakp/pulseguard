@@ -1,4 +1,4 @@
-// Package service — incident lifecycle updates (spec 060 / US7).
+// Package service — incident lifecycle updates.
 package service
 
 import (

@@ -11,11 +11,11 @@ import (
 
 	"github.com/denisakp/ogoune/internal/domain"
 	"github.com/denisakp/ogoune/internal/port"
-	"github.com/denisakp/ogoune/pkg/crypto"
 	"github.com/denisakp/ogoune/internal/repository/internaltest"
 	pgsqlc "github.com/denisakp/ogoune/internal/repository/sqlc/pg"
 	sqlitesqlc "github.com/denisakp/ogoune/internal/repository/sqlc/sqlite"
 	"github.com/denisakp/ogoune/internal/repository/store"
+	"github.com/denisakp/ogoune/pkg/crypto"
 )
 
 const roundtripTestKey = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
@@ -41,7 +41,7 @@ func roundtripFactory(t *testing.T, fx *internaltest.DialectFixture) (port.Resou
 }
 
 // TestResourceRepository_ListPreloads_RoundTripBound enforces the round-trip
-// bound for Resource.List (spec 048 §FR-006, spec 049 §FR-003, spec 050).
+// bound for Resource.List.
 //
 // As of spec 050 the list-view path uses attachTagsOnly: 1 principal SELECT
 // + 1 Tags preload = 2 round-trips. Channels / Component / Credential
@@ -132,10 +132,10 @@ func TestResourceRepository_ListPreloads_RoundTripBound(t *testing.T) {
 		// rows is irrelevant — those preloads are not issued on the list
 		// path. The test runs for two N values to prove invariance.
 		type tc struct {
-			name             string
-			withTags         bool
-			withCh           bool
-			withComp         bool
+			name              string
+			withTags          bool
+			withCh            bool
+			withComp          bool
 			expectedRoundTrip int64
 		}
 		cases := []tc{

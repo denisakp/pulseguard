@@ -1,4 +1,4 @@
-// Package handler — public status endpoints (spec 060).
+// Package handler — public status endpoints.
 package handler
 
 import (

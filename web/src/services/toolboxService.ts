@@ -15,7 +15,7 @@ interface V1Envelope<T> {
   data: T
 }
 
-// Toolbox one-shot network tools (spec 071). Each call accepts an optional
+// Toolbox one-shot network tools. Each call accepts an optional
 // AbortSignal so the UI can cancel slow external lookups.
 
 export const dnsLookup = async (

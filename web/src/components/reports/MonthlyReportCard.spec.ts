@@ -38,7 +38,7 @@ const stubs = {
   },
 }
 
-describe('MonthlyReportCard (spec 070 / US1)', () => {
+describe('MonthlyReportCard', () => {
   beforeEach(() => {
     toggleMonthlyMock.mockReset()
     monthlyRef.value = {

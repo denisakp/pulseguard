@@ -61,14 +61,14 @@ type ResourceRepository interface {
 	UpdateMetadata(ctx context.Context, id string, req UpdateMetadataRequest) error
 	FindScheduledResources(ctx context.Context) ([]*domain.Resource, error)
 	ListResourcesByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error)
-	// Host link (spec 079) — additive. SetResourceHostID links a monitor to a
+	// Host link — additive. SetResourceHostID links a monitor to a
 	// host; ClearResourceHostIDByHost unlinks every monitor of a host (host delete).
 	SetResourceHostID(ctx context.Context, resourceID string, hostID *string) error
 	ClearResourceHostIDByHost(ctx context.Context, hostID string) error
 }
 
 // ---------------------------------------------------------------------------
-// Agent device monitoring (spec 079)
+// Agent device monitoring
 // ---------------------------------------------------------------------------
 
 // HostRepository persists monitored hosts and their denormalized latest snapshot.
@@ -252,7 +252,7 @@ type ExpiryNotificationLogRepository interface {
 	DeleteOlderThan(ctx context.Context, cutoff time.Time) error
 }
 
-// DashboardRepository persists custom dashboards (spec 075). Config-only.
+// DashboardRepository persists custom dashboards. Config-only.
 type DashboardRepository interface {
 	Create(ctx context.Context, d *domain.Dashboard) (*domain.Dashboard, error)
 	FindByID(ctx context.Context, id string) (*domain.Dashboard, error)
@@ -270,20 +270,20 @@ type AnnouncementRepository interface {
 }
 
 // ReportSettingsRepository persists the single instance-wide monthly-report
-// configuration (spec 076). Get returns repository.ErrNotFound when unsaved.
+// configuration. Get returns repository.ErrNotFound when unsaved.
 type ReportSettingsRepository interface {
 	Get(ctx context.Context) (*domain.ReportSettings, error)
 	Upsert(ctx context.Context, s *domain.ReportSettings) (*domain.ReportSettings, error)
 }
 
-// ReportHistoryRepository persists generated monthly reports (spec 076).
+// ReportHistoryRepository persists generated monthly reports.
 type ReportHistoryRepository interface {
 	Create(ctx context.Context, r *domain.ReportHistory) (*domain.ReportHistory, error)
 	ListRecent(ctx context.Context, limit int) ([]*domain.ReportHistory, error)
 	FindByPeriod(ctx context.Context, period string) (*domain.ReportHistory, error)
 }
 
-// NotificationFeedRepository persists in-app notification-feed items (spec 072).
+// NotificationFeedRepository persists in-app notification-feed items.
 // Distinct from NotificationRepository (outbound dispatch events).
 type NotificationFeedRepository interface {
 	Create(ctx context.Context, n *domain.FeedNotification) (*domain.FeedNotification, error)

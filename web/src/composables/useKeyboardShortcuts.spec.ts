@@ -40,7 +40,7 @@ import {
 } from './useKeyboardShortcuts'
 import { useSearchPalette, __resetSearchPaletteForTests } from './useSearchPalette'
 
-describe('useKeyboardShortcuts (spec 069 / US3)', () => {
+describe('useKeyboardShortcuts', () => {
   let uninstall: () => void = () => undefined
 
   beforeEach(() => {
