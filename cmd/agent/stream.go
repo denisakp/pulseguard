@@ -103,7 +103,12 @@ func (s *Streamer) streamLoop(ctx context.Context, conn wsConn) error {
 		if err != nil {
 			return err
 		}
-		return conn.Write(ctx, b)
+		if err := conn.Write(ctx, b); err != nil {
+			return err
+		}
+		slog.Debug("agent: frame sent",
+			"cpu_pct", frame.CPUPct, "mem_pct", frame.MemPct, "disks", len(frame.Disks))
+		return nil
 	}
 
 	if err := send(); err != nil {
