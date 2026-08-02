@@ -46,15 +46,17 @@ a systemd service so it starts on boot and restarts on failure.
 sudo install -m755 ogoune-agent /usr/local/bin/ogoune-agent
 ```
 
-**2. Write the config** at `/etc/ogoune-agent.yaml` (mode `0600` — it holds the
-secret):
+**2. Write the config** at `/etc/ogoune-agent.env` (mode `0600` — it holds the
+secret). The service runs as an unprivileged `DynamicUser`, which cannot read a
+root-owned config file itself; systemd reads this env file privileged and injects
+it into the process:
 
 ```bash
-sudo tee /etc/ogoune-agent.yaml >/dev/null <<'EOF'
-backend_url: wss://your-ogoune/api/v1/agent/stream
-credential: ag_live_…
+sudo tee /etc/ogoune-agent.env >/dev/null <<'EOF'
+OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream
+OGOUNE_CREDENTIAL=ag_live_…
 EOF
-sudo chmod 600 /etc/ogoune-agent.yaml
+sudo chmod 600 /etc/ogoune-agent.env
 ```
 
 **3. Install the systemd unit** (shipped in `packaging/agent/ogoune-agent.service`,
@@ -69,7 +71,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/ogoune-agent      # reads /etc/ogoune-agent.yaml by default
+EnvironmentFile=-/etc/ogoune-agent.env
+ExecStart=/usr/local/bin/ogoune-agent
 Restart=on-failure
 RestartSec=5
 DynamicUser=yes
@@ -81,6 +84,10 @@ PrivateTmp=yes
 [Install]
 WantedBy=multi-user.target
 ```
+
+> If you'd rather use a config **file** (`/etc/ogoune-agent.yaml`) instead of the
+> env file, drop `DynamicUser=yes` from the unit (the process then runs as root
+> and can read the 0600 file), or `chown` the file to a dedicated service user.
 
 **4. Enable and start it:**
 
