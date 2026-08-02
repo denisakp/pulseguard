@@ -99,7 +99,7 @@ func initTimingWheelWorker(app *App, enrichmentService *service.EnrichmentServic
 }
 
 // startTimingWheelHostMetricsRetention runs the daily host-metrics retention
-// (decimate + purge) in-process (spec 079): once at startup, then daily.
+// (decimate + purge) in-process: once at startup, then daily.
 func startTimingWheelHostMetricsRetention(app *App) {
 	if app.HostMetricsService == nil {
 		return
@@ -119,7 +119,7 @@ func startTimingWheelHostMetricsRetention(app *App) {
 }
 
 // startTimingWheelReportCheck runs the monthly report catch-up scan in-process
-// (spec 076): once at startup (self-heals a missed month on restart) then daily.
+// once at startup (self-heals a missed month on restart) then daily.
 func startTimingWheelReportCheck(app *App) {
 	if app.ReportService == nil {
 		return
@@ -136,7 +136,7 @@ func startTimingWheelReportCheck(app *App) {
 	slog.Info("TimingWheel daily report check scheduled")
 }
 
-// startTimingWheelNotificationRetention runs the daily feed-retention prune in-process (spec 072).
+// startTimingWheelNotificationRetention runs the daily feed-retention prune in-process.
 func startTimingWheelNotificationRetention(app *App) {
 	if app.NotificationFeedRepo == nil {
 		return
@@ -298,7 +298,7 @@ func initAsynqProcessor(app *App, enrichmentService *service.EnrichmentService) 
 		}
 	}
 
-	// Monthly report catch-up scan (spec 076) — daily tick, idempotent per period.
+	// Monthly report catch-up scan — daily tick, idempotent per period.
 	var reportHandler *worker.ReportTaskHandler
 	if app.ReportService != nil {
 		reportHandler = worker.NewReportTaskHandler(app.ReportService)
@@ -307,7 +307,7 @@ func initAsynqProcessor(app *App, enrichmentService *service.EnrichmentService) 
 		}
 	}
 
-	// Host metrics retention (spec 079) — daily decimate + purge.
+	// Host metrics retention — daily decimate + purge.
 	var hostMetricsRetentionHandler *worker.HostMetricsRetentionHandler
 	if app.HostMetricsService != nil {
 		hostMetricsRetentionHandler = worker.NewHostMetricsRetentionHandler(app.HostMetricsService)

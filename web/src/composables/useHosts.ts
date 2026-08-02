@@ -4,7 +4,7 @@ import { listMonitors } from '@/services/hostsService'
 import type { Host, MonitorSummary } from '@/types'
 
 /**
- * Enriched Hosts feed (spec 081). Wraps `useHostStore` and derives, per host:
+ * Enriched Hosts feed. Wraps `useHostStore` and derives, per host:
  *   - `serviceCount` — number of monitors linked to the host, derived from the
  *     v1 monitors list (the only monitor read that carries `host_id`).
  *   - `worstLoad` — max(cpu, mem, disk), used for trouble-first sorting.

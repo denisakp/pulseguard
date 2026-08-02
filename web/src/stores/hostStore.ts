@@ -4,7 +4,7 @@ import { listHosts } from '@/services/hostsService'
 import type { Host } from '@/types'
 
 /**
- * Host fleet store (spec 081). Holds the raw host list plus a lightweight
+ * Host fleet store. Holds the raw host list plus a lightweight
  * polling loop so the Hosts list stays fresh without manual refresh. Derived
  * fields (serviceCount, worstLoad, trouble-first sort) live in `useHosts`.
  */

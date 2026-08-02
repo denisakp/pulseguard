@@ -20,7 +20,7 @@ type ResourceImportServiceInterface interface {
 	ExportYAML(ctx context.Context) ([]byte, error)
 }
 
-// ResourceImportHandler handles v1 bulk import/export of monitors (spec 078).
+// ResourceImportHandler handles v1 bulk import/export of monitors.
 type ResourceImportHandler struct {
 	service ResourceImportServiceInterface
 }

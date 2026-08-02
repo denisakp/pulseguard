@@ -26,7 +26,7 @@ type NotificationFeedV1ServiceInterface interface {
 	MarkAllRead(ctx context.Context, userID string, before time.Time) (int64, error)
 }
 
-// NotificationFeedHandler exposes /api/v1/notifications (spec 072).
+// NotificationFeedHandler exposes /api/v1/notifications.
 type NotificationFeedHandler struct {
 	service NotificationFeedV1ServiceInterface
 }

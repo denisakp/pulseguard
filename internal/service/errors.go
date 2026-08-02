@@ -53,7 +53,7 @@ var (
 	// ErrCredentialInvalid is returned when the supplied credential payload fails validation.
 	ErrCredentialInvalid = errors.New("invalid credential payload")
 
-	// Agent device monitoring (spec 079)
+	// Agent device monitoring
 
 	// ErrHostNotFound is returned when a host does not exist.
 	ErrHostNotFound = errors.New("host not found")

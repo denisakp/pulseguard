@@ -1,7 +1,7 @@
 import { getAuthenticatedClient } from '@/core/http/client'
 
 /**
- * Config-derived observability assets (spec 077). The alert-rules endpoint
+ * Config-derived observability assets. The alert-rules endpoint
  * returns raw `text/yaml` (the shared `request<T>` helper always `.json()`s, so
  * we read `.text()` off the ky instance directly); the dashboard returns JSON.
  * Callers fall back to the bundled static assets on any error.

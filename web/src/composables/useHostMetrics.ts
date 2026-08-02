@@ -3,7 +3,7 @@ import { getHostMetrics } from '@/services/hostsService'
 import type { HostMetricRange, HostMetricSample } from '@/types'
 
 /**
- * useHostMetrics (spec 081 — US3) — resolves a `from`/`to` window from a
+ * useHostMetrics — resolves a `from`/`to` window from a
  * reactive `range` preset (1h/6h/24h/7d back from now), fetches the host's
  * metric samples via `hostsService.getHostMetrics`, and shapes them into the
  * series the detail-page charts consume.

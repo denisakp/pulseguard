@@ -362,7 +362,7 @@ func (r *ResourceFake) FindByTag(ctx context.Context, tagName string, limit, off
 	return tagged[offset:end], nil
 }
 
-// ListResourcesByFilter applies the dynamic filter in memory (spec 051 fake).
+// ListResourcesByFilter applies the dynamic filter in memory.
 func (r *ResourceFake) ListResourcesByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

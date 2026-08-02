@@ -10,7 +10,7 @@ import (
 )
 
 // TestImport_GoldenScale imports a 100-resource manifest in a single request and
-// asserts it completes well within an interactive budget (spec 078 SC-007).
+// asserts it completes well within an interactive budget.
 // Heartbeat monitors are used so creation performs no network I/O.
 func TestImport_GoldenScale(t *testing.T) {
 	raw, err := os.ReadFile("testdata/golden-100.yaml")

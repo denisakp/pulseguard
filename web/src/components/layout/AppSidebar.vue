@@ -16,7 +16,7 @@ interface NavItem {
 }
 
 // Hosts is always visible so operators can discover it and reach the
-// onboarding/register flow even before any host exists (spec 081 follow-up).
+// onboarding/register flow even before any host exists.
 const monitor: NavItem[] = [
   { label: 'Overview', to: '/overview', icon: 'i-lucide-gauge' },
   { label: 'Resources', to: '/resources', icon: 'i-lucide-radar' },

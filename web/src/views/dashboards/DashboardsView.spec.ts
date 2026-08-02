@@ -100,7 +100,7 @@ function fixture() {
   ]
 }
 
-describe('DashboardsView (spec 070 / US2)', () => {
+describe('DashboardsView', () => {
   beforeEach(() => {
     loadMock.mockClear()
     setFilterMock.mockClear()

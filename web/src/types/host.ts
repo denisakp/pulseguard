@@ -1,4 +1,4 @@
-// Host view models (spec 081). Adapted to camelCase from the snake_case v1 DTOs
+// Host view models. Adapted to camelCase from the snake_case v1 DTOs
 // (@ogoune/api-types HostResponse / HostMetricSampleResponse / DiskUsageDTO).
 
 export interface DiskUsage {
@@ -23,7 +23,7 @@ export interface Host {
   lastDisks: DiskUsage[]
   createdAt: string
   updatedAt: string
-  /** Count of monitors linked to this host — derived client-side (spec 081 D2). */
+  /** Count of monitors linked to this host — derived client-side. */
   serviceCount?: number
 }
 

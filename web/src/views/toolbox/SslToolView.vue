@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * SSL Checker tool (spec 071, US2).
+ * SSL Checker tool.
  * Inspects a TLS certificate, warns when it expires within 14 days, lists
  * passive vulnerability indicators, and offers "Add as monitor".
  */

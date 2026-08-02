@@ -26,7 +26,6 @@ func NewStatusPageSettingsHandler(svc *service.StatusPageSettingsService) *Statu
 
 // SetDomainRefresh wires the callback invoked after every successful save /
 // verify so the HostRouter middleware can refresh its in-memory cache
-// (spec 060 / US6 T080).
 func (h *StatusPageSettingsHandler) SetDomainRefresh(fn func(domain, status string)) {
 	h.domainRefresh = fn
 }

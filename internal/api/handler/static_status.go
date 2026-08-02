@@ -1,9 +1,9 @@
 // Package handler — StaticStatusHandler serves the public bundle on the
-// custom domain with two server-side injections (spec 060 / T083):
-//   1. <meta name="x-ogoune-license"> reflecting the current edition.
-//   2. <title> reflecting the current verdict (e.g. "Acme Status — All
-//      Systems Operational"). Falls back to a generic label when the
-//      verdict cannot be computed.
+// custom domain with two server-side injections:
+//  1. <meta name="x-ogoune-license"> reflecting the current edition.
+//  2. <title> reflecting the current verdict (e.g. "Acme Status — All
+//     Systems Operational"). Falls back to a generic label when the
+//     verdict cannot be computed.
 //
 // The bundle itself (status.html + assets) is read from STATIC_DIR. Asset
 // requests (anything that doesn't end with "status.html" and exists on

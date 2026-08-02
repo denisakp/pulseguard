@@ -1,6 +1,6 @@
 package v1
 
-// Dashboards DTOs (spec 075). camelCase, mirrors the frozen frontend
+// Dashboards DTOs. camelCase, mirrors the frozen frontend
 // `Dashboard` / `WidgetInstance` / `DashboardScope` shapes.
 
 // DashboardScopePayload is the selection payload for a scope mode.
@@ -16,7 +16,7 @@ type DashboardScopePayload struct {
 // @name DashboardScope
 type DashboardScope struct {
 	Mode    string                `json:"mode"`
-	Payload DashboardScopePayload  `json:"payload"`
+	Payload DashboardScopePayload `json:"payload"`
 }
 
 // WidgetInstance is one placed widget within a dashboard.

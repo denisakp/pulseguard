@@ -5,7 +5,7 @@ import (
 )
 
 // PublicStatusMetrics exposes the counters needed to measure the public
-// status page caching behaviour (spec 060 / T088b — SC-007 observability).
+// status page caching behaviour.
 //
 // Vocabulary:
 //   - "hit" — the request carried a conditional header (If-None-Match or
@@ -13,7 +13,8 @@ import (
 //   - "miss" — first-touch request, no conditional header.
 //
 // The 95% cache ratio claim in the spec is measurable as
-//   hits / (hits + misses) on the public_status_cache_requests metric.
+//
+//	hits / (hits + misses) on the public_status_cache_requests metric.
 type PublicStatusMetrics struct {
 	hits   prometheus.Counter
 	misses prometheus.Counter

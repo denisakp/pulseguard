@@ -12,7 +12,7 @@ type resourceAgg struct {
 
 // aggregatePeriod computes overall uptime % and total downtime seconds for a
 // period from daily uptime aggregates, plus a per-resource breakdown. Reuses
-// pre-aggregated data only (spec 076 D4): a resource/day with no aggregate row
+// pre-aggregated data only: a resource/day with no aggregate row
 // simply is not summed. Resources with no aggregate rows over the period
 // contribute zero and are omitted from the breakdown. Pure — no I/O.
 func aggregatePeriod(

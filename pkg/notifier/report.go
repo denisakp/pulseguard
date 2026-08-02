@@ -7,7 +7,7 @@ type ReportBreakdownLine struct {
 	Incidents int
 }
 
-// ReportNotification carries a generated monthly report for email dispatch (spec 076).
+// ReportNotification carries a generated monthly report for email dispatch.
 type ReportNotification struct {
 	Period          string // YYYY-MM
 	Recipient       string

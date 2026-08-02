@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Register-host onboarding modal (spec 081). Collects the host name, calls
+ * Register-host onboarding modal. Collects the host name, calls
  * `registerHost`, then swaps the form for a one-time credential reveal.
  * Server-side ValidationError.fieldErrors are mapped back onto the form via
  * `formRef.setErrors` (UFormExample oracle pattern).

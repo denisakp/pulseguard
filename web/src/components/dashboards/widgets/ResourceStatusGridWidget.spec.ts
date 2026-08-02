@@ -36,7 +36,7 @@ function makeResource(over: Partial<Resource>): Resource {
   }
 }
 
-describe('ResourceStatusGridWidget (spec 070 / US3)', () => {
+describe('ResourceStatusGridWidget', () => {
   it('renders one cell per resource with status-driven data attribute', () => {
     const cells: ResolvedResource[] = [
       { id: 'r1', resource: makeResource({ status: 'up' }) },

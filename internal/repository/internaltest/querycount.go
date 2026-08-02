@@ -1,4 +1,4 @@
-// Package internaltest — query-counting DBTX decorators (spec 049 §FR-001/002).
+// Package internaltest — query-counting DBTX decorators.
 //
 // Wraps the sqlc-generated DBTX interfaces so tests can assert the exact
 // number of round-trips a read path takes (controlled-N+1 = 1+R verification

@@ -114,7 +114,6 @@ func TestAgentStream_RejectsBadCredential(t *testing.T) {
 
 // TestAgentStream_VersionedAndLegacyFrames asserts the backend accepts BOTH a
 // frame carrying schema_version:1 and a legacy frame with no schema_version
-// (spec 080 additive contract; 079 backward-compat regression).
 func TestAgentStream_VersionedAndLegacyFrames(t *testing.T) {
 	cases := []struct {
 		name  string

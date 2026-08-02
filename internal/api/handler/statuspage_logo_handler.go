@@ -1,4 +1,4 @@
-// Package handler — status page logo upload (spec 060 / US5).
+// Package handler — status page logo upload.
 package handler
 
 import (

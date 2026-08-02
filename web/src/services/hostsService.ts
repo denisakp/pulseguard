@@ -9,7 +9,7 @@ import type {
 } from '@/types'
 
 /**
- * Hosts feed — backed by the real v1 API (spec 079). v1 endpoints
+ * Hosts feed — backed by the real v1 API. v1 endpoints
  * wrap payloads in a `{ data }` envelope and use snake_case DTOs; this service
  * unwraps and maps them to the camelCase `Host` view models. Frontend-only: no
  * backend change.

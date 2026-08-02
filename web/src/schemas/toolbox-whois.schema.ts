@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// WHOIS form schema (spec 071, US4).
+// WHOIS form schema.
 
 const domain = z
   .string()

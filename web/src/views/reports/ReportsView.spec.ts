@@ -63,7 +63,7 @@ const stubs = {
   },
 }
 
-describe('ReportsView (spec 070 / US1)', () => {
+describe('ReportsView', () => {
   beforeEach(() => {
     loadAllMock.mockClear()
     monthlyRef.value = {

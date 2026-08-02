@@ -16,7 +16,7 @@ import { resolve } from 'node:path'
 const FORBIDDEN = /from ['"]@\/(stores|composables|router)\b/
 const ISOLATED = ['UStatusBadge.vue', 'UUptimeBar.vue', 'UUptimeCalendar.vue']
 
-describe('Shared component isolation (spec 055 Q2)', () => {
+describe('Shared component isolation', () => {
   it.each(ISOLATED)('%s does not import from @/stores, @/composables, or @/router', (file) => {
     const path = resolve(__dirname, '..', file)
     const src = readFileSync(path, 'utf8')

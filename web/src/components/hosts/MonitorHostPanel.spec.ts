@@ -53,7 +53,7 @@ function mountPanel(monitorId?: string) {
   })
 }
 
-describe('MonitorHostPanel (spec 081 / US4)', () => {
+describe('MonitorHostPanel', () => {
   beforeEach(() => {
     getHostMock.mockReset().mockResolvedValue(HOST)
     listMonitorsMock.mockReset().mockResolvedValue(RESOURCES)

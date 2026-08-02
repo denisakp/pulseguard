@@ -47,7 +47,7 @@ func NewAuthService(userRepo port.UserRepository, jwtManager *JWTManager) *AuthS
 }
 
 // SetSessionService wires the session service so login flows can issue a
-// session row + bind the JWT to it via the sid claim (spec 059 FR-009).
+// session row + bind the JWT to it via the sid claim.
 func (s *AuthService) SetSessionService(svc *SessionService) {
 	s.sessionService = svc
 }

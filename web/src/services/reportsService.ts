@@ -2,7 +2,7 @@ import type { MonthlyReport, ReportHistoryEntry } from '@/types'
 import { getAuthenticatedClient, request } from '@/core/http/client'
 
 /**
- * Reports feed — always backed by the real v1 API (spec 076).
+ * Reports feed — always backed by the real v1 API.
  *
  * The backend persists the monthly-report configuration, generates the monthly
  * report (reusing daily uptime aggregates + incidents), and emails it via an

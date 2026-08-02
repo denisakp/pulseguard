@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// Port scanner form schema (spec 071, US3). Mirrors backend caps:
+// Port scanner form schema. Mirrors backend caps:
 // max 100 ports, timeout 100–2000ms (default 1000).
 
 export const portPresets = ['common', 'web', 'db', 'custom'] as const

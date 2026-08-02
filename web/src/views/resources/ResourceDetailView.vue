@@ -434,7 +434,7 @@ async function onDelete() {
   }
 }
 
-// Host link (spec 081). host_id lives on the v1 monitor, not the root resource,
+// Host link. host_id lives on the v1 monitor, not the root resource,
 // so derive the current monitor's host from the v1 monitors list.
 const monitorId = computed(() => String(route.params.id))
 const currentHostId = ref<string | null>(null)
@@ -539,7 +539,7 @@ defineExpose({ resource, activeTab, loadDetail, loadActivity, togglePause, onDel
 
       <div v-if="activeTab === 'overview'" class="grid grid-cols-[1fr_320px] gap-6 items-start">
         <div class="flex flex-col gap-5 min-w-0">
-          <!-- Host link (spec 081). The context panel shows only when linked. -->
+          <!-- Host link. The context panel shows only when linked. -->
           <div class="bg-default rounded-lg border border-default p-5 flex flex-col gap-4">
             <div class="flex items-center justify-between gap-3">
               <h3 class="text-base font-semibold text-highlighted">Host</h3>

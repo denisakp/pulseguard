@@ -134,7 +134,7 @@ async function settle() {
   await nextTick()
 }
 
-describe('DashboardDetailView (spec 070 / US3) — read mode', () => {
+describe('DashboardDetailView — read mode', () => {
   beforeEach(() => {
     pushMock.mockClear()
     replaceMock.mockClear()
@@ -202,7 +202,7 @@ describe('DashboardDetailView (spec 070 / US3) — read mode', () => {
   })
 })
 
-describe('DashboardDetailView (spec 070 / US4) — edit mode', () => {
+describe('DashboardDetailView — edit mode', () => {
   beforeEach(() => {
     pushMock.mockClear()
     replaceMock.mockClear()

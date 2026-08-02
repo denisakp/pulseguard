@@ -46,7 +46,7 @@ function mountControl(currentHostId: string | null = null) {
   })
 }
 
-describe('LinkHostControl (spec 081 / US4)', () => {
+describe('LinkHostControl', () => {
   beforeEach(() => {
     listHostsMock.mockReset().mockResolvedValue(HOSTS)
     linkMock.mockReset().mockResolvedValue(undefined)

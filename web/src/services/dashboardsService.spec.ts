@@ -20,7 +20,7 @@ function sample(id = 'd1'): Dashboard {
   }
 }
 
-describe('dashboardsService (spec 075 — real backend)', () => {
+describe('dashboardsService', () => {
   it('list unwraps the {data} envelope', async () => {
     server.use(http.get('*/v1/dashboards', () => HttpResponse.json({ data: [sample()] })))
     const items = await createRemoteDashboardsFeed().list()

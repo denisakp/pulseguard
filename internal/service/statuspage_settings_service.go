@@ -38,12 +38,12 @@ var (
 // themeOverrideKeys is the closed whitelist of CSS-variable names operators
 // may set under `theme_overrides`. Each entry maps to its validator.
 var themeOverrideKeys = map[string]func(string) bool{
-	"--status-bg":        validateHex,
-	"--status-text":      validateHex,
-	"--status-up":        validateHex,
-	"--status-degraded":  validateHex,
-	"--status-down":      validateHex,
-	"--status-radius":    validateRadius,
+	"--status-bg":       validateHex,
+	"--status-text":     validateHex,
+	"--status-up":       validateHex,
+	"--status-degraded": validateHex,
+	"--status-down":     validateHex,
+	"--status-radius":   validateRadius,
 }
 
 func validateHex(v string) bool    { return hexColorRE.MatchString(v) }
@@ -72,7 +72,7 @@ func validateThemeOverrides(m map[string]string) error {
 	return nil
 }
 
-// Logo slot persistence (spec 060 / US5 T069-T070). Blob storage is handled
+// Logo slot persistence. Blob storage is handled
 // by the handler (writes to STATIC_DIR); the service only persists the URL.
 
 var ErrInvalidLogoSlot = errors.New("invalid logo slot")

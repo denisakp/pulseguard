@@ -23,7 +23,7 @@ const filters = useResourceFilters()
 
 const showModal = ref(false)
 const editingResource = ref<Resource | null>(null)
-// Seed for "create from Toolbox" CTAs (spec 071): /resources?create=1&type=&target=
+// Seed for "create from Toolbox" CTAs: /resources?create=1&type=&target=
 const createSeed = ref<{ type?: string; target?: string; name?: string } | null>(null)
 const collapsedGroups = ref<Record<string, boolean>>({})
 

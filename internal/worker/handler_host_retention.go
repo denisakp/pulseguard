@@ -8,7 +8,7 @@ import (
 )
 
 // TypeHostMetricsRetention is the Asynq task type for the daily host-metrics
-// retention job (spec 079): decimate old samples, then purge beyond the window.
+// retention job: decimate old samples, then purge beyond the window.
 const TypeHostMetricsRetention = "host:metrics:retention"
 
 // hostMetricsRetentionRunner is the slice of HostMetricsService the job needs.

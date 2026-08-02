@@ -17,7 +17,7 @@ import (
 )
 
 // IncidentUpdateSeeder is the minimal surface the incident lifecycle needs
-// to seed user-facing status updates (spec 060 / US7). Defined inline to
+// to seed user-facing status updates. Defined inline to
 // avoid pulling internal/service into the monitoring package.
 type IncidentUpdateSeeder interface {
 	AutoSeedOnDetect(ctx context.Context, incidentID, message string)
@@ -39,7 +39,7 @@ type IncidentService struct {
 	client               *asynq.Client
 }
 
-// NotificationEmitter is the optional in-app notification-feed producer (spec 072).
+// NotificationEmitter is the optional in-app notification-feed producer.
 // Implemented by *service.NotificationFeedService. Emission is fire-and-forget.
 type NotificationEmitter interface {
 	Emit(ctx context.Context, n domain.EmittedNotification) error
@@ -75,7 +75,7 @@ func (s *IncidentService) SetComponentRepository(repo port.ComponentRepository) 
 	s.components = repo
 }
 
-// SetNotificationEmitter wires the optional in-app notification-feed producer (spec 072).
+// SetNotificationEmitter wires the optional in-app notification-feed producer.
 // When nil, no feed notifications are emitted.
 func (s *IncidentService) SetNotificationEmitter(e NotificationEmitter) {
 	s.notificationEmitter = e

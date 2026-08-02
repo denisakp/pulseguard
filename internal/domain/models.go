@@ -672,7 +672,7 @@ type DNSRecord struct {
 	LastError *string `json:"last_error,omitempty"`
 }
 
-// --- In-app notification feed (spec 072) ---
+// --- In-app notification feed ---
 // Distinct from NotificationEvent / NotificationChannel (outbound dispatch).
 
 // Notification feed categories.
@@ -690,7 +690,7 @@ const (
 	NotificationSeveritySuccess = "success"
 )
 
-// FeedNotification is a single in-app notification-feed item (spec 072).
+// FeedNotification is a single in-app notification-feed item.
 // user_id == nil means instance-wide (visible to all authenticated users).
 // Read state is global: a single ReadAt shared by all users.
 type FeedNotification struct {
@@ -710,7 +710,7 @@ type FeedNotification struct {
 func (n *FeedNotification) Unread() bool { return n.ReadAt == nil }
 
 // EmittedNotification is the producer-facing input to the notification feed
-// (spec 072), decoupled from storage. OccurredAt zero defaults to now.
+// decoupled from storage. OccurredAt zero defaults to now.
 type EmittedNotification struct {
 	UserID      *string
 	Category    string
@@ -761,7 +761,7 @@ type WidgetInstance struct {
 	Config       map[string]any `json:"config,omitempty"`
 }
 
-// Dashboard is a saved custom view (spec 075). Config-only: scope + widgets +
+// Dashboard is a saved custom view. Config-only: scope + widgets +
 // settings are persisted; widget metric data renders frontend-side. Ownership
 // governs mutation; read is instance-wide.
 type Dashboard struct {
@@ -863,7 +863,7 @@ type Announcement struct {
 }
 
 // ---------------------------------------------------------------------------
-// Agent device monitoring (spec 079)
+// Agent device monitoring
 // ---------------------------------------------------------------------------
 
 // DiskUsage is a per-mount disk utilisation entry reported by an agent.

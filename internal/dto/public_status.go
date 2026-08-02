@@ -1,4 +1,4 @@
-// Package dto — public status page DTOs (spec 060).
+// Package dto — public status page DTOs.
 // These shapes are wire-stable and consumed by the public Vue bundle plus any
 // third-party integration. They MUST stay in sync with
 // `specs/060-prd-008-status-pages/contracts/public-status-api.md`.
@@ -9,9 +9,9 @@ import "time"
 type PublicVerdictStatus string
 
 const (
-	VerdictOperational         PublicVerdictStatus = "operational"
-	VerdictPartialDegradation  PublicVerdictStatus = "partial_degradation"
-	VerdictMajorOutage         PublicVerdictStatus = "major_outage"
+	VerdictOperational        PublicVerdictStatus = "operational"
+	VerdictPartialDegradation PublicVerdictStatus = "partial_degradation"
+	VerdictMajorOutage        PublicVerdictStatus = "major_outage"
 )
 
 type PublicAggregatedState string

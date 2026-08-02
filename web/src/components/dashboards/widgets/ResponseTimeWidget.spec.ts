@@ -35,7 +35,7 @@ function makeResource(over: Partial<Resource>): Resource {
   }
 }
 
-describe('ResponseTimeWidget (spec 070 / US3)', () => {
+describe('ResponseTimeWidget', () => {
   it('renders one row per resource with bar', () => {
     const r1: ResolvedResource = { id: 'r1', resource: makeResource({ name: 'api' }) }
     const r2: ResolvedResource = { id: 'r2', resource: makeResource({ name: 'web' }) }

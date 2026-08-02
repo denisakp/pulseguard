@@ -14,7 +14,7 @@ type PublicStatusCacheRecorder interface {
 }
 
 // PublicStatusCache adds short-lived HTTP cache headers for the public status
-// page JSON endpoints (spec 060 SC-006). It lets reverse proxies and browsers
+// page JSON endpoints. It lets reverse proxies and browsers
 // serve cached responses for `maxAgeSeconds` and revalidate in the background
 // for an additional `staleSeconds` window.
 //

@@ -1,4 +1,4 @@
--- 0026: Monthly report settings (spec 076). Single-tenant: one instance-wide config row.
+-- 0026: Monthly report settings. Single-tenant: one instance-wide config row.
 CREATE TABLE IF NOT EXISTS report_settings (
     id              TEXT PRIMARY KEY,
     enabled         INTEGER NOT NULL,

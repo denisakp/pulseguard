@@ -16,7 +16,7 @@ const stubs = {
   },
 }
 
-describe('MaintenanceModeView (spec 069 / US1)', () => {
+describe('MaintenanceModeView', () => {
   beforeEach(() => {
     document.documentElement.classList.remove('dark')
     vi.resetModules()

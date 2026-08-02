@@ -33,7 +33,7 @@ vi.mock('pinia', async () => {
 
 import { useSearchPalette, __resetSearchPaletteForTests } from './useSearchPalette'
 
-describe('useSearchPalette (spec 069 / US2)', () => {
+describe('useSearchPalette', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     __resetSearchPaletteForTests()

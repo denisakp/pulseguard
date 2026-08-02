@@ -3,7 +3,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 
 import { statusRoutes } from './status-router'
 
-describe('status-router (spec 060)', () => {
+describe('status-router', () => {
   const buildRouter = () => createRouter({ history: createMemoryHistory(), routes: statusRoutes })
 
   it('resolves / to the current snapshot view', () => {

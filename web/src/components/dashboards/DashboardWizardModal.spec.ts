@@ -93,7 +93,7 @@ async function settle() {
   await new Promise((r) => setTimeout(r, 0))
 }
 
-describe('DashboardWizardModal (spec 070 / US2)', () => {
+describe('DashboardWizardModal', () => {
   let wrapper: ReturnType<typeof mount> | null = null
 
   beforeEach(() => {

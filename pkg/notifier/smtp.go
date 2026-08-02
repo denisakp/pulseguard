@@ -394,7 +394,7 @@ func (n *SMTPNotifier) generateExpiryEmailHTML(expiry *ExpiryNotification) strin
 	return buf.String()
 }
 
-// reportSubject builds the subject line for a monthly report email (spec 076).
+// reportSubject builds the subject line for a monthly report email.
 func (n *SMTPNotifier) reportSubject(r *ReportNotification) string {
 	return fmt.Sprintf("Monthly uptime report — %s", r.Period)
 }

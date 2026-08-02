@@ -14,7 +14,7 @@ import (
 )
 
 // linkMonitorResponse decodes the {data:{...MonitorResponse}} envelope, focusing
-// on the host_id link field (spec 079).
+// on the host_id link field.
 type linkMonitorResponse struct {
 	Data struct {
 		ID     string  `json:"id"`

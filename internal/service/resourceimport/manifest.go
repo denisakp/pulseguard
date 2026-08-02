@@ -1,5 +1,5 @@
 // Package resourceimport implements the bulk YAML manifest importer and exporter
-// for monitored resources (spec 078). The flow is: Parse (strict YAML) → Validate
+// for monitored resources. The flow is: Parse (strict YAML) → Validate
 // (pure, per-row) → Import (resolve refs, create via ResourceService, all-or-nothing)
 // with a paired Export that round-trips the current resource set back to a manifest.
 package resourceimport
@@ -15,7 +15,6 @@ import (
 const ManifestVersion = 1
 
 // MaxManifestResources caps a single manifest to keep the import request bounded
-// (spec 078 FR-019).
 const MaxManifestResources = 500
 
 // Manifest is the parsed representation of an import document.

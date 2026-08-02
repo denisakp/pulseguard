@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// DNS lookup form schema (spec 071, US1).
+// DNS lookup form schema.
 
 export const dnsRecordTypes = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'CNAME'] as const
 export const dnsResolvers = ['cloudflare', 'google', 'quad9', 'custom'] as const

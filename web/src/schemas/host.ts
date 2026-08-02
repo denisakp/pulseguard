@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /**
- * Register-host form schema (spec 081). The only user-supplied field at
+ * Register-host form schema. The only user-supplied field at
  * registration time is the display name; everything else (OS, agent version,
  * metrics) is reported by the agent after it connects.
  */

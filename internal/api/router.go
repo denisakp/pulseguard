@@ -135,7 +135,7 @@ func NewRouter(
 	r.Get("/ping/{slug}", pingHandler.Ping)
 	r.Post("/ping/{slug}", pingHandler.Ping)
 
-	// Public status page (spec 060) — short-cached JSON, no auth.
+	// Public status page — short-cached JSON, no auth.
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.PublicStatusCache(60, 30, publicCacheMetrics))
 		r.Get("/status", publicStatusHandler.GetCurrent)
@@ -216,7 +216,7 @@ func NewRouter(
 			r.Get("/{resourceId}/uptime-stats", activityHandler.GetUptimeStats)                                             // GET /resources/{resourceId}/uptime-stats - get hourly uptime stats
 
 			// Resource credentials (feature 028)
-			r.Get(routeCredentials, credentialV1Handler.Get)                                        // GET /resources/{id}/credentials - get masked credential
+			r.Get(routeCredentials, credentialV1Handler.Get)                                         // GET /resources/{id}/credentials - get masked credential
 			r.With(middleware.RequireReadWrite).Post(routeCredentials, credentialV1Handler.Set)      // POST /resources/{id}/credentials - create/replace credential
 			r.With(middleware.RequireReadWrite).Delete(routeCredentials, credentialV1Handler.Delete) // DELETE /resources/{id}/credentials - remove credential
 			r.With(middleware.RequireReadWrite, middleware.PerUserRateLimit(10)).
@@ -306,7 +306,7 @@ func NewRouter(
 			registerSwaggerUI(r)
 		}
 
-		// Agent metrics ingestion (spec 079) — WebSocket, authenticated by the
+		// Agent metrics ingestion — WebSocket, authenticated by the
 		// per-host bearer credential, NOT operator auth. Mounted outside the
 		// operator-auth group and wrapped by HostCredentialAuth.
 		r.With(middleware.HostCredentialAuth(hostCredentialService)).Get("/agent/stream", agentStreamV1Handler.Stream)
@@ -318,7 +318,7 @@ func NewRouter(
 			r.Route("/monitors", func(r chi.Router) {
 				r.Get("/", monitorV1Handler.List)
 				r.With(middleware.RequireReadWrite).Post("/", monitorV1Handler.Create)
-				// Bulk import/export (spec 078). Import is write-scoped; export is read.
+				// Bulk import/export. Import is write-scoped; export is read.
 				r.With(middleware.RequireReadWrite).Post("/import", resourceImportV1Handler.Import)
 				r.Get("/export", resourceImportV1Handler.Export)
 				r.Get("/{id}", monitorV1Handler.Get)
@@ -326,11 +326,11 @@ func NewRouter(
 				r.With(middleware.RequireReadWrite).Delete("/{id}", monitorV1Handler.Delete)
 				r.With(middleware.RequireReadWrite).Post("/{id}/pause", monitorV1Handler.Pause)
 				r.With(middleware.RequireReadWrite).Post("/{id}/resume", monitorV1Handler.Resume)
-				// Monitor↔host link (spec 079). Write-scoped.
+				// Monitor↔host link. Write-scoped.
 				r.With(middleware.RequireReadWrite).Post("/{id}/host", hostV1Handler.LinkMonitor)
 				r.With(middleware.RequireReadWrite).Delete("/{id}/host", hostV1Handler.UnlinkMonitor)
 			})
-			// Hosts — agent device monitoring (spec 079). Read GET; writes scoped.
+			// Hosts — agent device monitoring. Read GET; writes scoped.
 			r.Route("/hosts", func(r chi.Router) {
 				r.Get("/", hostV1Handler.List)
 				r.With(middleware.RequireReadWrite).Post("/", hostV1Handler.Register)
@@ -373,13 +373,13 @@ func NewRouter(
 			r.Route("/status-pages", func(r chi.Router) {
 				r.Get("/", statusPageV1Handler.List)
 			})
-			// Notification feed (spec 072). GET read; mark-read mutations write-scoped.
+			// Notification feed. GET read; mark-read mutations write-scoped.
 			r.Route("/notifications", func(r chi.Router) {
 				r.Get("/", notificationFeedV1Handler.List)
 				r.With(middleware.RequireReadWrite).Post("/{id}/read", notificationFeedV1Handler.MarkRead)
 				r.With(middleware.RequireReadWrite).Post("/read-all", notificationFeedV1Handler.MarkAllRead)
 			})
-			// Custom dashboards (spec 075). Read instance-wide; mutations owner-only + write-scoped.
+			// Custom dashboards. Read instance-wide; mutations owner-only + write-scoped.
 			r.Route("/dashboards", func(r chi.Router) {
 				r.Get("/", dashboardV1Handler.List)
 				r.Get("/{id}", dashboardV1Handler.Get)
@@ -389,7 +389,7 @@ func NewRouter(
 				r.With(middleware.RequireReadWrite).Delete("/{id}", dashboardV1Handler.Delete)
 			})
 
-			// Monthly reports (spec 076) — instance-wide read; config write-scoped.
+			// Monthly reports — instance-wide read; config write-scoped.
 			r.Route("/reports", func(r chi.Router) {
 				r.Get("/settings", reportV1Handler.GetSettings)
 				r.With(middleware.RequireReadWrite).Put("/settings", reportV1Handler.UpdateSettings)
@@ -404,12 +404,12 @@ func NewRouter(
 				r.With(middleware.RequireReadWrite).Delete("/{id}", announcementV1Handler.Delete)
 			})
 
-			// Config-derived observability assets (spec 077) — read-only downloads.
+			// Config-derived observability assets — read-only downloads.
 			r.Route("/integrations", func(r chi.Router) {
 				r.Get("/alert-rules", integrationsV1Handler.AlertRules)
 				r.Get("/grafana-dashboard", integrationsV1Handler.GrafanaDashboard)
 			})
-			// Toolbox — one-shot network tools (spec 071). Write-scoped + per-user
+			// Toolbox — one-shot network tools. Write-scoped + per-user
 			// rate-limited; port-scan strictest (5/min), others 20/min.
 			r.Route("/toolbox", func(r chi.Router) {
 				r.With(middleware.RequireReadWrite, middleware.PerUserRateLimit(20)).Post("/dns", toolboxV1Handler.DNS)

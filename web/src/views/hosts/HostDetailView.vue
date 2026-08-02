@@ -101,7 +101,7 @@ onUnmounted(() => {
 
 const showInstall = ref(false)
 
-// Credential lifecycle actions (spec 081 follow-up: surfaced on the detail page).
+// Credential lifecycle actions.
 const router = useRouter()
 const rotated = ref<{ credential: string; prefix: string } | null>(null)
 

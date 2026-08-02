@@ -8,7 +8,7 @@ import (
 )
 
 // TestResourceRepository_SqlcContract drives the existing GORM contract suite
-// against the sqlc-backed ResourceRepository. PR1 of US1 (spec 048) covers
+// against the sqlc-backed ResourceRepository. PR1 of US1 covers
 // CRUD only; deferred methods (Update with M2M, FindByTag,
 // UpdateMonitoringState, UpdateMetadata) intentionally fail when invoked, so
 // this test currently runs the SAME runResourceContract body — which today

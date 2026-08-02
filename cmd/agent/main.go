@@ -1,4 +1,4 @@
-// Command ogoune-agent is the host monitoring agent (spec 080). It collects
+// Command ogoune-agent is the host monitoring agent. It collects
 // system metrics and streams them to the Ogoune backend over the
 // /api/v1/agent/stream WebSocket, authenticated by a per-host ag_live_
 // credential. The agent is optional and fail-safe: it never crashes the host,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * MonitorHostPanel (spec 081, US4) — host context shown on a monitor's page.
+ * MonitorHostPanel — host context shown on a monitor's page.
  *
  * Self-fetches the host (`getHost`) and the OTHER monitors linked to the same
  * host (from the resources service, filtered by `host_id`, excluding the current

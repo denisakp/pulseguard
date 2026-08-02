@@ -34,7 +34,7 @@ const stubs = {
 
 const initialScope: DashboardScope = { mode: 'tag', payload: { tagIds: [] } }
 
-describe('DashboardScopeResolver (spec 070 / US2)', () => {
+describe('DashboardScopeResolver', () => {
   beforeEach(() => {
     resourcesRef.value = []
     tagsRef.value = [

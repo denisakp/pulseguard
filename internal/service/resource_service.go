@@ -10,10 +10,10 @@ import (
 	"github.com/denisakp/ogoune/internal/config"
 	"github.com/denisakp/ogoune/internal/domain"
 	"github.com/denisakp/ogoune/internal/dto"
-	"github.com/denisakp/ogoune/internal/repository/sqlc/dynquery"
 	icmppkg "github.com/denisakp/ogoune/internal/icmp"
 	"github.com/denisakp/ogoune/internal/port"
 	"github.com/denisakp/ogoune/internal/repository"
+	"github.com/denisakp/ogoune/internal/repository/sqlc/dynquery"
 	"github.com/google/uuid"
 )
 
@@ -195,7 +195,7 @@ func (s *ResourceService) CreateResource(ctx context.Context, payload *dto.Creat
 	}
 
 	// Resolve notification channels by name (lookup-only; never created here).
-	// Used by the bulk import path (spec 078). Missing channel is a validation error.
+	// Used by the bulk import path. Missing channel is a validation error.
 	if len(payload.NotificationChannelNames) > 0 {
 		channels, err := s.resolveChannelsByName(ctx, payload.NotificationChannelNames)
 		if err != nil {
@@ -421,8 +421,7 @@ func (s *ResourceService) ListAll(ctx context.Context) ([]*domain.Resource, erro
 	return s.resources.List(ctx, 1000, 0)
 }
 
-// ListByFilter passes the dynamic filter through to the repo (spec 051).
+// ListByFilter passes the dynamic filter through to the repo.
 func (s *ResourceService) ListByFilter(ctx context.Context, f dynquery.MonitorFilter, page, perPage int) ([]*domain.Resource, int, error) {
 	return s.resources.ListResourcesByFilter(ctx, f, page, perPage)
 }
-

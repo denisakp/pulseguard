@@ -15,7 +15,7 @@ import type { Resource, Tag } from '@/types'
 
 interface Props {
   resource?: Resource | null
-  // Seed for "create from toolbox" (spec 071) — pre-fills type/target/name on a
+  // Seed for "create from toolbox" — pre-fills type/target/name on a
   // NEW monitor without entering edit mode.
   initial?: { type?: string; target?: string; name?: string } | null
 }
