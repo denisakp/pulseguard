@@ -20,6 +20,26 @@ func (f *fakeCollector) Collect(context.Context) (agentwire.Frame, error) {
 	return f.frame, f.err
 }
 
+func TestIsSystemMount(t *testing.T) {
+	cases := map[string]bool{
+		"/":              false,
+		"/data":          false,
+		"/mnt/vol1":      false,
+		"/proc":          true,
+		"/proc/sys":      true,
+		"/sys/fs/cgroup": true,
+		"/dev":           true,
+		"/dev/shm":       true,
+		"/run/lock":      true,
+		"/runners":       false, // not under /run/
+	}
+	for mp, want := range cases {
+		if got := isSystemMount(mp); got != want {
+			t.Errorf("isSystemMount(%q) = %v, want %v", mp, got, want)
+		}
+	}
+}
+
 // TestGopsutilCollector_Smoke verifies the real collector returns finite,
 // in-range values on this host. CPU % on the first call may be ~0 (delta since
 // process start), so it is only checked for finiteness/non-negativity.
