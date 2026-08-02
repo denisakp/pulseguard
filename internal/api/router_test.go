@@ -87,6 +87,7 @@ func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil, // searchV1Handler (spec 084)
 		nil, // hostV1Handler
 		nil, // agentStreamV1Handler
 		nil, // hostCredentialService

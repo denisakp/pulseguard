@@ -1353,6 +1353,49 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.SearchResponse": {
+                "properties": {
+                    "query_duration_ms": {
+                        "type": "integer"
+                    },
+                    "results": {
+                        "items": {
+                            "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SearchResult"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "total": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.SearchResult": {
+                "properties": {
+                    "category": {
+                        "description": "Category is one of: resource | incident | page.",
+                        "type": "string"
+                    },
+                    "deep_link": {
+                        "description": "DeepLink is the in-app path that opens the item (e.g. /resources/\u003cid\u003e).",
+                        "type": "string"
+                    },
+                    "id": {
+                        "description": "ID is a stable, category-prefixed id: \"resource:\u003cid\u003e\" | \"incident:\u003cid\u003e\" | \"page:\u003clabel\u003e\".",
+                        "type": "string"
+                    },
+                    "label": {
+                        "description": "Label is the primary human-readable text (monitor name, incident cause, page name).",
+                        "type": "string"
+                    },
+                    "meta": {
+                        "description": "Meta is short context (e.g. a monitor's target), omitted when empty.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_AnnouncementResponse": {
                 "properties": {
                     "data": {
@@ -1544,6 +1587,17 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SSLCheckResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_SearchResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SearchResponse"
                     },
                     "meta": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
@@ -4805,6 +4859,79 @@
                 "summary": "Live-test credentials without persisting (rate-limited 10/min)",
                 "tags": [
                     "resource-credentials"
+                ]
+            }
+        },
+        "/search": {
+            "get": {
+                "description": "Command-palette search across monitors (name/target), incidents (cause), and app pages. Read-only.",
+                "parameters": [
+                    {
+                        "description": "Search query (min 2 characters, matched literally)",
+                        "in": "query",
+                        "name": "q",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Max results (default 30, max 100)",
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Comma-separated filter: resource,incident,page (default all)",
+                        "in": "query",
+                        "name": "categories",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_SearchResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Search monitors, incidents, and pages",
+                "tags": [
+                    "search"
                 ]
             }
         },

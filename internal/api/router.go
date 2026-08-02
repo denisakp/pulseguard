@@ -54,6 +54,7 @@ func NewRouter(
 	escalationV1Handler *v1handler.EscalationHandler,
 	monitorV1Handler *v1handler.MonitorHandler,
 	incidentV1Handler *v1handler.IncidentHandler,
+	searchV1Handler *v1handler.SearchHandler,
 	channelV1Handler *v1handler.NotificationChannelHandler,
 	componentV1Handler *v1handler.ComponentHandler,
 	tagV1Handler *v1handler.TagHandler,
@@ -345,6 +346,8 @@ func NewRouter(
 				r.Get("/", incidentV1Handler.List)
 				r.Get("/{id}", incidentV1Handler.Get)
 			})
+			// Command-palette search (spec 084) — read-only, any valid credential.
+			r.Get("/search", searchV1Handler.List)
 			// Notification channel routes — registered in T029
 			r.Route("/notification-channels", func(r chi.Router) {
 				r.Get("/", channelV1Handler.List)

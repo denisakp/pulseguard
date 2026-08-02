@@ -35,7 +35,7 @@ func buildRouterForCoverage() http.Handler {
 		handler.NewRuntimeConfigHandler(&config.Config{SSLProvider: "external"}, "test"),
 		handler.NewAuthHandler(nil, nil),
 		handler.NewAccountHandler(nil, nil),
-		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		nil, nil, nil, // hostV1Handler, agentStreamV1Handler, hostCredentialService
 		false,
 		&config.Config{

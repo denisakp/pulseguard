@@ -5,7 +5,16 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-_Nothing yet._
+### Added
+
+- **Server-side search endpoint (spec 084)** — `GET /api/v1/search?q=&limit=&categories=`
+  powering the ⌘K command palette beyond the client-side (in-memory) window. Aggregates
+  case-insensitive substring/prefix matches across monitors (name/target), incidents
+  (cause), and app pages, returns a ranked, capped result set
+  (`{results,total,query_duration_ms}`). Read-only (any valid credential), dual-dialect
+  (SQLite + Postgres via the portable `LOWER() LIKE LOWER() ESCAPE` dynquery predicate,
+  injection-safe), no pagination, no new migration. The palette frontend swap (with a
+  client-side fallback) is a deferred follow-up.
 
 ---
 
