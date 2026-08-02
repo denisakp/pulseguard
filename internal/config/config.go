@@ -73,6 +73,12 @@ type Config struct {
 	AgentDownScanInterval     time.Duration // offline scan cadence (default 20s)
 	AgentDownExternalDelivery bool          // also send offline/recovery to the oldest SMTP channel (default false)
 
+	// Unread-notification escalation (spec 083). A recurring scan emails a grouped
+	// digest to the oldest SMTP channel when actionable notifications stay unread.
+	NotificationEscalationEnabled      bool          // master switch (default true)
+	NotificationEscalationScanInterval time.Duration // evaluation cadence (default 15m)
+	NotificationEscalationUnreadAge    time.Duration // unread-for at least this long to qualify (default 30m)
+
 	// Swagger configuration
 	EnableSwagger bool
 
@@ -137,6 +143,15 @@ func Load() Config {
 		agentDownScanInterval = 20 * time.Second
 	}
 	agentDownExternalDelivery := parseBool(GetEnv("AGENT_DOWN_EXTERNAL_DELIVERY", "false"), false)
+	notificationEscalationEnabled := parseBool(GetEnv("NOTIFICATION_ESCALATION_ENABLED", "true"), true)
+	notificationEscalationScanInterval := parseDuration(GetEnv("NOTIFICATION_ESCALATION_SCAN_INTERVAL", "15m"))
+	if notificationEscalationScanInterval <= 0 {
+		notificationEscalationScanInterval = 15 * time.Minute
+	}
+	notificationEscalationUnreadAge := parseDuration(GetEnv("NOTIFICATION_ESCALATION_UNREAD_AGE", "30m"))
+	if notificationEscalationUnreadAge <= 0 {
+		notificationEscalationUnreadAge = 30 * time.Minute
+	}
 	enableSwagger := parseBool(GetEnv("ENABLE_SWAGGER", "false"), false)
 	logFormat := GetEnv("LOG_FORMAT", "json")
 	logLevel := GetEnv("LOG_LEVEL", "info")
@@ -192,6 +207,10 @@ func Load() Config {
 		AgentDownAlertsEnabled:         agentDownAlertsEnabled,
 		AgentDownScanInterval:          agentDownScanInterval,
 		AgentDownExternalDelivery:      agentDownExternalDelivery,
+
+		NotificationEscalationEnabled:      notificationEscalationEnabled,
+		NotificationEscalationScanInterval: notificationEscalationScanInterval,
+		NotificationEscalationUnreadAge:    notificationEscalationUnreadAge,
 		EnableSwagger:                  enableSwagger,
 		AppEnv:                         appEnv,
 		SSLProvider:                    sslProvider,

@@ -264,6 +264,13 @@ type NotificationChannel struct {
 	Failures24h      int64       `json:"failures_24h"`
 }
 
+type NotificationEscalationState struct {
+	ID                  string       `json:"id"`
+	LastDigestAt        sql.NullTime `json:"last_digest_at"`
+	WatermarkOccurredAt sql.NullTime `json:"watermark_occurred_at"`
+	UpdatedAt           time.Time    `json:"updated_at"`
+}
+
 type NotificationEvent struct {
 	ID          string         `json:"id"`
 	CreatedAt   time.Time      `json:"created_at"`

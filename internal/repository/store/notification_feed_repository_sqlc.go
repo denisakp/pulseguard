@@ -226,6 +226,74 @@ func (r *NotificationFeedRepositorySQLC) DeleteOlderThan(ctx context.Context, cu
 	}
 }
 
+func (r *NotificationFeedRepositorySQLC) ListUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time, limit int) ([]*domain.FeedNotification, error) {
+	switch {
+	case r.pgQ != nil:
+		rows, err := r.pgQ.ListUnreadForEscalation(ctx, pgsqlc.ListUnreadForEscalationParams{
+			Cutoff:     pgTimestampFromPtr(&cutoff),
+			Categories: categories,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("sqlc: list unread for escalation: %w", err)
+		}
+		out := make([]*domain.FeedNotification, len(rows))
+		for i, row := range rows {
+			out[i] = feedNotifFromPG(row)
+		}
+		return capFeed(out, limit), nil
+	case r.sqliteQ != nil:
+		rows, err := r.sqliteQ.ListUnreadForEscalation(ctx, sqlitesqlc.ListUnreadForEscalationParams{
+			Cutoff:     cutoff,
+			Categories: categories,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("sqlc: list unread for escalation: %w", err)
+		}
+		out := make([]*domain.FeedNotification, len(rows))
+		for i, row := range rows {
+			out[i] = feedNotifFromSQLite(row)
+		}
+		return capFeed(out, limit), nil
+	default:
+		return nil, r.unconfigured()
+	}
+}
+
+// capFeed truncates to the newest `limit` items (the query already orders newest
+// first). The LIMIT is applied in Go because SQLite rejects a numbered placeholder
+// after a slice-expanded IN(...) list (placeholder-numbering collision).
+func capFeed(items []*domain.FeedNotification, limit int) []*domain.FeedNotification {
+	if limit > 0 && len(items) > limit {
+		return items[:limit]
+	}
+	return items
+}
+
+func (r *NotificationFeedRepositorySQLC) CountUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time) (int, error) {
+	switch {
+	case r.pgQ != nil:
+		n, err := r.pgQ.CountUnreadForEscalation(ctx, pgsqlc.CountUnreadForEscalationParams{
+			Cutoff:     pgTimestampFromPtr(&cutoff),
+			Categories: categories,
+		})
+		if err != nil {
+			return 0, fmt.Errorf("sqlc: count unread for escalation: %w", err)
+		}
+		return int(n), nil
+	case r.sqliteQ != nil:
+		n, err := r.sqliteQ.CountUnreadForEscalation(ctx, sqlitesqlc.CountUnreadForEscalationParams{
+			Cutoff:     cutoff,
+			Categories: categories,
+		})
+		if err != nil {
+			return 0, fmt.Errorf("sqlc: count unread for escalation: %w", err)
+		}
+		return int(n), nil
+	default:
+		return 0, r.unconfigured()
+	}
+}
+
 // sqliteNarg returns nil or the string value for a sqlc nullable (interface{}) param.
 func sqliteNarg(p *string) interface{} {
 	if p == nil {

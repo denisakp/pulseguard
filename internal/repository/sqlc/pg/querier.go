@@ -31,6 +31,7 @@ type Querier interface {
 	CountNotificationsForUser(ctx context.Context, arg CountNotificationsForUserParams) (int64, error)
 	CountRecentTwoFactorResetTokensByUser(ctx context.Context, arg CountRecentTwoFactorResetTokensByUserParams) (int64, error)
 	CountResourcesByComponentID(ctx context.Context, componentID pgtype.Text) (int64, error)
+	CountUnreadForEscalation(ctx context.Context, arg CountUnreadForEscalationParams) (int64, error)
 	CreateAPIKey(ctx context.Context, arg CreateAPIKeyParams) error
 	CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) (Announcement, error)
 	CreateComponent(ctx context.Context, arg CreateComponentParams) error
@@ -139,6 +140,7 @@ type Querier interface {
 	// to one pass over the window.
 	GetIncidentStatsPG(ctx context.Context, startedAt pgtype.Timestamptz) (GetIncidentStatsPGRow, error)
 	GetIncidentUpdate(ctx context.Context, id string) (IncidentUpdate, error)
+	GetNotificationEscalationState(ctx context.Context, id string) (NotificationEscalationState, error)
 	GetRecentResponseTimes(ctx context.Context, arg GetRecentResponseTimesParams) ([]GetRecentResponseTimesRow, error)
 	GetReportSettings(ctx context.Context) (ReportSetting, error)
 	GetResourceCredentialByResourceID(ctx context.Context, resourceID string) (ResourceCredential, error)
@@ -184,6 +186,7 @@ type Querier interface {
 	ListTagIDsByResourceID(ctx context.Context, resourceID string) ([]string, error)
 	ListTags(ctx context.Context, arg ListTagsParams) ([]Tag, error)
 	ListTagsByResourceIDs(ctx context.Context, dollar_1 []string) ([]ListTagsByResourceIDsRow, error)
+	ListUnreadForEscalation(ctx context.Context, arg ListUnreadForEscalationParams) ([]Notification, error)
 	MarkAllNotificationsReadForUser(ctx context.Context, arg MarkAllNotificationsReadForUserParams) (int64, error)
 	MarkNotificationChannelFailure(ctx context.Context, arg MarkNotificationChannelFailureParams) error
 	MarkNotificationChannelSent(ctx context.Context, arg MarkNotificationChannelSentParams) error
@@ -234,6 +237,7 @@ type Querier interface {
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 	UpdateUserTwoFactorSecret(ctx context.Context, arg UpdateUserTwoFactorSecretParams) error
 	UpsertHostAlertState(ctx context.Context, arg UpsertHostAlertStateParams) error
+	UpsertNotificationEscalationState(ctx context.Context, arg UpsertNotificationEscalationStateParams) error
 	UpsertReportSettings(ctx context.Context, arg UpsertReportSettingsParams) (ReportSetting, error)
 	UpsertResourceCredential(ctx context.Context, arg UpsertResourceCredentialParams) error
 	UpsertUptimeDailyAgg(ctx context.Context, arg UpsertUptimeDailyAggParams) error

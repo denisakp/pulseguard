@@ -63,6 +63,21 @@ func InitWorker(app *App) {
 			"external_delivery", app.Cfg.AgentDownExternalDelivery)
 	}
 
+	// Unread-notification escalation (spec 083 US2). Edition-agnostic; guarded by config.
+	if app.Cfg.NotificationEscalationEnabled {
+		esc := service.NewNotificationEscalationService(
+			app.NotificationFeedRepo, app.NotificationEscalationStateRepo,
+			app.NotificationChannelRepo, app.Cfg.NotificationEscalationUnreadAge,
+		)
+		if err := esc.Start(context.Background(), app.Cfg.NotificationEscalationScanInterval); err != nil {
+			slog.Error("failed to start notification escalation scanner", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("notification escalation scanner started",
+			"interval", app.Cfg.NotificationEscalationScanInterval.String(),
+			"unread_age", app.Cfg.NotificationEscalationUnreadAge.String())
+	}
+
 	if app.SchedulerCfg.Mode == scheduler.ModeAsynq {
 		initAsynqProcessor(app, enrichmentService)
 	} else {

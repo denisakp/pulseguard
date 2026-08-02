@@ -102,6 +102,17 @@ linked in the release notes.
   delivery via the oldest SMTP channel (`AGENT_DOWN_EXTERNAL_DELIVERY=true`).
   Configurable via `AGENT_DOWN_ALERTS_ENABLED` / `AGENT_DOWN_SCAN_INTERVAL`;
   fail-safe (alert/delivery failures never disturb monitoring).
+- **Unread-notification escalation (spec 083)** — the server now escalates
+  actionable feed notifications (incidents and agent-down alerts) that stay
+  **unread** too long. A recurring scan emails a single grouped digest ("N unread
+  notifications need attention" plus a short list) via the oldest SMTP channel,
+  batched (one digest, not one email per notification) and deduplicated — re-sent
+  only when a newer qualifying notification appears, never once the operator has
+  read them; purely informational entries are ignored. Configurable via
+  `NOTIFICATION_ESCALATION_ENABLED` (default `true`),
+  `NOTIFICATION_ESCALATION_SCAN_INTERVAL` (`15m`), and
+  `NOTIFICATION_ESCALATION_UNREAD_AGE` (`30m`). Fail-safe: with no SMTP channel it
+  silently no-ops, and a send failure never disturbs monitoring.
 
 ### Changed
 

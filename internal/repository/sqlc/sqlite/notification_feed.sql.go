@@ -8,6 +8,7 @@ package sqlitesqlc
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"time"
 )
 
@@ -24,6 +25,37 @@ type CountNotificationsForUserParams struct {
 
 func (q *Queries) CountNotificationsForUser(ctx context.Context, arg CountNotificationsForUserParams) (int64, error) {
 	row := q.db.QueryRowContext(ctx, countNotificationsForUser, arg.UserID, arg.Category)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countUnreadForEscalation = `-- name: CountUnreadForEscalation :one
+SELECT COUNT(*) FROM notifications
+WHERE read_at IS NULL
+  AND user_id IS NULL
+  AND occurred_at <= ?1
+  AND category IN (/*SLICE:categories*/?)
+`
+
+type CountUnreadForEscalationParams struct {
+	Cutoff     time.Time `json:"cutoff"`
+	Categories []string  `json:"categories"`
+}
+
+func (q *Queries) CountUnreadForEscalation(ctx context.Context, arg CountUnreadForEscalationParams) (int64, error) {
+	query := countUnreadForEscalation
+	var queryParams []interface{}
+	queryParams = append(queryParams, arg.Cutoff)
+	if len(arg.Categories) > 0 {
+		for _, v := range arg.Categories {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:categories*/?", strings.Repeat(",?", len(arg.Categories))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:categories*/?", "NULL", 1)
+	}
+	row := q.db.QueryRowContext(ctx, query, queryParams...)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -117,6 +149,67 @@ func (q *Queries) ListNotificationsForUser(ctx context.Context, arg ListNotifica
 		arg.Off,
 		arg.Lim,
 	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Notification{}
+	for rows.Next() {
+		var i Notification
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Category,
+			&i.Severity,
+			&i.Title,
+			&i.Description,
+			&i.DeepLink,
+			&i.Payload,
+			&i.OccurredAt,
+			&i.ReadAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUnreadForEscalation = `-- name: ListUnreadForEscalation :many
+SELECT id, user_id, category, severity, title, description, deep_link, payload, occurred_at, read_at, created_at, updated_at FROM notifications
+WHERE read_at IS NULL
+  AND user_id IS NULL
+  AND occurred_at <= ?1
+  AND category IN (/*SLICE:categories*/?)
+ORDER BY occurred_at DESC
+`
+
+type ListUnreadForEscalationParams struct {
+	Cutoff     time.Time `json:"cutoff"`
+	Categories []string  `json:"categories"`
+}
+
+func (q *Queries) ListUnreadForEscalation(ctx context.Context, arg ListUnreadForEscalationParams) ([]Notification, error) {
+	query := listUnreadForEscalation
+	var queryParams []interface{}
+	queryParams = append(queryParams, arg.Cutoff)
+	if len(arg.Categories) > 0 {
+		for _, v := range arg.Categories {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:categories*/?", strings.Repeat(",?", len(arg.Categories))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:categories*/?", "NULL", 1)
+	}
+	rows, err := q.db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
 		return nil, err
 	}
