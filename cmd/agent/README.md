@@ -7,11 +7,27 @@ credential. The agent is **optional** — no core monitoring capability depends 
 it — and **fail-safe**: it never crashes the host, retries on failure, and slows
 to a capped back-off on a revoked credential.
 
-## Build
+## Install / build
+
+Prebuilt artifacts are published per release (spec 082):
+
+- **Container image**: `ghcr.io/denisakp/ogoune-agent:<version>` (+ `:latest`),
+  multi-arch `linux/amd64,arm64`, versioned in lockstep with the API image.
+- **Release binaries**: `ogoune-agent-linux-amd64` / `ogoune-agent-linux-arm64`
+  (+ `SHA256SUMS`) attached to the GitHub Release.
 
 ```bash
-make build-agent          # → dist/ogoune-agent (version stamped from git)
-# or: go build -o dist/ogoune-agent ./cmd/agent
+# Container (reads host metrics with --pid=host):
+docker run -d --name ogoune-agent --restart unless-stopped --pid=host --network=host \
+  -e OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream \
+  -e OGOUNE_CREDENTIAL=ag_live_… ghcr.io/denisakp/ogoune-agent:latest
+```
+
+Build from source (contributors):
+
+```bash
+make build-agent                 # → dist/ogoune-agent (version stamped from git)
+make build-agent-linux ARCH=amd64  # cross-compile a static linux binary (arm64 default)
 ```
 
 ## Register a host (operator)
@@ -27,16 +43,22 @@ curl -sS -X POST https://ogoune.example.com/api/v1/hosts \
 
 Config precedence: **flags > environment > file > defaults**.
 
-Config file (default `/etc/ogoune-agent.yaml`, mode `0600`) — see
-[`packaging/agent/ogoune-agent.example.yaml`](../../packaging/agent/ogoune-agent.example.yaml):
+Config file (default `/etc/ogoune/agent.cfg`, mode `0600`) is **env-style
+`KEY=value`** — the same format works as the agent's config, as the systemd
+`EnvironmentFile`, and as `docker --env-file`. See
+[`packaging/agent/ogoune-agent.cfg.example`](../../packaging/agent/ogoune-agent.cfg.example):
 
-```yaml
-backend_url: wss://ogoune.example.com/api/v1/agent/stream   # required
-credential: ag_live_…                                       # required
-interval: 10s          # optional (default 10s)
-log_level: info        # optional (debug|info|warn|error)
-insecure_skip_verify: false   # dev/self-signed only
+```ini
+OGOUNE_BACKEND_URL=wss://ogoune.example.com/api/v1/agent/stream   # required
+OGOUNE_CREDENTIAL=ag_live_…                                       # required
+#OGOUNE_INTERVAL=10s          # optional (default 10s)
+#OGOUNE_LOG_LEVEL=info        # optional (debug|info|warn|error)
+#OGOUNE_INSECURE=false        # dev/self-signed only
 ```
+
+> Use `wss://` (TLS) in production. The agent warns when connecting over plaintext
+> `ws://` to a non-local host (it still connects — local `ws://` stays easy).
+> The previous `/etc/ogoune-agent.yaml` path/format is **deprecated**.
 
 | Setting | Flag | Env |
 |---|---|---|
@@ -60,25 +82,24 @@ As a service (systemd), using
 [`packaging/agent/ogoune-agent.service`](../../packaging/agent/ogoune-agent.service):
 
 The unit runs as a `DynamicUser` (unprivileged), which cannot read a root-owned
-`0600` config file — so it takes its settings from `/etc/ogoune-agent.env`, which
-systemd reads privileged and injects into the process:
+`0600` config file itself — so the env-style `/etc/ogoune/agent.cfg` doubles as the
+systemd `EnvironmentFile`, which systemd reads privileged and injects into the
+process:
 
 ```bash
 sudo install -m755 dist/ogoune-agent /usr/local/bin/ogoune-agent
 
-sudo tee /etc/ogoune-agent.env >/dev/null <<'EOF'
+sudo mkdir -p /etc/ogoune
+sudo tee /etc/ogoune/agent.cfg >/dev/null <<'EOF'
 OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream
 OGOUNE_CREDENTIAL=ag_live_…
 EOF
-sudo chmod 600 /etc/ogoune-agent.env
+sudo chmod 600 /etc/ogoune/agent.cfg
 
 sudo install -m644 packaging/agent/ogoune-agent.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now ogoune-agent
 journalctl -u ogoune-agent -f
 ```
-
-(Prefer a YAML config file? Drop `DynamicUser=yes` from the unit so the process
-runs as root and can read `/etc/ogoune-agent.yaml`.)
 
 ## Behaviour
 

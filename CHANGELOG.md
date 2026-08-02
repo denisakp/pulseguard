@@ -63,16 +63,16 @@ linked in the release notes.
   monitored Linux host. Collects OS, CPU %, memory %, per-mount disk %, and
   network counters via gopsutil and streams them to `/api/v1/agent/stream` every
   ~10s, authenticated by the host's `ag_live_…` credential. Config from
-  `/etc/ogoune-agent.yaml` with env/flag overrides; a systemd unit is provided
-  (`packaging/agent/`). Fail-safe: reconnects with exponential back-off, and on a
-  revoked credential slows to a capped (~5 min) infinite back-off so it self-heals
-  when the credential is re-validated — never crashing the host, never
-  tight-looping. Build with `make build-agent`. The agent↔backend frame is a
-  single shared contract (`pkg/agentwire`, carrying `schema_version`) imported by
-  both sides so they cannot drift; the 079 ingestion handler adopts it
+  `/etc/ogoune/agent.cfg` (env-style `KEY=value`) with env/flag overrides; a
+  systemd unit is provided (`packaging/agent/`). Fail-safe: reconnects with
+  exponential back-off, and on a revoked credential slows to a capped (~5 min)
+  infinite back-off so it self-heals when the credential is re-validated — never
+  crashing the host, never tight-looping. The agent↔backend frame is a single
+  shared contract (`pkg/agentwire`, carrying `schema_version`) imported by both
+  sides so they cannot drift; the 079 ingestion handler adopts it
   backward-compatibly (a frame with no `schema_version` is treated as v1).
 - **Hosts UI (spec 081)** — the operator frontend for agent device monitoring. A
-  **Hosts** nav section (hidden until a host exists), a list page (online/offline,
+  **Hosts** nav section, a list page (online/offline,
   live CPU/memory/disk, hosted-service count, last-seen; trouble-first sort), a
   detail page (identity + install helper, CPU/memory/per-mount-disk/network graphs
   over 1h/6h/24h/7d, and the linked-monitors list), an in-app register/onboard flow
@@ -80,6 +80,19 @@ linked in the release notes.
   context panel + link/unlink control on the monitor page. Frontend-only, no
   backend change (host metrics graphs are hand-rolled SVG — no charting dependency);
   monitor↔host data is read from the versioned `/api/v1/monitors` endpoint.
+- **Agent packaging & distribution (spec 082)** — the host agent ships as real
+  artifacts instead of a build-from-source step. A multi-arch
+  (`linux/amd64,arm64`) container image `ghcr.io/denisakp/ogoune-agent` (distroless
+  static, nonroot) plus static release binaries (`ogoune-agent-linux-{amd64,arm64}`
+  + `SHA256SUMS`) are built and published by `release.yml` on every tag, versioned
+  in lockstep with the API image. Docker Compose gains an agent service: the dev
+  stack auto-registers a `local` host and hands the agent its credential
+  (zero-touch dogfood), while the prod stack keeps it opt-in behind
+  `profiles: [agent]` with an operator-supplied credential — no secret is ever
+  baked into an image, layer, or committed compose file. The agent's default
+  config path moves to `/etc/ogoune/agent.cfg` (env-style, doubling as the systemd
+  `EnvironmentFile` / `docker --env-file`), and it now logs a warning when
+  connecting over plaintext `ws://` to a remote host (use `wss://` in production).
 
 ### Changed
 
@@ -105,6 +118,10 @@ linked in the release notes.
   binary. They are silently ignored — leaving them in your `.env` is safe and
   has no effect. The regression test `TestLegacyFlagsSilentlyIgnored` guards
   this behaviour going forward.
+- **Agent YAML config at `/etc/ogoune-agent.yaml`** — replaced by the env-style
+  `/etc/ogoune/agent.cfg` (spec 082). Existing installs keep working via
+  environment variables and flags; point `--config` / `OGOUNE_CONFIG` at the old
+  file if you must. Docs and the shipped example now use the new path/format.
 
 ### Performance
 
