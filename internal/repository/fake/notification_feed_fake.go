@@ -117,6 +117,40 @@ func (r *NotificationFeedRepository) MarkAllRead(ctx context.Context, userID str
 	return count, nil
 }
 
+func (r *NotificationFeedRepository) ListUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time, limit int) ([]*domain.FeedNotification, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	inScope := func(cat string) bool {
+		for _, c := range categories {
+			if c == cat {
+				return true
+			}
+		}
+		return false
+	}
+	out := make([]*domain.FeedNotification, 0)
+	for _, n := range r.byID {
+		if n.UserID != nil || n.ReadAt != nil {
+			continue // instance-wide + unread only
+		}
+		if n.OccurredAt.After(cutoff) || !inScope(n.Category) {
+			continue
+		}
+		cp := *n
+		out = append(out, &cp)
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].OccurredAt.After(out[j].OccurredAt) })
+	if limit > 0 && len(out) > limit {
+		out = out[:limit]
+	}
+	return out, nil
+}
+
+func (r *NotificationFeedRepository) CountUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time) (int, error) {
+	items, _ := r.ListUnreadForEscalation(ctx, categories, cutoff, 0)
+	return len(items), nil
+}
+
 func (r *NotificationFeedRepository) DeleteOlderThan(ctx context.Context, cutoff time.Time) (int64, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()

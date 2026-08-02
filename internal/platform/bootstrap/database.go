@@ -95,6 +95,8 @@ func InitDatabase(app *App) {
 	app.HostRepo = store.NewHostRepositorySQLC(rt)
 	app.HostCredentialRepo = store.NewHostCredentialRepositorySQLC(rt)
 	app.HostMetricsRepo = store.NewHostMetricRepositorySQLC(rt)
+	app.HostAlertStateRepo = store.NewHostAlertStateRepositorySQLC(rt)
+	app.NotificationEscalationStateRepo = store.NewNotificationEscalationStateRepositorySQLC(rt)
 	app.HostCredentialService = service.NewHostCredentialService(app.HostCredentialRepo)
 	app.HostService = service.NewHostService(app.HostRepo, app.HostCredentialService, app.HostMetricsRepo, app.ResourceRepo, cfg.HostFreshnessThreshold)
 	app.HostMetricsService = service.NewHostMetricsService(app.HostMetricsRepo, app.HostRepo, cfg.HostMetricsRawWindow, time.Duration(cfg.HostMetricsRetentionDays)*24*time.Hour)

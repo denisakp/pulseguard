@@ -108,6 +108,14 @@ type Host struct {
 	LastDisks    sql.NullString  `json:"last_disks"`
 }
 
+type HostAlertState struct {
+	HostID       string       `json:"host_id"`
+	State        string       `json:"state"`
+	OfflineSince sql.NullTime `json:"offline_since"`
+	Alerted      int64        `json:"alerted"`
+	UpdatedAt    time.Time    `json:"updated_at"`
+}
+
 type HostCredential struct {
 	ID         string       `json:"id"`
 	CreatedAt  time.Time    `json:"created_at"`
@@ -254,6 +262,13 @@ type NotificationChannel struct {
 	LastSentAt       interface{} `json:"last_sent_at"`
 	LastFailureAt    interface{} `json:"last_failure_at"`
 	Failures24h      int64       `json:"failures_24h"`
+}
+
+type NotificationEscalationState struct {
+	ID                  string       `json:"id"`
+	LastDigestAt        sql.NullTime `json:"last_digest_at"`
+	WatermarkOccurredAt sql.NullTime `json:"watermark_occurred_at"`
+	UpdatedAt           time.Time    `json:"updated_at"`
 }
 
 type NotificationEvent struct {

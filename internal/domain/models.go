@@ -680,6 +680,9 @@ const (
 	NotificationCategoryIncident = "incident"
 	NotificationCategorySystem   = "system"
 	NotificationCategoryGeneral  = "general"
+	// NotificationCategoryHost marks agent-down / host-recovery feed entries
+	// (spec 083). Actionable — included in unread-escalation scope.
+	NotificationCategoryHost = "host"
 )
 
 // Notification feed severities.
@@ -898,6 +901,40 @@ func (h *Host) IsOnline(now time.Time, threshold time.Duration) bool {
 	}
 	return now.Sub(*h.LastSeenAt) <= threshold
 }
+
+// Host alert states (spec 083 agent-down alerting).
+const (
+	HostAlertStateOnline  = "online"
+	HostAlertStateOffline = "offline"
+)
+
+// HostAlertState tracks the agent-down alert lifecycle for one host so that at
+// most one offline alert (and one recovery) is raised per offline episode, and
+// so the state survives restarts. Not derived — persisted per host (spec 083).
+type HostAlertState struct {
+	HostID       string     // PK, FK hosts(id) ON DELETE CASCADE
+	State        string     // HostAlertStateOnline | HostAlertStateOffline
+	OfflineSince *time.Time // start of the current offline episode (nil when online)
+	Alerted      bool       // whether the offline alert already fired this episode
+	UpdatedAt    time.Time
+}
+
+// NotificationEscalationStateID is the fixed primary key of the single-row
+// notification_escalation_state table.
+const NotificationEscalationStateID = "singleton"
+
+// NotificationEscalationState is the high-water mark for the unread-notification
+// digest (spec 083 US2): the newest occurred_at already covered by a sent digest,
+// used to avoid re-sending the digest while the unread set is unchanged.
+type NotificationEscalationState struct {
+	ID                  string
+	LastDigestAt        *time.Time
+	WatermarkOccurredAt *time.Time
+	UpdatedAt           time.Time
+}
+
+// Actionable notification categories escalated by the unread digest (spec 083 US2).
+var EscalationCategories = []string{NotificationCategoryIncident, NotificationCategoryHost}
 
 // HostCredential is a per-host bearer secret (ag_live_…) authorising an agent to
 // report for exactly one host. Only the hash is stored; the raw is shown once.

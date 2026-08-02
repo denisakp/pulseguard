@@ -29,3 +29,18 @@ WHERE read_at IS NULL
 
 -- name: DeleteNotificationsOlderThan :execrows
 DELETE FROM notifications WHERE occurred_at < sqlc.arg('cutoff');
+
+-- name: ListUnreadForEscalation :many
+SELECT * FROM notifications
+WHERE read_at IS NULL
+  AND user_id IS NULL
+  AND occurred_at <= sqlc.arg('cutoff')
+  AND category IN (sqlc.slice('categories'))
+ORDER BY occurred_at DESC;
+
+-- name: CountUnreadForEscalation :one
+SELECT COUNT(*) FROM notifications
+WHERE read_at IS NULL
+  AND user_id IS NULL
+  AND occurred_at <= sqlc.arg('cutoff')
+  AND category IN (sqlc.slice('categories'));

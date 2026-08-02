@@ -168,6 +168,45 @@ Precedence: **flags > environment > file > defaults**. The config file
   service.
 - **Shutdown**: `systemctl stop` closes the connection cleanly.
 
+## Agent-down alerts
+
+When a host that was online stops reporting past the freshness threshold, Ogoune
+raises a **notification** in the in-app feed ("Host X went offline"), and a
+matching "back online" notification when it recovers. You get exactly one alert
+per offline episode (brief blips are ignored), so a flapping host won't spam you.
+
+Configure it on the **server** (not the agent):
+
+| Env var | Default | Meaning |
+|---|---|---|
+| `AGENT_DOWN_ALERTS_ENABLED` | `true` | Master switch for agent-down feed alerts |
+| `AGENT_DOWN_SCAN_INTERVAL` | `20s` | How often the server checks host liveness |
+| `AGENT_DOWN_EXTERNAL_DELIVERY` | `false` | Also email the alert via your oldest SMTP channel |
+| `HOST_FRESHNESS_THRESHOLD` | `45s` | A host is "offline" once its last sample is older than this |
+
+With defaults, an offline host is alerted within about a minute. Set
+`AGENT_DOWN_EXTERNAL_DELIVERY=true` (and configure an SMTP notification channel)
+to also receive the alert by email.
+
+## Missed-alert escalation
+
+If actionable feed notifications (incidents and agent-down alerts) sit **unread**
+past a configured age, Ogoune emails you a single grouped digest — "N unread
+notifications need attention" with a short list — via your oldest SMTP channel, so
+a missed alert doesn't go unnoticed. It's batched (one digest, not one email per
+notification) and deduplicated: the digest is re-sent only when a newer qualifying
+notification appears, and never once you've read them. Purely informational feed
+entries don't trigger it, and with no SMTP channel configured the scan quietly does
+nothing.
+
+Configure it on the **server** (not the agent):
+
+| Env var | Default | Meaning |
+|---|---|---|
+| `NOTIFICATION_ESCALATION_ENABLED` | `true` | Master switch for unread-notification escalation |
+| `NOTIFICATION_ESCALATION_SCAN_INTERVAL` | `15m` | How often the server scans the feed for unread alerts |
+| `NOTIFICATION_ESCALATION_UNREAD_AGE` | `30m` | How long an actionable notification stays unread before it's escalated |
+
 ## Scope
 
 Linux only for now. Windows/macOS agents and kernel-level (eBPF) capture are

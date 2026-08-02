@@ -81,6 +81,15 @@ type HostRepository interface {
 	UpdateSnapshot(ctx context.Context, h *domain.Host) error
 }
 
+// HostAlertStateRepository persists per-host agent-down alert state (spec 083)
+// so alerts fire once per offline episode and survive restarts.
+type HostAlertStateRepository interface {
+	// Get returns the state for a host, or repository.ErrNotFound if none exists.
+	Get(ctx context.Context, hostID string) (*domain.HostAlertState, error)
+	// Upsert inserts or updates the state row for a host.
+	Upsert(ctx context.Context, s *domain.HostAlertState) error
+}
+
 // HostCredentialRepository persists per-host bearer credentials (hash only).
 type HostCredentialRepository interface {
 	Create(ctx context.Context, c *domain.HostCredential) error
@@ -292,6 +301,19 @@ type NotificationFeedRepository interface {
 	MarkRead(ctx context.Context, id string, at time.Time) (int64, error)
 	MarkAllRead(ctx context.Context, userID string, before, at time.Time) (int64, error)
 	DeleteOlderThan(ctx context.Context, cutoff time.Time) (int64, error)
+	// ListUnreadForEscalation returns instance-wide unread notifications in the
+	// given categories with occurred_at <= cutoff, newest first (spec 083 US2).
+	ListUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time, limit int) ([]*domain.FeedNotification, error)
+	// CountUnreadForEscalation counts the same qualifying set.
+	CountUnreadForEscalation(ctx context.Context, categories []string, cutoff time.Time) (int, error)
+}
+
+// NotificationEscalationStateRepository persists the unread-digest high-water
+// mark (single row) so the digest is not re-sent while unchanged (spec 083 US2).
+type NotificationEscalationStateRepository interface {
+	// Get returns the state, or repository.ErrNotFound if none exists yet.
+	Get(ctx context.Context) (*domain.NotificationEscalationState, error)
+	Upsert(ctx context.Context, s *domain.NotificationEscalationState) error
 }
 
 // SessionRepository — spec 059 FR-008/009/009a.

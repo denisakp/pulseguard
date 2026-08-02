@@ -67,6 +67,18 @@ type Config struct {
 	HostMetricsRawWindow     time.Duration // keep raw (undecimated) samples within this window (default 48h)
 	HostFreshnessThreshold   time.Duration // a host is "online" while last_seen_at is within this (default 45s)
 
+	// Agent-down alerting (spec 083). A recurring scan raises a feed alert when an
+	// agent-backed host has been continuously offline past the freshness threshold.
+	AgentDownAlertsEnabled    bool          // master switch (default true)
+	AgentDownScanInterval     time.Duration // offline scan cadence (default 20s)
+	AgentDownExternalDelivery bool          // also send offline/recovery to the oldest SMTP channel (default false)
+
+	// Unread-notification escalation (spec 083). A recurring scan emails a grouped
+	// digest to the oldest SMTP channel when actionable notifications stay unread.
+	NotificationEscalationEnabled      bool          // master switch (default true)
+	NotificationEscalationScanInterval time.Duration // evaluation cadence (default 15m)
+	NotificationEscalationUnreadAge    time.Duration // unread-for at least this long to qualify (default 30m)
+
 	// Swagger configuration
 	EnableSwagger bool
 
@@ -125,6 +137,21 @@ func Load() Config {
 	}
 	hostMetricsRawWindow := parseDuration(GetEnv("HOST_METRICS_RAW_WINDOW", "48h"))
 	hostFreshnessThreshold := parseDuration(GetEnv("HOST_FRESHNESS_THRESHOLD", "45s"))
+	agentDownAlertsEnabled := parseBool(GetEnv("AGENT_DOWN_ALERTS_ENABLED", "true"), true)
+	agentDownScanInterval := parseDuration(GetEnv("AGENT_DOWN_SCAN_INTERVAL", "20s"))
+	if agentDownScanInterval <= 0 {
+		agentDownScanInterval = 20 * time.Second
+	}
+	agentDownExternalDelivery := parseBool(GetEnv("AGENT_DOWN_EXTERNAL_DELIVERY", "false"), false)
+	notificationEscalationEnabled := parseBool(GetEnv("NOTIFICATION_ESCALATION_ENABLED", "true"), true)
+	notificationEscalationScanInterval := parseDuration(GetEnv("NOTIFICATION_ESCALATION_SCAN_INTERVAL", "15m"))
+	if notificationEscalationScanInterval <= 0 {
+		notificationEscalationScanInterval = 15 * time.Minute
+	}
+	notificationEscalationUnreadAge := parseDuration(GetEnv("NOTIFICATION_ESCALATION_UNREAD_AGE", "30m"))
+	if notificationEscalationUnreadAge <= 0 {
+		notificationEscalationUnreadAge = 30 * time.Minute
+	}
 	enableSwagger := parseBool(GetEnv("ENABLE_SWAGGER", "false"), false)
 	logFormat := GetEnv("LOG_FORMAT", "json")
 	logLevel := GetEnv("LOG_LEVEL", "info")
@@ -177,6 +204,13 @@ func Load() Config {
 		HostMetricsRetentionDays:       hostMetricsRetentionDays,
 		HostMetricsRawWindow:           hostMetricsRawWindow,
 		HostFreshnessThreshold:         hostFreshnessThreshold,
+		AgentDownAlertsEnabled:         agentDownAlertsEnabled,
+		AgentDownScanInterval:          agentDownScanInterval,
+		AgentDownExternalDelivery:      agentDownExternalDelivery,
+
+		NotificationEscalationEnabled:      notificationEscalationEnabled,
+		NotificationEscalationScanInterval: notificationEscalationScanInterval,
+		NotificationEscalationUnreadAge:    notificationEscalationUnreadAge,
 		EnableSwagger:                  enableSwagger,
 		AppEnv:                         appEnv,
 		SSLProvider:                    sslProvider,

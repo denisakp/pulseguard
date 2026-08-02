@@ -27,6 +27,80 @@ func TestStaticDirOverride(t *testing.T) {
 	}
 }
 
+func TestAgentDownDefaults(t *testing.T) {
+	for _, k := range []string{"AGENT_DOWN_ALERTS_ENABLED", "AGENT_DOWN_SCAN_INTERVAL", "AGENT_DOWN_EXTERNAL_DELIVERY"} {
+		os.Unsetenv(k)
+	}
+	cfg := Load()
+	if !cfg.AgentDownAlertsEnabled {
+		t.Error("AgentDownAlertsEnabled should default true")
+	}
+	if cfg.AgentDownScanInterval != 20*time.Second {
+		t.Errorf("AgentDownScanInterval default = %s, want 20s", cfg.AgentDownScanInterval)
+	}
+	if cfg.AgentDownExternalDelivery {
+		t.Error("AgentDownExternalDelivery should default false")
+	}
+}
+
+func TestAgentDownOverrides(t *testing.T) {
+	os.Setenv("AGENT_DOWN_ALERTS_ENABLED", "false")
+	os.Setenv("AGENT_DOWN_SCAN_INTERVAL", "5s")
+	os.Setenv("AGENT_DOWN_EXTERNAL_DELIVERY", "true")
+	defer func() {
+		os.Unsetenv("AGENT_DOWN_ALERTS_ENABLED")
+		os.Unsetenv("AGENT_DOWN_SCAN_INTERVAL")
+		os.Unsetenv("AGENT_DOWN_EXTERNAL_DELIVERY")
+	}()
+	cfg := Load()
+	if cfg.AgentDownAlertsEnabled {
+		t.Error("AgentDownAlertsEnabled should be false")
+	}
+	if cfg.AgentDownScanInterval != 5*time.Second {
+		t.Errorf("AgentDownScanInterval = %s, want 5s", cfg.AgentDownScanInterval)
+	}
+	if !cfg.AgentDownExternalDelivery {
+		t.Error("AgentDownExternalDelivery should be true")
+	}
+}
+
+func TestNotificationEscalationDefaults(t *testing.T) {
+	for _, k := range []string{"NOTIFICATION_ESCALATION_ENABLED", "NOTIFICATION_ESCALATION_SCAN_INTERVAL", "NOTIFICATION_ESCALATION_UNREAD_AGE"} {
+		os.Unsetenv(k)
+	}
+	cfg := Load()
+	if !cfg.NotificationEscalationEnabled {
+		t.Error("NotificationEscalationEnabled should default true")
+	}
+	if cfg.NotificationEscalationScanInterval != 15*time.Minute {
+		t.Errorf("scan interval default = %s, want 15m", cfg.NotificationEscalationScanInterval)
+	}
+	if cfg.NotificationEscalationUnreadAge != 30*time.Minute {
+		t.Errorf("unread age default = %s, want 30m", cfg.NotificationEscalationUnreadAge)
+	}
+}
+
+func TestNotificationEscalationOverrides(t *testing.T) {
+	os.Setenv("NOTIFICATION_ESCALATION_ENABLED", "false")
+	os.Setenv("NOTIFICATION_ESCALATION_SCAN_INTERVAL", "2m")
+	os.Setenv("NOTIFICATION_ESCALATION_UNREAD_AGE", "10m")
+	defer func() {
+		os.Unsetenv("NOTIFICATION_ESCALATION_ENABLED")
+		os.Unsetenv("NOTIFICATION_ESCALATION_SCAN_INTERVAL")
+		os.Unsetenv("NOTIFICATION_ESCALATION_UNREAD_AGE")
+	}()
+	cfg := Load()
+	if cfg.NotificationEscalationEnabled {
+		t.Error("should be false")
+	}
+	if cfg.NotificationEscalationScanInterval != 2*time.Minute {
+		t.Errorf("scan interval = %s, want 2m", cfg.NotificationEscalationScanInterval)
+	}
+	if cfg.NotificationEscalationUnreadAge != 10*time.Minute {
+		t.Errorf("unread age = %s, want 10m", cfg.NotificationEscalationUnreadAge)
+	}
+}
+
 func TestEnableICMPDefaultFalse(t *testing.T) {
 	os.Unsetenv("ENABLE_ICMP")
 

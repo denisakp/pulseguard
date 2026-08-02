@@ -29,6 +29,26 @@ func (q *Queries) CountNotificationsForUser(ctx context.Context, arg CountNotifi
 	return count, err
 }
 
+const countUnreadForEscalation = `-- name: CountUnreadForEscalation :one
+SELECT COUNT(*) FROM notifications
+WHERE read_at IS NULL
+  AND user_id IS NULL
+  AND occurred_at <= $1
+  AND category = ANY($2::text[])
+`
+
+type CountUnreadForEscalationParams struct {
+	Cutoff     pgtype.Timestamptz `json:"cutoff"`
+	Categories []string           `json:"categories"`
+}
+
+func (q *Queries) CountUnreadForEscalation(ctx context.Context, arg CountUnreadForEscalationParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countUnreadForEscalation, arg.Cutoff, arg.Categories)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createNotification = `-- name: CreateNotification :one
 INSERT INTO notifications (id, user_id, category, severity, title, description, deep_link, payload, occurred_at, read_at, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -117,6 +137,53 @@ func (q *Queries) ListNotificationsForUser(ctx context.Context, arg ListNotifica
 		arg.Off,
 		arg.Lim,
 	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Notification{}
+	for rows.Next() {
+		var i Notification
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Category,
+			&i.Severity,
+			&i.Title,
+			&i.Description,
+			&i.DeepLink,
+			&i.Payload,
+			&i.OccurredAt,
+			&i.ReadAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUnreadForEscalation = `-- name: ListUnreadForEscalation :many
+SELECT id, user_id, category, severity, title, description, deep_link, payload, occurred_at, read_at, created_at, updated_at FROM notifications
+WHERE read_at IS NULL
+  AND user_id IS NULL
+  AND occurred_at <= $1
+  AND category = ANY($2::text[])
+ORDER BY occurred_at DESC
+`
+
+type ListUnreadForEscalationParams struct {
+	Cutoff     pgtype.Timestamptz `json:"cutoff"`
+	Categories []string           `json:"categories"`
+}
+
+func (q *Queries) ListUnreadForEscalation(ctx context.Context, arg ListUnreadForEscalationParams) ([]Notification, error) {
+	rows, err := q.db.Query(ctx, listUnreadForEscalation, arg.Cutoff, arg.Categories)
 	if err != nil {
 		return nil, err
 	}

@@ -107,6 +107,14 @@ type Host struct {
 	LastDisks    []byte             `json:"last_disks"`
 }
 
+type HostAlertState struct {
+	HostID       string             `json:"host_id"`
+	State        string             `json:"state"`
+	OfflineSince pgtype.Timestamptz `json:"offline_since"`
+	Alerted      bool               `json:"alerted"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
 type HostCredential struct {
 	ID         string             `json:"id"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
@@ -253,6 +261,13 @@ type NotificationChannel struct {
 	LastSentAt       pgtype.Timestamptz `json:"last_sent_at"`
 	LastFailureAt    pgtype.Timestamptz `json:"last_failure_at"`
 	Failures24h      int32              `json:"failures_24h"`
+}
+
+type NotificationEscalationState struct {
+	ID                  string             `json:"id"`
+	LastDigestAt        pgtype.Timestamptz `json:"last_digest_at"`
+	WatermarkOccurredAt pgtype.Timestamptz `json:"watermark_occurred_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
 }
 
 type NotificationEvent struct {
