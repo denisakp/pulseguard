@@ -1,0 +1,32 @@
+# Ogoune host monitoring agent (spec 082).
+# Multi-stage: static Go build → distroless/static (nonroot, ships CA certs so
+# wss:// TLS verification works; no shell, no package manager, no secret).
+FROM golang:1.25-alpine3.22 AS go-builder
+
+ARG VERSION=dev
+
+WORKDIR /build
+
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+COPY cmd/ cmd/
+COPY internal/ internal/
+COPY pkg/ pkg/
+
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-w -s -X main.version=${VERSION} -extldflags '-static'" \
+    -a -installsuffix cgo \
+    -o ogoune-agent ./cmd/agent
+
+# Final image — distroless static (nonroot). Includes CA certificates.
+FROM gcr.io/distroless/static-debian12:nonroot
+
+LABEL org.opencontainers.image.source="https://github.com/denisakp/ogoune"
+LABEL org.opencontainers.image.description="Ogoune host monitoring agent — streams system metrics to the Ogoune backend."
+LABEL org.opencontainers.image.title="Ogoune Agent"
+
+COPY --from=go-builder /build/ogoune-agent /usr/local/bin/ogoune-agent
+
+# nonroot user is provided by the base image (uid 65532).
+ENTRYPOINT ["/usr/local/bin/ogoune-agent"]

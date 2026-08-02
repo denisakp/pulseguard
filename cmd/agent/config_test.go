@@ -20,7 +20,8 @@ func fileFrom(content string) func(string) ([]byte, error) {
 }
 
 func TestLoad_FlagsOverEnvOverFile(t *testing.T) {
-	file := "backend_url: wss://file/api/v1/agent/stream\ncredential: ag_live_file\ninterval: 30s\n"
+	// Env-style /etc/ogoune/agent.cfg: KEY=value with OGOUNE_* keys, comments, quotes.
+	file := "# ogoune agent config\nOGOUNE_BACKEND_URL=wss://file/api/v1/agent/stream\nOGOUNE_CREDENTIAL=\"ag_live_file\"\nOGOUNE_INTERVAL=30s\n"
 	env := map[string]string{
 		"OGOUNE_CREDENTIAL": "ag_live_env",
 		"OGOUNE_INTERVAL":   "20s",
@@ -46,7 +47,7 @@ func TestLoad_FlagsOverEnvOverFile(t *testing.T) {
 }
 
 func TestLoad_EnvOverFile(t *testing.T) {
-	file := "backend_url: wss://file/api/v1/agent/stream\ncredential: ag_live_file\n"
+	file := "OGOUNE_BACKEND_URL=wss://file/api/v1/agent/stream\nOGOUNE_CREDENTIAL=ag_live_file\n"
 	env := map[string]string{"OGOUNE_CREDENTIAL": "ag_live_env"}
 	cfg, err := Load(nil, envFrom(env), fileFrom(file))
 	if err != nil {
@@ -54,6 +55,30 @@ func TestLoad_EnvOverFile(t *testing.T) {
 	}
 	if cfg.Credential != "ag_live_env" {
 		t.Errorf("Credential = %q, want env value", cfg.Credential)
+	}
+	// backend_url only in file → file layer applied.
+	if cfg.BackendURL != "wss://file/api/v1/agent/stream" {
+		t.Errorf("BackendURL = %q, want file value", cfg.BackendURL)
+	}
+}
+
+func TestParseEnvFile(t *testing.T) {
+	in := "# comment\n\nOGOUNE_BACKEND_URL=ws://h/s\n  export OGOUNE_CREDENTIAL = 'ag_live_x' \nOGOUNE_LOG_LEVEL=\"debug\"\n"
+	m, err := parseEnvFile([]byte(in))
+	if err != nil {
+		t.Fatalf("parseEnvFile: %v", err)
+	}
+	if m["OGOUNE_BACKEND_URL"] != "ws://h/s" {
+		t.Errorf("BACKEND_URL = %q", m["OGOUNE_BACKEND_URL"])
+	}
+	if m["OGOUNE_CREDENTIAL"] != "ag_live_x" {
+		t.Errorf("CREDENTIAL = %q (quotes/export/space not stripped)", m["OGOUNE_CREDENTIAL"])
+	}
+	if m["OGOUNE_LOG_LEVEL"] != "debug" {
+		t.Errorf("LOG_LEVEL = %q", m["OGOUNE_LOG_LEVEL"])
+	}
+	if _, err := parseEnvFile([]byte("OGOUNE_BACKEND_URL\n")); err == nil {
+		t.Error("line without '=' should error")
 	}
 }
 
@@ -106,6 +131,26 @@ func TestValidate(t *testing.T) {
 	bad.Interval = 500 * time.Millisecond
 	if err := bad.Validate(); err == nil {
 		t.Error("sub-second interval should be rejected")
+	}
+}
+
+func TestIsPlaintextToRemote(t *testing.T) {
+	cases := []struct {
+		url  string
+		want bool
+	}{
+		{"ws://example.com/api/v1/agent/stream", true},
+		{"ws://10.0.0.5:8080/s", true},
+		{"wss://example.com/s", false},   // TLS
+		{"ws://localhost:8080/s", false}, // loopback name
+		{"ws://127.0.0.1/s", false},      // loopback IP
+		{"ws://[::1]/s", false},          // loopback IPv6
+		{"://bad", false},                // malformed → false
+	}
+	for _, c := range cases {
+		if got := isPlaintextToRemote(c.url); got != c.want {
+			t.Errorf("isPlaintextToRemote(%q) = %v, want %v", c.url, got, c.want)
+		}
 	}
 }
 

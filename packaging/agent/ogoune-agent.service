@@ -7,13 +7,14 @@ Wants=network-online.target
 [Service]
 Type=simple
 # The service runs as an unprivileged DynamicUser, which cannot read a
-# root-owned 0600 config file. So configuration is supplied via this env file,
-# which systemd reads privileged (as PID 1) and injects into the process:
+# root-owned 0600 config file. The agent's env-style config doubles as the
+# systemd EnvironmentFile: systemd reads it privileged (as PID 1) and injects
+# OGOUNE_* into the process, so no separate .env is needed.
 #   OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream
 #   OGOUNE_CREDENTIAL=ag_live_...
-# Keep /etc/ogoune-agent.env at mode 0600 (it holds the secret). The leading '-'
+# Keep /etc/ogoune/agent.cfg at mode 0600 (it holds the secret). The leading '-'
 # makes it optional so flags/other env still work.
-EnvironmentFile=-/etc/ogoune-agent.env
+EnvironmentFile=-/etc/ogoune/agent.cfg
 ExecStart=/usr/local/bin/ogoune-agent
 Restart=on-failure
 RestartSec=5

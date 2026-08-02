@@ -52,11 +52,17 @@ jobs:
         run: |
           set -euo pipefail
           REPO="${{ steps.vars.outputs.image_repo }}"
-          TAGS="${REPO}:${{ steps.vars.outputs.version }}"
+          VERSION="${{ steps.vars.outputs.version }}"
+          TAGS="${REPO}:${VERSION}"
+          # Agent image lives in the same registry/owner, suffixed -agent (spec 082).
+          AGENT_REPO="${REPO}-agent"
+          AGENT_TAGS="${AGENT_REPO}:${VERSION}"
           if [[ "${{ steps.vars.outputs.prerelease }}" == "false" ]]; then
             TAGS="${TAGS},${REPO}:latest"
+            AGENT_TAGS="${AGENT_TAGS},${AGENT_REPO}:latest"
           fi
           echo "list=$TAGS" >> "$GITHUB_OUTPUT"
+          echo "agent_list=$AGENT_TAGS" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-qemu-action@v3
 
@@ -80,6 +86,38 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ env.IMAGE_NAME }}
           tags: ${{ steps.tags.outputs.list }}
 
+      # Agent image (spec 082) — same commit/tag as the API image → lockstep version.
+      - name: build and push agent image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile.agent
+          push: true
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=${{ steps.vars.outputs.version }}
+          cache-from: type=gha,scope=${{ env.IMAGE_NAME }}-agent
+          cache-to: type=gha,mode=max,scope=${{ env.IMAGE_NAME }}-agent
+          tags: ${{ steps.tags.outputs.agent_list }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      # Release binaries (spec 082) — static linux amd64 + arm64 + checksums.
+      - name: build agent release binaries
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.vars.outputs.version }}"
+          mkdir -p dist
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" go build \
+              -ldflags "-w -s -X main.version=${VERSION}" \
+              -o "dist/ogoune-agent-linux-${arch}" ./cmd/agent
+          done
+          ( cd dist && sha256sum ogoune-agent-linux-amd64 ogoune-agent-linux-arm64 > SHA256SUMS )
+          cat dist/SHA256SUMS
+
       - name: create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -87,3 +125,7 @@ jobs:
           body_path: release-notes/${{ steps.vars.outputs.version }}.md
           prerelease: ${{ steps.vars.outputs.prerelease }}
           generate_release_notes: false
+          files: |
+            dist/ogoune-agent-linux-amd64
+            dist/ogoune-agent-linux-arm64
+            dist/SHA256SUMS

@@ -8,6 +8,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -19,6 +20,15 @@ import (
 var version = "0.1.0"
 
 func main() {
+	// --version prints the build version and exits (release lockstep check, SC-002).
+	// Handled before Load so it works without a valid config.
+	for _, a := range os.Args[1:] {
+		if a == "--version" || a == "-version" || a == "version" {
+			fmt.Println(version)
+			return
+		}
+	}
+
 	cfg, err := Load(os.Args[1:], os.Getenv, os.ReadFile)
 	if err != nil {
 		// Fail fast, before any network attempt, with a clear message.
@@ -28,6 +38,9 @@ func main() {
 
 	setupLogging(cfg.LogLevel)
 	slog.Info("ogoune-agent starting", "version", version, "backend", cfg.BackendURL, "interval", cfg.Interval.String())
+	if isPlaintextToRemote(cfg.BackendURL) {
+		slog.Warn("ogoune-agent: connecting over plaintext ws:// to a remote host — credentials and metrics are unencrypted; use wss:// (TLS) in production", "backend", cfg.BackendURL)
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
