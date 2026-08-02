@@ -1,18 +1,26 @@
 <script setup lang="ts">
 /**
- * HostDetailView (spec 081 — US3) — a single host's detail page: header
+ * HostDetailView — a single host's detail page: header
  * (name / OS / agent version / last-seen + online state), an "Install agent"
  * helper, a range selector driving `useHostMetrics`, four metric charts
  * (CPU %, RAM %, per-mount Disk %, Network in/out), and the list of monitors
  * linked to the host. Frontend-only; polls the host snapshot every ~12s.
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { getHost, listMonitors } from '@/services/hostsService'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  getHost,
+  listMonitors,
+  rotateCredential,
+  revokeCredential,
+  deleteHost,
+} from '@/services/hostsService'
 import { NotFoundError } from '@/core/errors'
 import { timeAgo } from '@/libs/date-time.helper'
+import { useConfirm } from '@/composables/useConfirm'
 import { useHostMetrics } from '@/composables/useHostMetrics'
 import HostMetricChart from '@/components/hosts/HostMetricChart.vue'
+import HostCredentialReveal from '@/components/hosts/HostCredentialReveal.vue'
 import HostServicesList, {
   type HostLinkedMonitor,
 } from '@/components/hosts/HostServicesList.vue'
@@ -93,6 +101,45 @@ onUnmounted(() => {
 
 const showInstall = ref(false)
 
+// Credential lifecycle actions (spec 081 follow-up: surfaced on the detail page).
+const router = useRouter()
+const rotated = ref<{ credential: string; prefix: string } | null>(null)
+
+async function onRotate() {
+  const ok = await useConfirm({
+    kind: 'default',
+    title: 'Rotate credential?',
+    body: "The current credential stops working immediately. You'll get a new one to reinstall on the agent.",
+    ctaLabel: 'Rotate',
+  })
+  if (!ok) return
+  rotated.value = await rotateCredential(hostId.value)
+}
+async function onRevoke() {
+  const ok = await useConfirm({
+    kind: 'destructive',
+    title: 'Revoke credential?',
+    body: 'The agent stops authenticating until a new credential is issued. This cannot be undone.',
+    ctaLabel: 'Revoke',
+  })
+  if (!ok) return
+  await revokeCredential(hostId.value)
+}
+async function onDelete() {
+  const ok = await useConfirm({
+    kind: 'destructive',
+    title: 'Delete host?',
+    body: 'The host and its metric history are removed and its monitors are unlinked (the monitors themselves are kept). This cannot be undone.',
+    ctaLabel: 'Delete',
+  })
+  if (!ok) return
+  await deleteHost(hostId.value)
+  await router.push('/hosts')
+}
+function onRotatedClose() {
+  rotated.value = null
+}
+
 const onlineLabel = computed(() => (host.value?.online ? 'Online' : 'Offline'))
 const onlineDotClass = computed(() => (host.value?.online ? 'bg-success' : 'bg-dimmed'))
 const lastSeenLabel = computed(() =>
@@ -133,14 +180,43 @@ defineExpose({ host, monitors, loading, notFound, range, setRange, metrics })
             <span data-testid="host-last-seen">Last seen: {{ lastSeenLabel }}</span>
           </div>
         </div>
-        <UButton
-          color="neutral"
-          variant="subtle"
-          icon="i-lucide-download"
-          @click="showInstall = !showInstall"
-        >
-          Install agent
-        </UButton>
+        <div class="flex items-center gap-2 shrink-0">
+          <UButton
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-download"
+            @click="showInstall = !showInstall"
+          >
+            Install agent
+          </UButton>
+          <UButton
+            color="neutral"
+            variant="subtle"
+            icon="i-lucide-refresh-cw"
+            data-testid="rotate-credential"
+            @click="onRotate"
+          >
+            Rotate
+          </UButton>
+          <UButton
+            color="warning"
+            variant="subtle"
+            icon="i-lucide-ban"
+            data-testid="revoke-credential"
+            @click="onRevoke"
+          >
+            Revoke
+          </UButton>
+          <UButton
+            color="error"
+            variant="subtle"
+            icon="i-lucide-trash-2"
+            data-testid="delete-host"
+            @click="onDelete"
+          >
+            Delete
+          </UButton>
+        </div>
       </div>
 
       <UAlert v-if="error" color="error" :title="error" class="mb-4" />
@@ -152,29 +228,29 @@ defineExpose({ host, monitors, loading, notFound, range, setRange, metrics })
         data-testid="install-agent"
       >
         <p class="text-muted mb-3">
-          The <code>ogoune-agent</code> is an optional Go binary you install on the monitored Linux
-          server. It streams OS, CPU, memory, per-mount disk, and network metrics to Ogoune every
-          ~10 seconds.
+          The <code>ogoune-agent</code> runs on this Linux host and streams CPU, memory,
+          per-mount disk, and network metrics to Ogoune every ~10 seconds. Use the host's
+          credential below — press <strong>Rotate</strong> above to issue a fresh one if you
+          don't have it.
         </p>
-        <ol class="list-decimal list-inside space-y-2 text-muted">
-          <li>Register the host to get a one-time credential (shown once):</li>
-        </ol>
+        <p class="text-muted mb-2 font-medium text-default">Docker (quickest):</p>
         <pre
-          class="mt-2 mb-3 overflow-x-auto rounded-md bg-default p-3 text-xs font-mono text-default"
-        >curl -sS -X POST https://your-ogoune/api/v1/hosts \
-  -H "Authorization: Bearer &lt;operator-api-key&gt;" \
-  -H "Content-Type: application/json" -d '{"name":"web-1"}'</pre>
-        <p class="text-muted mb-2">Install and run under systemd:</p>
+          class="mb-4 overflow-x-auto rounded-md bg-default p-3 text-xs font-mono text-default"
+        >docker run -d --name ogoune-agent --restart unless-stopped \
+  --pid=host --network=host \
+  -e OGOUNE_BACKEND_URL=wss://your-ogoune/api/v1/agent/stream \
+  -e OGOUNE_CREDENTIAL=&lt;this host's credential&gt; \
+  ghcr.io/denisakp/ogoune-agent:latest</pre>
+        <p class="text-muted mb-2 font-medium text-default">Binary + systemd:</p>
         <pre
           class="overflow-x-auto rounded-md bg-default p-3 text-xs font-mono text-default"
-        >make build-agent   # → dist/ogoune-agent
-
-sudo install -m755 dist/ogoune-agent /usr/local/bin/ogoune-agent
-sudo install -m600 packaging/agent/ogoune-agent.example.yaml /etc/ogoune-agent.yaml
-# edit /etc/ogoune-agent.yaml: set backend_url + credential
-sudo install -m644 packaging/agent/ogoune-agent.service /etc/systemd/system/
-sudo systemctl daemon-reload &amp;&amp; sudo systemctl enable --now ogoune-agent
-journalctl -u ogoune-agent -f</pre>
+        ># download ogoune-agent for your platform from the Ogoune releases page
+sudo install -m755 ogoune-agent /usr/local/bin/ogoune-agent
+sudo tee /etc/ogoune-agent.yaml &gt;/dev/null &lt;&lt;'EOF'
+backend_url: wss://your-ogoune/api/v1/agent/stream
+credential: &lt;this host's credential&gt;
+EOF
+sudo systemctl enable --now ogoune-agent</pre>
         <p class="text-muted mt-3">
           Within ~15 seconds the host reports live metrics and shows as <strong>online</strong>.
         </p>
@@ -229,5 +305,22 @@ journalctl -u ogoune-agent -f</pre>
         </div>
       </div>
     </template>
+
+    <!-- New credential after a rotate (shown once). -->
+    <UModal
+      v-if="rotated"
+      :open="true"
+      title="New credential"
+      :ui="{ content: 'sm:max-w-lg' }"
+      @update:open="onRotatedClose"
+    >
+      <template #body>
+        <HostCredentialReveal
+          :credential="rotated.credential"
+          :prefix="rotated.prefix"
+          @close="onRotatedClose"
+        />
+      </template>
+    </UModal>
   </div>
 </template>

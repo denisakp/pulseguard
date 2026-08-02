@@ -5,6 +5,7 @@ import type { Host } from '@/types'
 
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: 'h1' } }),
+  useRouter: () => ({ push: vi.fn() }),
 }))
 
 const getHostMock = vi.fn()
@@ -14,6 +15,9 @@ vi.mock('@/services/hostsService', () => ({
   getHost: (...a: unknown[]) => getHostMock(...a),
   getHostMetrics: (...a: unknown[]) => getHostMetricsMock(...a),
   listMonitors: (...a: unknown[]) => listMonitorsMock(...a),
+  rotateCredential: vi.fn(),
+  revokeCredential: vi.fn(),
+  deleteHost: vi.fn(),
 }))
 
 import HostDetailView from './HostDetailView.vue'
