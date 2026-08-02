@@ -86,31 +86,25 @@ const columns: TableColumn<EnrichedHost>[] = [
     header: '',
     cell: ({ row }) =>
       h(
-        'div',
-        { class: 'flex gap-1 justify-end' },
-        rowActions.map((a) =>
-          h(
-            resolveButton(),
-            {
-              icon: a.icon,
-              color: 'neutral',
-              variant: 'ghost',
-              size: 'xs',
-              'aria-label': a.label,
-              onClick: () => onAction({ action: a, row: row.original }),
-            },
-            () => a.label,
-          ),
-        ),
+        resolveComponent('UDropdownMenu'),
+        {
+          items: rowActions.map((a) => ({
+            label: a.label,
+            icon: a.icon,
+            onSelect: () => onAction({ action: a, row: row.original }),
+          })),
+        },
+        () =>
+          h(resolveComponent('UButton'), {
+            variant: 'ghost',
+            color: 'neutral',
+            size: 'xs',
+            icon: 'i-lucide-ellipsis-vertical',
+            'aria-label': 'Host actions',
+          }),
       ),
   },
 ]
-
-// Resolve the globally-registered UButton so the render function uses the real
-// component (a bare 'UButton' string renders as an inert <ubutton> element).
-function resolveButton() {
-  return resolveComponent('UButton')
-}
 
 async function onAction(p: { action: RowAction; row: Host }) {
   const row = p.row
