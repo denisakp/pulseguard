@@ -7,6 +7,12 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Tags domain moved to `/api/v1/tags` (spec 086, US1)** — the frontend now reads/writes
+  tags through the versioned API (`tagService.ts` walks the paginated `{data,meta}` list and
+  unwraps the envelope); the v1 `TagResponse` gained `updated_at` and a `PATCH /api/v1/tags/{id}`
+  alias (matching the frontend's partial-edit verb). The frozen root `/api/tags` handler,
+  its routes, its `NewRouter` param, and the dead root tag DTO are deleted. First domain of the
+  Phase-3 root→v1 convergence (mirrors spec 085); `TagService` is shared, so behavior is identical.
 - **v1 monitors return the rich resource shape (spec 085, Phase 2a)** — `/api/v1/monitors`
   List/Get/Create/Update/PATCH/Pause/Resume now return the same enriched `ResourceResponse`
   the root `/api/resources` returns (tags as objects, `last_checked`, `uptime_7d`,

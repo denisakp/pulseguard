@@ -9,31 +9,61 @@ import type { components } from '@ogoune/api-types'
 export type ContractTag =
   components['schemas']['github_com_denisakp_ogoune_internal_dto_v1.TagResponse']
 
+// v1 list envelope: `{ data, meta }`. `per_page` is capped at 100 server-side.
+const PER_PAGE = 100
+
+interface TagListEnvelope {
+  data: Tag[]
+  meta: { total: number; page: number; per_page: number }
+}
+
+// fetchTags preserves the legacy "return ALL tags" contract on top of the
+// paginated v1 `GET /v1/tags` endpoint: it walks pages of `per_page=100`
+// accumulating `.data` until it has collected `meta.total` items (or a page
+// comes back short), then returns the flattened list.
 export const fetchTags = async (): Promise<Tag[]> => {
-  return await request<Tag[]>(getAuthenticatedClient(), 'tags')
+  const client = getAuthenticatedClient()
+  const all: Tag[] = []
+  let page = 1
+
+  for (;;) {
+    const res = await request<TagListEnvelope>(client, 'v1/tags', {
+      searchParams: { page, per_page: PER_PAGE },
+    })
+    all.push(...res.data)
+
+    const total = res.meta?.total ?? all.length
+    if (all.length >= total || res.data.length < PER_PAGE) break
+    page += 1
+  }
+
+  return all
 }
 
 export const fetchTag = async (id: string): Promise<Tag> => {
-  return await request<Tag>(getAuthenticatedClient(), `tags/${id}`)
+  const res = await request<{ data: Tag }>(getAuthenticatedClient(), `v1/tags/${id}`)
+  return res.data
 }
 
 export const createTag = async (tag: CreateTag): Promise<Tag> => {
-  return await request<Tag>(getAuthenticatedClient(), 'tags', {
+  const res = await request<{ data: Tag }>(getAuthenticatedClient(), 'v1/tags', {
     method: 'POST',
     json: tag,
   })
+  return res.data
 }
 
 export const updateTag = async (id: string, tag: Partial<Tag>): Promise<Tag> => {
-  return await request<Tag>(getAuthenticatedClient(), `tags/${id}`, {
+  const res = await request<{ data: Tag }>(getAuthenticatedClient(), `v1/tags/${id}`, {
     method: 'PATCH',
     json: tag,
   })
+  return res.data
 }
 
 /**
  * Delete a tag. Server returns 204 No Content — `request<T>` returns undefined.
  */
 export const deleteTag = async (id: string): Promise<void> => {
-  await request<void>(getAuthenticatedClient(), `tags/${id}`, { method: 'DELETE' })
+  await request<void>(getAuthenticatedClient(), `v1/tags/${id}`, { method: 'DELETE' })
 }
