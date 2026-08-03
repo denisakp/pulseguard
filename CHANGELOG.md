@@ -5,6 +5,38 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Public docs coverage for previously-undocumented shipped features (`nebula/`)** — new
+  narrative guide pages for status pages, dashboards, scheduled reports, tags & components,
+  maintenance windows, API keys & 2FA, bulk YAML import/export, and Prometheus observability
+  (`/metrics` + the Grafana dashboard / alert-rules endpoints). Every page is grounded directly
+  in the v1 API and Go source rather than roadmap prose. Closes most of the gap between what's
+  shipped and what's publicly documented.
+- **Mermaid diagrams in `nebula/`** — `vitepress-plugin-mermaid` wired into the VitePress build;
+  `guide/incidents.md` gets a state-diagram of the incident lifecycle.
+
+### Changed
+
+- **`guide/monitor-types.md` rewritten** — was a six-row stub table; now includes real config
+  examples per type, including the previously-undocumented Heartbeat/Push, SSL/domain expiry,
+  and Protocol-with-auth (Redis/MySQL/PostgreSQL) variants.
+- **`enterprise/index.md` corrected** — no longer misdescribes PostgreSQL + Redis as an EE
+  differentiator (it's Community Edition, see `self-host/production.md`); now lists the actual
+  EE scope (team management, SSO/SAML, multi-tenancy, SOC 2 audit logs, dedicated support) with
+  an honest note that most of it is still on the roadmap, not shipped.
+- **`roadmap.md` drift fixed** — scheduled reports and the host agent were marked `[ ]` Planned
+  despite already being shipped; dashboards, YAML bulk import/export, announcements, and the
+  search endpoint were shipped but missing from the document entirely. All corrected against
+  CHANGELOG/git history.
+
+### Fixed
+
+- **`nebula/` dev server startup** — `vitepress-plugin-mermaid`'s hardcoded `optimizeDeps.include`
+  list doesn't resolve under pnpm's strict linking (and lists `debug`, which current mermaid no
+  longer even depends on). Added `nebula/.npmrc` hoist pattern for the real transitive deps and
+  an explicit `debug` devDependency for the stale one.
+
 ## [1.0.0-beta.2] - 2026-08-03
 
 ### Changed

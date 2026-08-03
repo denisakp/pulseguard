@@ -89,6 +89,8 @@ All contributors must sign our **CLA (Contributor Licence Agreement)** before th
 - [x] Two-factor authentication (TOTP)
 - [x] Maintenance windows (one-time + cron)
 - [x] Components, Tags, Organization
+- [x] YAML bulk import/export for resources
+- [x] Configurable dashboards — widget layout per view, scoped by tag/component/type/manual selection
 
 ---
 
@@ -117,6 +119,9 @@ Community Edition — expanding monitoring coverage, observability, and security
 
 - [x] **Public API v1** — versioned REST API with OpenAPI spec
 - [x] **Credential encryption (AES-256-GCM)** — SMTP passwords and webhook tokens encrypted at rest
+- [x] **Server-side search endpoint** — `GET /api/v1/search`, ranked cross-entity search
+  (monitors, incidents, app pages) powering the ⌘K command palette beyond the client-side window
+- [x] **Announcements** — operator-authored, dismissible in-app banners (info/warning/success/error)
 
 ---
 
@@ -139,12 +144,15 @@ Community Edition — expanding monitoring coverage, observability, and security
 
 ### Agent device monitoring — the killer feature
 
-- [ ] **Lightweight agent (Go)** — cross-platform device monitoring agent (Linux, macOS, Windows).
-  CPU, memory, disk, network metrics. Reverse tunnel pattern (agent initiates outbound connection), no
-  inbound ports required. Traverses NAT and Kubernetes Ingress natively. eBPF programs (via `cilium/ebpf`)
-  intercept kernel events on Linux — OOMKills, segfaults, syscall latency spikes — at the source.
-  Single language across backend + agent (shared domain types, protocol DTOs, tooling). Static stripped
-  binary target ≤15MB. **Community Edition.**
+- [x] **Lightweight agent (Go)** — cross-platform device monitoring agent (Linux, macOS, Windows),
+  shipped ahead of schedule in the v1.0.0-beta (specs 079-083). CPU, memory, per-mount disk, and network
+  metrics streamed over a WebSocket via a reverse tunnel (agent initiates outbound connection), no
+  inbound ports required. Single language across backend + agent (shared domain types via
+  `pkg/agentwire`). Ships as a distroless container image + static release binaries, with a systemd
+  unit and agent-down alerting. No eBPF/kernel-event interception yet — see below.
+- [ ] **Kernel-level event interception (eBPF)** — via `cilium/ebpf`, intercept kernel events on Linux
+  (OOMKills, segfaults, syscall latency spikes) at the source, feeding Flash Correlation below.
+  **Community Edition.**
   > **Note:** A Zig rewrite for sub-3MB footprint was previously planned but dropped. eBPF tooling is
   > mature in Go (Cilium, Datadog, Parca, Pixie all ship Go+eBPF in prod), Zig is pre-1.0 with weak
   > Windows/macOS coverage, and footprint <30MB is not a real adoption blocker — Flash Correlation is
@@ -165,8 +173,9 @@ Community Edition — expanding monitoring coverage, observability, and security
 
 ### Reporting
 
-- [ ] **Scheduled reports — Community** — monthly health report (fixed schedule, first day of the month).
-  Covers all resources. Sent via configured SMTP channel. Toggle on/off in settings. No configuration required.
+- [x] **Scheduled reports — Community** — monthly health report (fixed schedule, first day of the month),
+  shipped ahead of schedule in v1.0.0-beta. Covers all resources. Sent via configured SMTP channel.
+  Toggle on/off in settings. No configuration required.
 
 ### Alerting & integrations
 
