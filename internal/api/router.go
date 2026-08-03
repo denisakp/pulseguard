@@ -30,7 +30,6 @@ const (
 func NewRouter(
 	pingHandler *handler.PingHandler,
 	activityHandler *handler.MonitoringActivityHandler,
-	tagHandler *handler.TagHandler,
 	componentHandler *handler.ComponentHandler,
 	statusPageHandler *handler.StatusPageHandler,
 	publicStatusHandler *handler.PublicStatusHandler,
@@ -215,13 +214,8 @@ func NewRouter(
 			r.With(middleware.RequireReadWrite).Post("/resources/bulk-remove", componentHandler.BulkRemoveFromComponent)    // POST /components/resources/bulk-remove - remove resources from components
 		})
 
-		// Tags API
-		r.Route("/tags", func(r chi.Router) {
-			r.Get("/", tagHandler.ListTags)                                           // GET /tags - list all tags
-			r.With(middleware.RequireReadWrite).Post("/", tagHandler.CreateTag)       // POST /tags - create new tag
-			r.With(middleware.RequireReadWrite).Patch("/{id}", tagHandler.UpdateTag)  // PATCH /tags/{id} - update tag
-			r.With(middleware.RequireReadWrite).Delete("/{id}", tagHandler.DeleteTag) // DELETE /tags/{id} - delete tag
-		})
+		// Tags API — migrated to /api/v1/tags (spec 086); the root /tags handler
+		// + routes were deleted.
 
 		// Monitoring Activities API
 		r.Get("/monitoring-activities", activityHandler.ListActivities) // GET /monitoring-activities - list activities (supports ?resource_id=xxx)
@@ -361,6 +355,7 @@ func NewRouter(
 				r.With(middleware.RequireReadWrite).Post("/", tagV1Handler.Create)
 				r.Get("/{id}", tagV1Handler.Get)
 				r.With(middleware.RequireReadWrite).Put("/{id}", tagV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", tagV1Handler.Patch)
 				r.With(middleware.RequireReadWrite).Delete("/{id}", tagV1Handler.Delete)
 			})
 			// Status page routes — registered in T034

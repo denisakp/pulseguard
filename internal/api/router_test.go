@@ -31,7 +31,6 @@ func (m *mockRouterPingService) HandleHeartbeatRecovery(ctx context.Context, res
 func TestNewRouter_PingIsPublicAndRootResourcesRemoved(t *testing.T) {
 	pingHandler := handler.NewPingHandler(&mockRouterPingService{})
 	activityHandler := handler.NewMonitoringActivityHandler(nil)
-	tagHandler := handler.NewTagHandler(nil)
 	componentHandler := handler.NewComponentHandler(nil)
 	statusPageHandler := handler.NewStatusPageHandler(nil)
 	publicStatusHandler := handler.NewPublicStatusHandler(nil)
@@ -49,7 +48,6 @@ func TestNewRouter_PingIsPublicAndRootResourcesRemoved(t *testing.T) {
 	router := NewRouter(
 		pingHandler,
 		activityHandler,
-		tagHandler,
 		componentHandler,
 		statusPageHandler,
 		publicStatusHandler,

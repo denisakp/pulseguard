@@ -71,8 +71,10 @@ export const baselineHandlers = [
     HttpResponse.json({ edition: 'community', version: '1.0.0' }),
   ),
 
-  // Tags
-  http.get(`${API}/tags`, () => HttpResponse.json([])),
+  // Tags (v1) — list is paginated `{ data, meta }`
+  http.get(`${API}/tags`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
+  ),
 
   // Maintenance
   http.get(`${API}/maintenances`, () => HttpResponse.json([])),

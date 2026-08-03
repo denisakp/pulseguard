@@ -1865,6 +1865,8 @@ components:
           type: string
         name:
           type: string
+        updated_at:
+          type: string
       type: object
     github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest:
       properties:
@@ -4284,6 +4286,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Get a tag by ID
+      tags:
+      - tags
+    patch:
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.UpdateTagRequest'
+                description: Update payload
+                summary: body
+        description: Update payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_TagResponse'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Not Found
+      security:
+      - BearerAuth: []
+      summary: Update a tag (partial)
       tags:
       - tags
     put:

@@ -51,7 +51,6 @@ func InitRouter(app *App) {
 	// Initialize handlers
 	pingHandler := handler.NewPingHandler(app.ResourceService)
 	activityHandler := handler.NewMonitoringActivityHandler(activityService)
-	tagHandler := handler.NewTagHandler(tagService)
 	statusPageHandler := handler.NewStatusPageHandler(statusPageService)
 	publicStatusHandler := handler.NewPublicStatusHandler(app.PublicStatusService)
 	statusPageSettingsHandler := handler.NewStatusPageSettingsHandler(statusPageSettingsService)
@@ -106,7 +105,7 @@ func InitRouter(app *App) {
 		return
 	}
 
-	apiHandler := api.NewRouter(pingHandler, activityHandler, tagHandler, componentHandler, statusPageHandler, publicStatusHandler, asCacheRecorder(app.PublicStatusCacheMetr), statusPageSettingsHandler, incidentHandler, incidentUpdateHandler, notificationHandler, maintenanceHandler, statsHandler, systemHandler, runtimeConfigHandler, authHandler, accountHandler, app.AuthService, app.APIKeyService, app.SessionService, sessionHandler, twoFactorV1Handler, escalationV1Handler, monitorV1Handler, incidentV1Handler, searchV1Handler, channelV1Handler, componentV1Handler, tagV1Handler, statusPageV1Handler, heartbeatV1Handler, credentialV1Handler, toolboxV1Handler, notificationFeedV1Handler, dashboardV1Handler, reportV1Handler, announcementV1Handler, integrationsV1Handler, resourceImportV1Handler, hostV1Handler, agentStreamV1Handler, app.HostCredentialService, cfg.EnableSwagger, cfg)
+	apiHandler := api.NewRouter(pingHandler, activityHandler, componentHandler, statusPageHandler, publicStatusHandler, asCacheRecorder(app.PublicStatusCacheMetr), statusPageSettingsHandler, incidentHandler, incidentUpdateHandler, notificationHandler, maintenanceHandler, statsHandler, systemHandler, runtimeConfigHandler, authHandler, accountHandler, app.AuthService, app.APIKeyService, app.SessionService, sessionHandler, twoFactorV1Handler, escalationV1Handler, monitorV1Handler, incidentV1Handler, searchV1Handler, channelV1Handler, componentV1Handler, tagV1Handler, statusPageV1Handler, heartbeatV1Handler, credentialV1Handler, toolboxV1Handler, notificationFeedV1Handler, dashboardV1Handler, reportV1Handler, announcementV1Handler, integrationsV1Handler, resourceImportV1Handler, hostV1Handler, agentStreamV1Handler, app.HostCredentialService, cfg.EnableSwagger, cfg)
 
 	// Root router
 	rootRouter := chi.NewRouter()

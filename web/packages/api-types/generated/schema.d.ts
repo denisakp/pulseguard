@@ -3533,7 +3533,53 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update a tag (partial) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Tag ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.UpdateTagRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_TagResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/toolbox/dns": {
@@ -4674,6 +4720,7 @@ export interface components {
             description?: string;
             id?: string;
             name?: string;
+            updated_at?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest": {
             config?: number[];
