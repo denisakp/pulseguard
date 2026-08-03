@@ -5,6 +5,8 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.0.0-beta.3] - 2026-08-03
+
 ### Added
 
 - **Public docs coverage for previously-undocumented shipped features (`nebula/`)** — new
