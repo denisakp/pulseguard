@@ -6,8 +6,8 @@
 import { computed, ref, watch } from 'vue'
 import {
   CHANNEL_TYPES,
+  channelSchemaFor,
   emptyConfigForType,
-  notificationChannelSchema,
   type ChannelType,
   type NotificationChannelInput,
 } from '@/schemas/notification-channel.schema'
@@ -93,7 +93,10 @@ function validate(): NotificationChannelInput | null {
     is_active: isActive.value,
     config: config.value,
   } as NotificationChannelInput
-  const r = notificationChannelSchema.safeParse(candidate)
+  // On edit the schema relaxes secret fields — GET masks them, so the operator
+  // sees them blank and may leave them blank to keep the stored value.
+  const schema = channelSchemaFor(props.initial?.id ? 'edit' : 'create')
+  const r = schema.safeParse(candidate)
   if (!r.success) {
     const errs: Record<string, string> = {}
     for (const issue of r.error.issues) {
@@ -199,6 +202,9 @@ defineExpose({
           <h3 class="text-xs font-semibold text-muted uppercase tracking-wide">
             Channel configuration
           </h3>
+          <p v-if="initial?.id" class="text-xs text-muted">
+            Secrets are hidden. Leave a secret field blank to keep the current value.
+          </p>
           <component :is="formComponent" v-model="config" :field-errors="fieldError" />
         </div>
 

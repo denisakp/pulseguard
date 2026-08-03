@@ -24,7 +24,6 @@ func buildRouterForCoverage() http.Handler {
 		handler.NewPublicStatusHandler(nil),
 		nil, // publicCacheMetrics
 		handler.NewStatusPageSettingsHandler(nil),
-		handler.NewNotificationHandler(nil),
 		handler.NewMaintenanceHandler(nil),
 		handler.NewStatsHandler(nil),
 		handler.NewSystemHandler(),

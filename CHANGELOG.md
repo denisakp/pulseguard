@@ -7,6 +7,17 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Notification channels moved to `/api/v1/*` (spec 086, US3)** — channel config, the
+  channel test flows, and the notification stats counters now go through the versioned API
+  (`notificationChannelService.ts` + `notificationStatsService.ts`; the in-app feed was already
+  v1 and is untouched). The v1 channel response was corrected to the full shape the UI needs —
+  `name` restored, the bogus duplicate `is_enabled` removed, telemetry (`last_sent_at`,
+  `last_failure_at`, `failures_24h`) added — while **masking secrets** (`password`/`auth_token`/
+  `token`/`account_sid`/`secret`) that the root API previously returned in cleartext. Update now
+  **preserves omitted secrets** (editing a channel without re-typing its password keeps the stored
+  one); the channel form makes secrets optional on edit ("leave blank to keep current"). New v1
+  endpoints: `POST /{id}/test`, `POST /test-config`, `GET /notifications/stats`, and `PATCH /{id}`.
+  The root notification handler + routes are deleted. Third domain of the Phase-3 convergence.
 - **Incidents domain moved to `/api/v1/incidents` (spec 086, US2)** — the frontend now reads
   incidents (list + rich detail) and manages the status-update timeline through the versioned
   API. The v1 `IncidentResponse` became a superset carrying the rich detail fields the UI

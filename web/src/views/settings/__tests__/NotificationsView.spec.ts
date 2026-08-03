@@ -149,6 +149,72 @@ describe('NotificationsView', () => {
     expect(fetchChannelsMock).toHaveBeenCalledTimes(2)
   })
 
+  it('onSubmit in edit mode strips a blank (masked) secret from the update payload', async () => {
+    const chan = {
+      id: 'c1',
+      name: 'Ops',
+      type: 'smtp',
+      config: { host: 'h', port: 587, username: 'u', sender: 'a@b.co', recipient: 'c@d.co' },
+      enabled_by_default: false,
+    }
+    fetchChannelsMock.mockResolvedValue([chan])
+    updateChannelMock.mockResolvedValue({ id: 'c1' })
+    const w = mount(NotificationsView)
+    await flushPromises()
+    const vm = w.vm as unknown as Vm & { openEdit: (c: unknown) => void }
+    vm.openEdit(chan)
+    await vm.onSubmit({
+      type: 'smtp',
+      name: 'Ops',
+      is_default: false,
+      is_active: true,
+      config: {
+        host: 'h',
+        port: 587,
+        username: 'u',
+        password: '',
+        sender: 'a@b.co',
+        recipient: 'c@d.co',
+      },
+    })
+    const [id, payload] = updateChannelMock.mock.calls[0]
+    expect(id).toBe('c1')
+    expect(payload.config).not.toHaveProperty('password')
+    expect(payload.config.host).toBe('h')
+  })
+
+  it('onSubmit in edit mode keeps a newly typed secret', async () => {
+    const chan = {
+      id: 'c1',
+      name: 'Ops',
+      type: 'smtp',
+      config: { host: 'h', port: 587, username: 'u', sender: 'a@b.co', recipient: 'c@d.co' },
+      enabled_by_default: false,
+    }
+    fetchChannelsMock.mockResolvedValue([chan])
+    updateChannelMock.mockResolvedValue({ id: 'c1' })
+    const w = mount(NotificationsView)
+    await flushPromises()
+    const vm = w.vm as unknown as Vm & { openEdit: (c: unknown) => void }
+    vm.openEdit(chan)
+    await vm.onSubmit({
+      type: 'smtp',
+      name: 'Ops',
+      is_default: false,
+      is_active: true,
+      config: {
+        host: 'h',
+        port: 587,
+        username: 'u',
+        password: 'n3w',
+        sender: 'a@b.co',
+        recipient: 'c@d.co',
+      },
+    })
+    const [, payload] = updateChannelMock.mock.calls[0]
+    expect(payload.config.password).toBe('n3w')
+  })
+
   it('onDelete with confirm true → service deleteChannel called and row removed', async () => {
     const a: Channel = { id: 'a', name: 'A', type: 'slack', config: {}, enabled_by_default: false }
     fetchChannelsMock.mockResolvedValue([a])

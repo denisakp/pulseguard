@@ -2659,7 +2659,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -2714,7 +2714,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
                     };
                 };
                 /** @description Not Found */
@@ -2752,7 +2752,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -2816,6 +2816,168 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        /** Update a notification channel (partial) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Channel ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/notification-channels/{id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a test notification through a saved channel */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Channel ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-channels/test-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate and test an unsaved channel config */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Config to test */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.TestChannelConfigRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2982,6 +3144,51 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notification stats counters */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_NotificationStatsResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4329,6 +4536,20 @@ export interface components {
             uptime_7d?: number;
             uptime_30d?: number;
         };
+        "github_com_denisakp_ogoune_internal_dto.NotificationChannelResponse": {
+            config?: {
+                [key: string]: unknown;
+            };
+            created_at?: string;
+            enabled_by_default?: boolean;
+            failures_24h?: number;
+            id?: string;
+            last_failure_at?: string;
+            last_sent_at?: string;
+            name?: string;
+            type?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.NotificationChannelType"];
+            updated_at?: string;
+        };
         "github_com_denisakp_ogoune_internal_dto.ProblemDetail": {
             code?: string;
             detail?: string;
@@ -4555,15 +4776,6 @@ export interface components {
             severity?: string;
             title?: string;
         };
-        "github_com_denisakp_ogoune_internal_dto_v1.ChannelResponse": {
-            config?: number[];
-            created_at?: string;
-            id?: string;
-            is_default?: boolean;
-            is_enabled?: boolean;
-            type?: string;
-            updated_at?: string;
-        };
         "github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse": {
             created_at?: string;
             description?: string;
@@ -4579,9 +4791,7 @@ export interface components {
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateChannelRequest": {
             config?: number[];
-            is_default?: boolean;
-            /** @description defaults to true if omitted */
-            is_enabled?: boolean;
+            enabled_by_default?: boolean;
             name?: string;
             type?: string;
         };
@@ -4747,6 +4957,9 @@ export interface components {
         "github_com_denisakp_ogoune_internal_dto_v1.MarkAllReadResponse": {
             marked?: number;
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.MessageResponse": {
+            message?: string;
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.MetaResponse": {
             page?: number;
             per_page?: number;
@@ -4777,6 +4990,11 @@ export interface components {
         "github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStatsResponse": {
             resource_id?: string;
             stats?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStat"][];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.NotificationStatsResponse": {
+            failed_24h?: number;
+            pending?: number;
+            sent_30d?: number;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.PortResult": {
             banner?: string;
@@ -4884,16 +5102,16 @@ export interface components {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.LiveSnapshotResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.NotificationChannelResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ResourceResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_AnnouncementResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.AnnouncementResponse"];
-            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
-        };
-        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse": {
-            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ChannelResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse": {
@@ -4940,12 +5158,20 @@ export interface components {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MarkAllReadResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MessageResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MonitorResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorUptimeStatsResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStatsResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_NotificationStatsResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.NotificationStatsResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_PortScanResponse": {
@@ -4988,10 +5214,13 @@ export interface components {
             name?: string;
             updated_at?: string;
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.TestChannelConfigRequest": {
+            config?: number[];
+            type?: string;
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest": {
             config?: number[];
-            is_default?: boolean;
-            is_enabled?: boolean;
+            enabled_by_default?: boolean;
             name?: string;
             type?: string;
         };

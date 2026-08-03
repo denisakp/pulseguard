@@ -70,8 +70,32 @@ export const baselineHandlers = [
   // Credentials
   http.get(`${API}/credentials`, () => HttpResponse.json([])),
 
-  // Notification channels
-  http.get(`${API}/notification-channels`, () => HttpResponse.json([])),
+  // Notification channels (v1) — list is paginated `{ data, meta }`, single is `{ data }`.
+  // GET masks config secrets (password/auth_token/token/account_sid/secret absent).
+  http.get(`${API}/notification-channels`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
+  ),
+  http.get(`${API}/notification-channels/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'chan', type: 'slack', config: {} } }),
+  ),
+  http.post(`${API}/notification-channels`, () =>
+    HttpResponse.json({ data: { id: '01H', name: 'new', type: 'slack', config: {} } }, { status: 201 }),
+  ),
+  http.patch(`${API}/notification-channels/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'chan', type: 'slack', config: {} } }),
+  ),
+  http.delete(`${API}/notification-channels/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${API}/notification-channels/:id/test`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
+  http.post(`${API}/notification-channels/test-config`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
+
+  // Notification stats (v1) — `{ data: { sent_30d, pending, failed_24h } }`
+  http.get(`${API}/notifications/stats`, () =>
+    HttpResponse.json({ data: { sent_30d: 0, pending: 0, failed_24h: 0 } }),
+  ),
 
   // Status pages
   http.get(`${API}/status-pages`, () => HttpResponse.json([])),

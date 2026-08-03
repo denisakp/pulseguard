@@ -3,11 +3,9 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
-	"time"
-
-	"errors"
 
 	"github.com/denisakp/ogoune/internal/domain"
 	"github.com/denisakp/ogoune/internal/dto"
@@ -23,9 +21,12 @@ type ChannelV1ServiceInterface interface {
 	CreateNotificationChannel(ctx context.Context, payload *dto.CreateNotificationChannelPayload) (*domain.NotificationChannel, error)
 	UpdateNotificationChannel(ctx context.Context, id string, payload *dto.UpdateNotificationChannelPayload) (*domain.NotificationChannel, error)
 	DeleteNotificationChannel(ctx context.Context, id string) error
+	TestNotificationChannel(ctx context.Context, id string) error
+	ValidateAndTestChannelConfig(ctx context.Context, channelType domain.NotificationChannelType, config json.RawMessage) error
+	Stats(ctx context.Context) (*service.NotificationStats, error)
 }
 
-// NotificationChannelHandler handles v1 CRUD endpoints for notification channels.
+// NotificationChannelHandler handles v1 CRUD + test/stats endpoints for notification channels.
 type NotificationChannelHandler struct {
 	service ChannelV1ServiceInterface
 }
@@ -35,43 +36,59 @@ func NewNotificationChannelHandler(svc ChannelV1ServiceInterface) *NotificationC
 	return &NotificationChannelHandler{service: svc}
 }
 
-// sensitiveConfigKeys is a set of config keys that must be stripped from responses.
-var sensitiveConfigKeys = map[string]bool{
-	"password":    true,
-	"auth_token":  true,
-	"token":       true,
-	"account_sid": true,
-	"secret":      true,
+// sensitiveConfigKeys are config keys that MUST NOT be echoed back in responses.
+var sensitiveConfigKeys = []string{"password", "auth_token", "token", "account_sid", "secret"}
+
+// maskChannelResponse builds the rich (root-compatible) channel response but with
+// the sensitive config values stripped — v1 never leaks secrets in cleartext.
+func maskChannelResponse(ch *domain.NotificationChannel) (*dto.NotificationChannelResponse, error) {
+	// ToNotificationChannelResponse unmarshals the config; guard an empty/nil one.
+	if len(ch.Config) == 0 {
+		c := *ch
+		c.Config = []byte("{}")
+		ch = &c
+	}
+	resp, err := dto.ToNotificationChannelResponse(ch)
+	if err != nil {
+		return nil, err
+	}
+	for _, key := range sensitiveConfigKeys {
+		delete(resp.Config, key)
+	}
+	return resp, nil
 }
 
-// mapChannelResponse maps a domain.NotificationChannel to a v1 ChannelResponse.
-// Sensitive config fields are removed before returning.
-func mapChannelResponse(ch *domain.NotificationChannel) dtoV1.ChannelResponse {
-	var config json.RawMessage
-	if len(ch.Config) > 0 {
-		var configMap map[string]any
-		if err := json.Unmarshal(ch.Config, &configMap); err == nil {
-			for key := range sensitiveConfigKeys {
-				delete(configMap, key)
-			}
-			if sanitized, err := json.Marshal(configMap); err == nil {
-				config = sanitized
+// mergePreservedSecrets restores sensitive config values the incoming update omits
+// (or leaves empty) from the stored config. Because responses are masked, the
+// frontend re-sends a config without secrets on edit; this keeps the stored secret
+// unless the operator explicitly supplied a new non-empty value.
+func mergePreservedSecrets(existing, incoming []byte) json.RawMessage {
+	if len(incoming) == 0 {
+		return nil
+	}
+	var inMap map[string]any
+	if err := json.Unmarshal(incoming, &inMap); err != nil {
+		return incoming
+	}
+	var exMap map[string]any
+	_ = json.Unmarshal(existing, &exMap)
+	for _, key := range sensitiveConfigKeys {
+		v, present := inMap[key]
+		empty := !present
+		if s, ok := v.(string); ok && s == "" {
+			empty = true
+		}
+		if empty {
+			if ev, ok := exMap[key]; ok {
+				inMap[key] = ev
 			}
 		}
 	}
-	if config == nil {
-		config = json.RawMessage("{}")
+	merged, err := json.Marshal(inMap)
+	if err != nil {
+		return incoming
 	}
-
-	return dtoV1.ChannelResponse{
-		ID:        ch.ID,
-		Type:      string(ch.Type),
-		Config:    config,
-		IsDefault: ch.EnabledByDefault,
-		IsEnabled: ch.EnabledByDefault,
-		CreatedAt: ch.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt: ch.UpdatedAt.UTC().Format(time.RFC3339),
-	}
+	return merged
 }
 
 // List handles GET /api/v1/notification-channels
@@ -104,17 +121,21 @@ func (h *NotificationChannelHandler) List(w http.ResponseWriter, r *http.Request
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to count channels")
 		return
 	}
-	total := len(allItems)
 
-	data := make([]dtoV1.ChannelResponse, 0, len(items))
+	data := make([]*dto.NotificationChannelResponse, 0, len(items))
 	for _, ch := range items {
-		data = append(data, mapChannelResponse(ch))
+		resp, err := maskChannelResponse(ch)
+		if err != nil {
+			respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to map channel")
+			return
+		}
+		data = append(data, resp)
 	}
 
 	respondPaginated(w, data, dtoV1.MetaResponse{
 		Page:    params.Page,
 		PerPage: params.PerPage,
-		Total:   total,
+		Total:   len(allItems),
 	})
 }
 
@@ -125,7 +146,7 @@ func (h *NotificationChannelHandler) List(w http.ResponseWriter, r *http.Request
 // @Security    BearerAuth
 // @Produce     json
 // @Param       id path string true "Channel ID"
-// @Success     200 {object} dtoV1.SingleResponse[dtoV1.ChannelResponse]
+// @Success     200 {object} dtoV1.SingleResponse[dto.NotificationChannelResponse]
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Router      /notification-channels/{id} [get]
 func (h *NotificationChannelHandler) Get(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +164,12 @@ func (h *NotificationChannelHandler) Get(w http.ResponseWriter, r *http.Request)
 		respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "channel not found")
 		return
 	}
-	respond(w, http.StatusOK, mapChannelResponse(ch))
+	resp, err := maskChannelResponse(ch)
+	if err != nil {
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to map channel")
+		return
+	}
+	respond(w, http.StatusOK, resp)
 }
 
 // Create handles POST /api/v1/notification-channels
@@ -154,7 +180,7 @@ func (h *NotificationChannelHandler) Get(w http.ResponseWriter, r *http.Request)
 // @Accept      json
 // @Produce     json
 // @Param       body body dtoV1.CreateChannelRequest true "Channel payload"
-// @Success     201 {object} dtoV1.SingleResponse[dtoV1.ChannelResponse]
+// @Success     201 {object} dtoV1.SingleResponse[dto.NotificationChannelResponse]
 // @Failure     422 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Router      /notification-channels [post]
@@ -185,9 +211,10 @@ func (h *NotificationChannelHandler) Create(w http.ResponseWriter, r *http.Reque
 	}
 
 	payload := &dto.CreateNotificationChannelPayload{
-		Name:   req.Name,
-		Type:   channelType,
-		Config: req.Config,
+		Name:             req.Name,
+		Type:             channelType,
+		Config:           req.Config,
+		EnabledByDefault: req.EnabledByDefault,
 	}
 
 	created, err := h.service.CreateNotificationChannel(r.Context(), payload)
@@ -199,7 +226,12 @@ func (h *NotificationChannelHandler) Create(w http.ResponseWriter, r *http.Reque
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to create channel")
 		return
 	}
-	respond(w, http.StatusCreated, mapChannelResponse(created))
+	resp, err := maskChannelResponse(created)
+	if err != nil {
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to map channel")
+		return
+	}
+	respond(w, http.StatusCreated, resp)
 }
 
 // Update handles PUT /api/v1/notification-channels/{id}
@@ -211,7 +243,7 @@ func (h *NotificationChannelHandler) Create(w http.ResponseWriter, r *http.Reque
 // @Produce     json
 // @Param       id   path string true "Channel ID"
 // @Param       body body dtoV1.UpdateChannelRequest true "Update payload"
-// @Success     200 {object} dtoV1.SingleResponse[dtoV1.ChannelResponse]
+// @Success     200 {object} dtoV1.SingleResponse[dto.NotificationChannelResponse]
 // @Failure     404 {object} dtoV1.ErrorResponse
 // @Failure     403 {object} dtoV1.ErrorResponse
 // @Router      /notification-channels/{id} [put]
@@ -223,13 +255,24 @@ func (h *NotificationChannelHandler) Update(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Load the stored channel so an update that omits secrets (because responses
+	// are masked) preserves them instead of wiping the stored config.
+	existing, err := h.service.GetNotificationChannel(r.Context(), id)
+	if err != nil || existing == nil {
+		respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "channel not found")
+		return
+	}
+
 	payload := &dto.UpdateNotificationChannelPayload{
-		Name:   req.Name,
-		Config: req.Config,
+		Name:             req.Name,
+		EnabledByDefault: req.EnabledByDefault,
 	}
 	if req.Type != nil {
 		t := domain.NotificationChannelType(*req.Type)
 		payload.Type = &t
+	}
+	if len(req.Config) > 0 {
+		payload.Config = mergePreservedSecrets(existing.Config, req.Config)
 	}
 
 	updated, err := h.service.UpdateNotificationChannel(r.Context(), id, payload)
@@ -238,10 +281,36 @@ func (h *NotificationChannelHandler) Update(w http.ResponseWriter, r *http.Reque
 			respondError(w, r, http.StatusNotFound, "RESOURCE_NOT_FOUND", "channel not found")
 			return
 		}
+		if errors.Is(err, service.ErrValidationFailed) {
+			respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", err.Error())
+			return
+		}
 		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to update channel")
 		return
 	}
-	respond(w, http.StatusOK, mapChannelResponse(updated))
+	resp, err := maskChannelResponse(updated)
+	if err != nil {
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to map channel")
+		return
+	}
+	respond(w, http.StatusOK, resp)
+}
+
+// Patch handles PATCH /api/v1/notification-channels/{id} — partial update, alias of Update.
+//
+// @Summary     Update a notification channel (partial)
+// @Tags        notification-channels
+// @Security    BearerAuth
+// @Accept      json
+// @Produce     json
+// @Param       id   path string true "Channel ID"
+// @Param       body body dtoV1.UpdateChannelRequest true "Update payload"
+// @Success     200 {object} dtoV1.SingleResponse[dto.NotificationChannelResponse]
+// @Failure     404 {object} dtoV1.ErrorResponse
+// @Failure     403 {object} dtoV1.ErrorResponse
+// @Router      /notification-channels/{id} [patch]
+func (h *NotificationChannelHandler) Patch(w http.ResponseWriter, r *http.Request) {
+	h.Update(w, r)
 }
 
 // Delete handles DELETE /api/v1/notification-channels/{id}
@@ -265,4 +334,73 @@ func (h *NotificationChannelHandler) Delete(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// Test handles POST /api/v1/notification-channels/{id}/test — sends a real test
+// notification through a saved channel.
+//
+// @Summary     Send a test notification through a saved channel
+// @Tags        notification-channels
+// @Security    BearerAuth
+// @Produce     json
+// @Param       id path string true "Channel ID"
+// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MessageResponse]
+// @Failure     422 {object} dtoV1.ErrorResponse
+// @Failure     403 {object} dtoV1.ErrorResponse
+// @Router      /notification-channels/{id}/test [post]
+func (h *NotificationChannelHandler) Test(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	if err := h.service.TestNotificationChannel(r.Context(), id); err != nil {
+		respondError(w, r, http.StatusUnprocessableEntity, "TEST_FAILED", err.Error())
+		return
+	}
+	respond(w, http.StatusOK, dtoV1.MessageResponse{Message: "test notification sent"})
+}
+
+// TestConfig handles POST /api/v1/notification-channels/test-config — validates and
+// tests an unsaved channel config.
+//
+// @Summary     Validate and test an unsaved channel config
+// @Tags        notification-channels
+// @Security    BearerAuth
+// @Accept      json
+// @Produce     json
+// @Param       body body dtoV1.TestChannelConfigRequest true "Config to test"
+// @Success     200 {object} dtoV1.SingleResponse[dtoV1.MessageResponse]
+// @Failure     422 {object} dtoV1.ErrorResponse
+// @Failure     403 {object} dtoV1.ErrorResponse
+// @Router      /notification-channels/test-config [post]
+func (h *NotificationChannelHandler) TestConfig(w http.ResponseWriter, r *http.Request) {
+	var req dtoV1.TestChannelConfigRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, r, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "invalid request body")
+		return
+	}
+	if err := h.service.ValidateAndTestChannelConfig(r.Context(), domain.NotificationChannelType(req.Type), req.Config); err != nil {
+		respondError(w, r, http.StatusUnprocessableEntity, "TEST_FAILED", err.Error())
+		return
+	}
+	respond(w, http.StatusOK, dtoV1.MessageResponse{Message: "configuration validated and tested"})
+}
+
+// Stats handles GET /api/v1/notifications/stats — notification counters for the header.
+//
+// @Summary     Notification stats counters
+// @Tags        notification-channels
+// @Security    BearerAuth
+// @Produce     json
+// @Success     200 {object} dtoV1.SingleResponse[dtoV1.NotificationStatsResponse]
+// @Failure     500 {object} dtoV1.ErrorResponse
+// @Router      /notifications/stats [get]
+func (h *NotificationChannelHandler) Stats(w http.ResponseWriter, r *http.Request) {
+	stats, err := h.service.Stats(r.Context())
+	if err != nil {
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to load notification stats")
+		return
+	}
+	respond(w, http.StatusOK, dtoV1.NotificationStatsResponse{
+		Sent30d:   stats.Sent30d,
+		Pending:   stats.Pending,
+		Failed24h: stats.Failed24h,
+	})
 }
