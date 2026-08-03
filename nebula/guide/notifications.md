@@ -17,4 +17,4 @@ Channel credentials are encrypted at rest with **AES-256-GCM**. They are never s
 
 ## Monthly reports
 
-Ogoune can deliver a monthly uptime report via the configured SMTP channel — generated for the previous completed month, idempotent per period.
+Ogoune can also email a monthly uptime recap — see [Scheduled reports](/guide/reports).

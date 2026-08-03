@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
 // Ogoune public docs. Covers Community (CE) + Enterprise (EE) — same codebase,
 // EE features documented publicly (Portainer model). Cloud = the managed offering.
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: 'Ogoune',
   description: 'Uptime monitoring that confirms before it cries wolf.',
   lang: 'en-US',
@@ -49,6 +50,28 @@ export default defineConfig({
             { text: 'Monitor types', link: '/guide/monitor-types' },
             { text: 'Incidents & confirmation', link: '/guide/incidents' },
             { text: 'Notifications', link: '/guide/notifications' },
+            { text: 'Maintenance windows', link: '/guide/maintenance-windows' },
+          ],
+        },
+        {
+          text: 'Organization',
+          items: [
+            { text: 'Tags & components', link: '/guide/tags-components' },
+          ],
+        },
+        {
+          text: 'Status pages & reporting',
+          items: [
+            { text: 'Public status pages', link: '/guide/status-pages' },
+            { text: 'Dashboards', link: '/guide/dashboards' },
+            { text: 'Scheduled reports', link: '/guide/reports' },
+          ],
+        },
+        {
+          text: 'Account & API',
+          items: [
+            { text: 'API keys & 2FA', link: '/guide/api-access' },
+            { text: 'Bulk import/export', link: '/guide/import-export' },
           ],
         },
       ],
@@ -61,6 +84,7 @@ export default defineConfig({
             { text: 'Production (Postgres + Redis)', link: '/self-host/production' },
             { text: 'Configuration', link: '/self-host/configuration' },
             { text: 'Host agent', link: '/self-host/agent' },
+            { text: 'Observability (Prometheus)', link: '/self-host/observability' },
           ],
         },
       ],
@@ -102,4 +126,4 @@ export default defineConfig({
       copyright: 'Copyright © Ogoune',
     },
   },
-})
+}))

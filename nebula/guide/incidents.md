@@ -19,3 +19,20 @@ Related failures are grouped so a single upstream outage doesn't produce dozens 
 ## Lifecycle steps
 
 `detected` · `resource_down_alert` · `resolved` · `resource_up_alert` — steps may not all be present for every incident.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Monitoring
+    Monitoring --> Confirming: check fails
+    Confirming --> Monitoring: check recovers before N failures
+    Confirming --> detected: N consecutive failures
+    detected --> resource_down_alert: notification dispatched
+    resource_down_alert --> resolved: check recovers
+    resolved --> resource_up_alert: notification dispatched
+    resource_up_alert --> [*]
+```
+
+::: tip
+Not every incident carries all four steps — e.g. a resolved incident with no configured
+notification channel skips the alert steps but still records `detected` and `resolved`.
+:::
