@@ -17,7 +17,6 @@ import (
 // to enumerate registered routes via chi.Walk (handlers are never invoked here).
 func buildRouterForCoverage() http.Handler {
 	return NewRouter(
-		handler.NewResourceHandler(nil),
 		handler.NewPingHandler(&mockRouterPingService{}),
 		handler.NewMonitoringActivityHandler(nil),
 		handler.NewTagHandler(nil),

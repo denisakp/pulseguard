@@ -19,23 +19,27 @@ import { server } from '@/test/msw/server'
 
 describe('resourceService', () => {
   describe('fetchResources', () => {
-    it('sends GET to /resources', async () => {
+    it('sends GET to /v1/monitors and unwraps the paginated envelope', async () => {
       const resources = [{ id: 'r1', name: 'API Server' }]
-      server.use(http.get('*/resources', () => HttpResponse.json(resources)))
+      server.use(
+        http.get('*/v1/monitors', () =>
+          HttpResponse.json({ data: resources, meta: { page: 1, per_page: 100, total: 1 } }),
+        ),
+      )
       const result = await fetchResources()
       expect(result).toEqual(resources)
     })
 
     it('propagates server errors as ServerError', async () => {
-      server.use(http.get('*/resources', () => HttpResponse.json({}, { status: 500 })))
+      server.use(http.get('*/v1/monitors', () => HttpResponse.json({}, { status: 500 })))
       await expect(fetchResources()).rejects.toBeInstanceOf(ServerError)
     })
   })
 
   describe('fetchResource', () => {
-    it('sends GET to /resources/:id', async () => {
+    it('sends GET to /v1/monitors/:id and unwraps data', async () => {
       const resource = { id: 'r1', name: 'API Server' }
-      server.use(http.get('*/resources/r1', () => HttpResponse.json(resource)))
+      server.use(http.get('*/v1/monitors/r1', () => HttpResponse.json({ data: resource })))
       const result = await fetchResource('r1')
       expect(result).toEqual(resource)
     })
@@ -43,9 +47,9 @@ describe('resourceService', () => {
     it('passes limit as query param when provided', async () => {
       let limit: string | null = null
       server.use(
-        http.get('*/resources/r1', ({ request }) => {
+        http.get('*/v1/monitors/r1', ({ request }) => {
           limit = new URL(request.url).searchParams.get('limit')
-          return HttpResponse.json({ id: 'r1' })
+          return HttpResponse.json({ data: { id: 'r1' } })
         }),
       )
       await fetchResource('r1', 50)
@@ -54,16 +58,16 @@ describe('resourceService', () => {
   })
 
   describe('createResource', () => {
-    it('sends POST to /resources with payload and success-message header', async () => {
+    it('sends POST to /v1/monitors with payload and success-message header', async () => {
       const newResource = { name: 'New Monitor', url: 'https://example.com' }
       const created = { id: 'r2', ...newResource }
       let body: unknown = null
       let successHeader: string | null = null
       server.use(
-        http.post('*/resources', async ({ request }) => {
+        http.post('*/v1/monitors', async ({ request }) => {
           body = await request.json()
           successHeader = request.headers.get('x-success-message')
-          return HttpResponse.json(created, { status: 201 })
+          return HttpResponse.json({ data: created }, { status: 201 })
         }),
       )
 
@@ -76,9 +80,9 @@ describe('resourceService', () => {
 
     it('surfaces 422 validation errors as ValidationError with fieldErrors', async () => {
       server.use(
-        http.post('*/resources', () =>
+        http.post('*/v1/monitors', () =>
           HttpResponse.json(
-            { message: 'Invalid', fieldErrors: { name: ['required'] } },
+            { detail: 'Invalid', fieldErrors: { name: ['required'] } },
             { status: 422 },
           ),
         ),
@@ -97,8 +101,8 @@ describe('resourceService', () => {
 
     it('also normalizes 400 validation errors as ValidationError', async () => {
       server.use(
-        http.post('*/resources', () =>
-          HttpResponse.json({ message: 'Bad', fieldErrors: { url: ['invalid'] } }, { status: 400 }),
+        http.post('*/v1/monitors', () =>
+          HttpResponse.json({ detail: 'Bad', fieldErrors: { url: ['invalid'] } }, { status: 400 }),
         ),
       )
       try {
@@ -112,16 +116,16 @@ describe('resourceService', () => {
   })
 
   describe('updateResource', () => {
-    it('sends PATCH to /resources/:id with payload and success-message header', async () => {
+    it('sends PATCH to /v1/monitors/:id with payload and success-message header', async () => {
       const updates = { name: 'Updated Monitor' }
       const updated = { id: 'r1', name: 'Updated Monitor' }
       let body: unknown = null
       let successHeader: string | null = null
       server.use(
-        http.patch('*/resources/r1', async ({ request }) => {
+        http.patch('*/v1/monitors/r1', async ({ request }) => {
           body = await request.json()
           successHeader = request.headers.get('x-success-message')
-          return HttpResponse.json(updated)
+          return HttpResponse.json({ data: updated })
         }),
       )
 
@@ -134,10 +138,10 @@ describe('resourceService', () => {
   })
 
   describe('deleteResource', () => {
-    it('sends DELETE to /resources/:id with success-message header and reaches success on 204', async () => {
+    it('sends DELETE to /v1/monitors/:id with success-message header and reaches success on 204', async () => {
       let successHeader: string | null = null
       server.use(
-        http.delete('*/resources/r1', ({ request }) => {
+        http.delete('*/v1/monitors/r1', ({ request }) => {
           successHeader = request.headers.get('x-success-message')
           return new HttpResponse(null, { status: 204 })
         }),
@@ -148,30 +152,30 @@ describe('resourceService', () => {
   })
 
   describe('pauseResource', () => {
-    it('sends POST to /resources/:id/pause', async () => {
+    it('sends POST to /v1/monitors/:id/pause and unwraps data', async () => {
       const paused = { id: 'r1', status: 'paused' }
-      server.use(http.post('*/resources/r1/pause', () => HttpResponse.json(paused)))
+      server.use(http.post('*/v1/monitors/r1/pause', () => HttpResponse.json({ data: paused })))
       const result = await pauseResource('r1')
       expect(result).toEqual(paused)
     })
   })
 
   describe('resumeResource', () => {
-    it('sends POST to /resources/:id/resume', async () => {
+    it('sends POST to /v1/monitors/:id/resume and unwraps data', async () => {
       const resumed = { id: 'r1', status: 'active' }
-      server.use(http.post('*/resources/r1/resume', () => HttpResponse.json(resumed)))
+      server.use(http.post('*/v1/monitors/r1/resume', () => HttpResponse.json({ data: resumed })))
       const result = await resumeResource('r1')
       expect(result).toEqual(resumed)
     })
   })
 
   describe('addTagsToResource', () => {
-    it('sends POST to /resources/:id/tags with tag_ids', async () => {
+    it('sends POST to /v1/monitors/:id/tags with tag_ids', async () => {
       let body: { tag_ids: string[] } | null = null
       server.use(
-        http.post('*/resources/r1/tags', async ({ request }) => {
+        http.post('*/v1/monitors/r1/tags', async ({ request }) => {
           body = (await request.json()) as typeof body
-          return HttpResponse.json({})
+          return new HttpResponse(null, { status: 204 })
         }),
       )
       await addTagsToResource('r1', ['t1', 't2'])
@@ -180,10 +184,10 @@ describe('resourceService', () => {
   })
 
   describe('removeTagFromResource', () => {
-    it('sends DELETE to /resources/:id/tags/:tagId', async () => {
+    it('sends DELETE to /v1/monitors/:id/tags/:tagId', async () => {
       let called = false
       server.use(
-        http.delete('*/resources/r1/tags/t1', () => {
+        http.delete('*/v1/monitors/r1/tags/t1', () => {
           called = true
           return new HttpResponse(null, { status: 204 })
         }),
@@ -194,9 +198,11 @@ describe('resourceService', () => {
   })
 
   describe('fetchUptimeStats', () => {
-    it('sends GET to /resources/:id/uptime-stats', async () => {
+    it('sends GET to /v1/monitors/:id/uptime-stats and unwraps data', async () => {
       const stats = { resource_id: 'r1', stats: [] }
-      server.use(http.get('*/resources/r1/uptime-stats', () => HttpResponse.json(stats)))
+      server.use(
+        http.get('*/v1/monitors/r1/uptime-stats', () => HttpResponse.json({ data: stats })),
+      )
       const result = await fetchUptimeStats('r1')
       expect(result).toEqual(stats)
     })
