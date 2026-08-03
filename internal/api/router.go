@@ -28,7 +28,6 @@ const (
 // NewRouter creates and configures the main HTTP router with all JSON API routes.
 // All endpoints return JSON responses - no HTML rendering.
 func NewRouter(
-	resourceHandler *handler.ResourceHandler,
 	pingHandler *handler.PingHandler,
 	activityHandler *handler.MonitoringActivityHandler,
 	tagHandler *handler.TagHandler,
@@ -202,27 +201,8 @@ func NewRouter(
 			r.Delete("/{id}", escalationV1Handler.Delete)
 		})
 
-		// Resources (Monitors) API
-		r.Route("/resources", func(r chi.Router) {
-			r.Get("/", resourceHandler.ListResources)                                                                       // GET /resources - list all resources
-			r.With(middleware.RequireReadWrite).Post("/", resourceHandler.CreateResource)                                   // POST /resources - create new resource
-			r.Get("/{id}", resourceHandler.GetResourceByID)                                                                 // GET /resources/{id} - get resource details
-			r.Get("/{id}/live", resourceHandler.GetLive)                                                                    // GET /resources/{id}/live - get live resource snapshot
-			r.With(middleware.RequireReadWrite).Patch("/{id}", resourceHandler.UpdateResource)                              // PATCH /resources/{id} - update resource
-			r.With(middleware.RequireReadWrite).Delete("/{id}", resourceHandler.DeleteResource)                             // DELETE /resources/{id} - delete resource
-			r.With(middleware.RequireReadWrite).Post("/{id}/pause", resourceHandler.PauseResourceMonitoring)                // POST /resources/{id}/pause - pause monitoring
-			r.With(middleware.RequireReadWrite).Post("/{id}/resume", resourceHandler.ResumeResourceMonitoring)              // POST /resources/{id}/resume - resume monitoring
-			r.With(middleware.RequireReadWrite).Post("/{resourceID}/tags", resourceHandler.AddTagsToResource)               // POST /resources/{resourceID}/tags - add tags
-			r.With(middleware.RequireReadWrite).Delete("/{resourceID}/tags/{tagID}", resourceHandler.RemoveTagFromResource) // DELETE /resources/{resourceID}/tags/{tagID} - remove tag
-			r.Get("/{resourceId}/uptime-stats", activityHandler.GetUptimeStats)                                             // GET /resources/{resourceId}/uptime-stats - get hourly uptime stats
-
-			// Resource credentials (feature 028)
-			r.Get(routeCredentials, credentialV1Handler.Get)                                         // GET /resources/{id}/credentials - get masked credential
-			r.With(middleware.RequireReadWrite).Post(routeCredentials, credentialV1Handler.Set)      // POST /resources/{id}/credentials - create/replace credential
-			r.With(middleware.RequireReadWrite).Delete(routeCredentials, credentialV1Handler.Delete) // DELETE /resources/{id}/credentials - remove credential
-			r.With(middleware.RequireReadWrite, middleware.PerUserRateLimit(10)).
-				Post(routeCredentialsTest, credentialV1Handler.Test) // POST /resources/{id}/credentials/test - live-test (10 req/min/user)
-		})
+		// Resources (Monitors) API — migrated to /api/v1/monitors (spec 085);
+		// the root /resources handler + routes were deleted in Phase 2b.
 
 		// Components API
 		r.Route("/components", func(r chi.Router) {

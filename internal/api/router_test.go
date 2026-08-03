@@ -28,8 +28,7 @@ func (m *mockRouterPingService) HandleHeartbeatRecovery(ctx context.Context, res
 	return nil
 }
 
-func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
-	resourceHandler := handler.NewResourceHandler(nil)
+func TestNewRouter_PingIsPublicAndRootResourcesRemoved(t *testing.T) {
 	pingHandler := handler.NewPingHandler(&mockRouterPingService{})
 	activityHandler := handler.NewMonitoringActivityHandler(nil)
 	tagHandler := handler.NewTagHandler(nil)
@@ -48,7 +47,6 @@ func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
 	accountHandler := handler.NewAccountHandler(nil, nil)
 
 	router := NewRouter(
-		resourceHandler,
 		pingHandler,
 		activityHandler,
 		tagHandler,
@@ -105,8 +103,10 @@ func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
 	router.ServeHTTP(pingRec, pingReq)
 	assert.Equal(t, http.StatusNotFound, pingRec.Code)
 
+	// Root /resources was migrated to /api/v1/monitors and deleted (spec 085
+	// Phase 2b): the route no longer exists, so it 404s instead of 401.
 	resourcesReq := httptest.NewRequest(http.MethodGet, "/resources/", nil)
 	resourcesRec := httptest.NewRecorder()
 	router.ServeHTTP(resourcesRec, resourcesReq)
-	assert.Equal(t, http.StatusUnauthorized, resourcesRec.Code)
+	assert.Equal(t, http.StatusNotFound, resourcesRec.Code)
 }

@@ -16,6 +16,19 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
   `MonitorResponse` for CRUD (kept only for the monitor↔host link endpoints). Prerequisite
   for the frontend repoint + root-handler deletion (Phase 2b, still pending). Contract
   change is safe: beta, and the SPA is the only v1 consumer.
+- **Frontend repointed to `/api/v1/monitors` (spec 085, Phase 2b)** — `resourceService.ts`
+  now calls the versioned endpoints (list walks the paginated `page`/`per_page` response,
+  unwrapping the `{data}` envelope). The `Resource` type and its ~25 consumers are
+  unchanged — the v1 rich shape is field-identical, so no mapping layer was needed. This
+  makes `/api/v1/monitors` the single source of truth for the resources domain.
+
+### Removed
+
+- **Root `/api/resources` handler + routes deleted (spec 085, Phase 2b)** — the frozen
+  non-versioned `resource_handler.go` (+ its tests), the `r.Route("/resources", …)` block,
+  and the `resourceHandler` parameter of `NewRouter` are gone now that the SPA reads from
+  `/api/v1/monitors`. No external consumer existed; the resource-credential routes remain
+  available under `/api/v1/monitors/{id}/credentials*`.
 
 ### Added
 

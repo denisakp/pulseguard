@@ -34,16 +34,18 @@ export const baselineHandlers = [
   http.get(`${API}/me/onboarding-state`, () => HttpResponse.json({ status: 'pending' })),
   http.patch(`${API}/me/onboarding-state`, () => HttpResponse.json({ status: 'done' })),
 
-  // Resources
-  http.get(`${API}/resources`, () => HttpResponse.json([])),
-  http.get(`${API}/resources/:id`, ({ params }) =>
-    HttpResponse.json({ id: params.id, name: 'res' }),
+  // Resources (v1 monitors) — list is paginated `{ data, meta }`, single is `{ data }`
+  http.get(`${API}/monitors`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
   ),
-  http.post(`${API}/resources`, () =>
-    HttpResponse.json({ id: '01H', name: 'new' }, { status: 201 }),
+  http.get(`${API}/monitors/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'res' } }),
   ),
-  http.put(`${API}/resources/:id`, ({ params }) => HttpResponse.json({ id: params.id })),
-  http.delete(`${API}/resources/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${API}/monitors`, () =>
+    HttpResponse.json({ data: { id: '01H', name: 'new' } }, { status: 201 }),
+  ),
+  http.patch(`${API}/monitors/:id`, ({ params }) => HttpResponse.json({ data: { id: params.id } })),
+  http.delete(`${API}/monitors/:id`, () => new HttpResponse(null, { status: 204 })),
 
   // Incidents
   http.get(`${API}/incidents`, () => HttpResponse.json([])),
