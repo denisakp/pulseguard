@@ -1212,6 +1212,248 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/incidents/{id}/event-steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List an incident's event steps */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/incidents/{id}/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List an incident's timeline updates */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Add an update to an incident's timeline */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/incidents/{id}/updates/{updateID}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an incident timeline update */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                    /** @description Update ID */
+                    updateID: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Edit an incident timeline update */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                    /** @description Update ID */
+                    updateID: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/integrations/alert-rules": {
         parameters: {
             query?: never;
@@ -4472,12 +4714,32 @@ export interface components {
         "github_com_denisakp_ogoune_internal_dto_v1.IncidentResponse": {
             cause?: string;
             created_at?: string;
+            details?: string;
+            diagnostics?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.IncidentDiagnostics"];
+            event_steps?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.IncidentEventStep"][];
             id?: string;
             monitor_id?: string;
             resolved_at?: string;
+            resource?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"];
+            resource_id?: string;
             started_at?: string;
             /** @description "open" or "resolved" */
             status?: string;
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest": {
+            message?: string;
+            status?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateResponse": {
+            created_at?: string;
+            id?: string;
+            incident_id?: string;
+            message?: string;
+            posted_at?: string;
+            posted_by?: string;
+            status?: string;
+            updated_at?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.LinkHostRequest": {
             host_id?: string;
@@ -4668,6 +4930,10 @@ export interface components {
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MarkAllReadResponse": {

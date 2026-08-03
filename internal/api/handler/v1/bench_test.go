@@ -90,6 +90,9 @@ func (s *benchIncidentService) ListByFilter(ctx context.Context, f dynquery.Inci
 func (s *benchIncidentService) GetIncidentByID(ctx context.Context, id string) (*domain.Incident, error) {
 	return s.repo.FindByID(ctx, id)
 }
+func (s *benchIncidentService) GetEventStepsForIncident(_ context.Context, _ string) ([]domain.IncidentEventStep, error) {
+	panic("bench harness: GetEventStepsForIncident not used")
+}
 
 // ----------------------------------------------------------------------------
 // Fixture: 300 monitors + 100 incidents in PG.

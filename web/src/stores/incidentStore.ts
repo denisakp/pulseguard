@@ -11,10 +11,8 @@ export const useIncidentStore = defineStore('incident', () => {
   const fetchError = ref<string | null>(null)
   const getLoading = ref(false)
   const getError = ref<string | null>(null)
-  const resolveLoading = ref(false)
-  const resolveError = ref<string | null>(null)
-  const loading = computed(() => fetchLoading.value || getLoading.value || resolveLoading.value)
-  const error = computed(() => fetchError.value ?? getError.value ?? resolveError.value)
+  const loading = computed(() => fetchLoading.value || getLoading.value)
+  const error = computed(() => fetchError.value ?? getError.value)
 
   const fetchIncidents = (params?: IncidentsQueryParams) =>
     withStoreAction(fetchLoading, fetchError, async () => {
@@ -30,14 +28,6 @@ export const useIncidentStore = defineStore('incident', () => {
   const getIncidentById = (id: string) =>
     withStoreAction(getLoading, getError, () => incidentService.fetchIncidentById(id))
 
-  const resolveIncident = (id: string) =>
-    withStoreAction(resolveLoading, resolveError, async () => {
-      const updated = await incidentService.resolveIncident(id)
-      const index = incidents.value.findIndex((i) => i.id === id)
-      if (index !== -1) incidents.value[index] = updated
-      return updated
-    })
-
   const unresolvedCount = computed(() => incidents.value.filter((i) => !i.resolved_at).length)
   const resolvedCount = computed(() => incidents.value.filter((i) => i.resolved_at).length)
   const unresolvedIncidents = computed(() => incidents.value.filter((i) => !i.resolved_at))
@@ -51,11 +41,8 @@ export const useIncidentStore = defineStore('incident', () => {
     fetchError,
     getLoading,
     getError,
-    resolveLoading,
-    resolveError,
     fetchIncidents,
     getIncidentById,
-    resolveIncident,
     unresolvedCount,
     resolvedCount,
     unresolvedIncidents,

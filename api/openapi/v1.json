@@ -2011,6 +2011,19 @@
                     "created_at": {
                         "type": "string"
                     },
+                    "details": {
+                        "type": "string"
+                    },
+                    "diagnostics": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.IncidentDiagnostics"
+                    },
+                    "event_steps": {
+                        "items": {
+                            "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.IncidentEventStep"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
                     "id": {
                         "type": "string"
                     },
@@ -2020,11 +2033,60 @@
                     "resolved_at": {
                         "type": "string"
                     },
+                    "resource": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.Resource"
+                    },
+                    "resource_id": {
+                        "type": "string"
+                    },
                     "started_at": {
                         "type": "string"
                     },
                     "status": {
                         "description": "\"open\" or \"resolved\"",
+                        "type": "string"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest": {
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateResponse": {
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "incident_id": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "posted_at": {
+                        "type": "string"
+                    },
+                    "posted_by": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "updated_at": {
                         "type": "string"
                     }
                 },
@@ -2594,6 +2656,17 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.IncidentResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateResponse"
                     },
                     "meta": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
@@ -4296,6 +4369,305 @@
                     }
                 ],
                 "summary": "Get an incident by ID",
+                "tags": [
+                    "incidents"
+                ]
+            }
+        },
+        "/incidents/{id}/event-steps": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "Incident ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "List an incident's event steps",
+                "tags": [
+                    "incidents"
+                ]
+            }
+        },
+        "/incidents/{id}/updates": {
+            "get": {
+                "parameters": [
+                    {
+                        "description": "Incident ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {},
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "List an incident's timeline updates",
+                "tags": [
+                    "incidents"
+                ]
+            },
+            "post": {
+                "parameters": [
+                    {
+                        "description": "Incident ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest",
+                                        "summary": "body",
+                                        "description": "Update payload"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Update payload",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Add an update to an incident's timeline",
+                "tags": [
+                    "incidents"
+                ]
+            }
+        },
+        "/incidents/{id}/updates/{updateID}": {
+            "delete": {
+                "parameters": [
+                    {
+                        "description": "Incident ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Update ID",
+                        "in": "path",
+                        "name": "updateID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Delete an incident timeline update",
+                "tags": [
+                    "incidents"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "description": "Incident ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Update ID",
+                        "in": "path",
+                        "name": "updateID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest",
+                                        "summary": "body",
+                                        "description": "Update payload"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Update payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Edit an incident timeline update",
                 "tags": [
                     "incidents"
                 ]

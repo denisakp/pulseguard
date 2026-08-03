@@ -2,7 +2,6 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useIncidentStore } from '@/stores/incidentStore'
-import { useConfirm } from '@/composables/useConfirm'
 import IncidentHeader from '@/components/incidents/IncidentHeader.vue'
 import IncidentTimeline from '@/components/incidents/IncidentTimeline.vue'
 import DiagnosticsPanel from '@/components/incidents/DiagnosticsPanel.vue'
@@ -28,21 +27,9 @@ async function loadIncident() {
   }
 }
 
-async function onAction(p: { kind: 'resolve' | 'back' }) {
+function onAction(p: { kind: 'back' }) {
   if (p.kind === 'back') {
     router.push('/incidents')
-    return
-  }
-  if (p.kind === 'resolve' && incident.value) {
-    const ok = await useConfirm({
-      title: 'Mark as resolved?',
-      body: `${incident.value.resource?.name ?? incident.value.resource_id} — this records a resolved event and stops alerts.`,
-      ctaLabel: 'Resolve',
-    })
-    if (ok) {
-      await incidentStore.resolveIncident(incident.value.id)
-      await loadIncident()
-    }
   }
 }
 

@@ -19,10 +19,19 @@ import (
 // --- mock incident service ---
 
 type mockIncidentService struct {
-	incidents []*domain.Incident
-	incident  *domain.Incident
-	listErr   error
-	getErr    error
+	incidents  []*domain.Incident
+	incident   *domain.Incident
+	eventSteps []domain.IncidentEventStep
+	listErr    error
+	getErr     error
+	stepsErr   error
+}
+
+func (m *mockIncidentService) GetEventStepsForIncident(_ context.Context, _ string) ([]domain.IncidentEventStep, error) {
+	if m.stepsErr != nil {
+		return nil, m.stepsErr
+	}
+	return m.eventSteps, nil
 }
 
 func (m *mockIncidentService) ListAll(_ context.Context, limit, offset int) ([]*domain.Incident, error) {
@@ -94,6 +103,7 @@ func newIncidentRouter(svc v1.IncidentV1ServiceInterface) *chi.Mux {
 	h := v1.NewIncidentHandler(svc)
 	r.Get("/api/v1/incidents", h.List)
 	r.Get("/api/v1/incidents/{id}", h.Get)
+	r.Get("/api/v1/incidents/{id}/event-steps", h.GetEventSteps)
 	return r
 }
 
@@ -113,6 +123,41 @@ func makeIncidents(n int, resolved bool) []*domain.Incident {
 		incidents[i] = inc
 	}
 	return incidents
+}
+
+func TestIncidentHandler_GetEventSteps_ReturnsSteps(t *testing.T) {
+	msg := "resource down"
+	svc := &mockIncidentService{eventSteps: []domain.IncidentEventStep{
+		{Base: domain.Base{ID: "step-1"}, IncidentID: "inc-1", Step: domain.IncidentEventStepDetected, Message: &msg},
+	}}
+	router := newIncidentRouter(svc)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/incidents/inc-1/event-steps", nil)
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	var out struct {
+		Data []map[string]interface{} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &out))
+	require.Len(t, out.Data, 1)
+	assert.Equal(t, "step-1", out.Data[0]["id"])
+}
+
+func TestIncidentHandler_GetEventSteps_EmptyIsArray(t *testing.T) {
+	router := newIncidentRouter(&mockIncidentService{})
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/incidents/inc-1/event-steps", nil)
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	require.Equal(t, http.StatusOK, rr.Code)
+	var out struct {
+		Data []map[string]interface{} `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &out))
+	assert.NotNil(t, out.Data)
+	assert.Len(t, out.Data, 0)
 }
 
 // T024: Incident filter tests

@@ -8,7 +8,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  action: [{ kind: 'resolve' | 'back' }]
+  action: [{ kind: 'back' }]
 }>()
 
 const isResolved = computed(() => !!props.incident.resolved_at)
@@ -58,15 +58,6 @@ function formatDate(iso?: string | null) {
         <span class="text-xs font-mono text-muted">{{ incidentLabel }}</span>
       </div>
       <div class="flex items-center gap-2">
-        <UButton
-          v-if="!isResolved"
-          color="primary"
-          size="sm"
-          icon="i-lucide-check-circle"
-          @click="emit('action', { kind: 'resolve' })"
-        >
-          Resolve
-        </UButton>
         <UButton
           color="neutral"
           variant="outline"

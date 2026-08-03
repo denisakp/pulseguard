@@ -588,7 +588,11 @@ func (r *IncidentRepositorySQLC) ListIncidentsByFilter(ctx context.Context, f dy
 		if err := r.pgPool.QueryRow(ctx, countSQL, countArgs...).Scan(&total); err != nil {
 			return nil, 0, fmt.Errorf("sqlc: list incidents by filter (count): %w", err)
 		}
-		return incidentsFromPG(typed), int(total), nil
+		out := incidentsFromPG(typed)
+		if err := r.attachResources(ctx, out); err != nil {
+			return nil, 0, err
+		}
+		return out, int(total), nil
 
 	case r.sqliteQ != nil:
 		sqlRows, err := r.sqliteDB.QueryContext(ctx, rowsSQL, rowsArgs...)
@@ -611,7 +615,11 @@ func (r *IncidentRepositorySQLC) ListIncidentsByFilter(ctx context.Context, f dy
 		if err := r.sqliteDB.QueryRowContext(ctx, countSQL, countArgs...).Scan(&total); err != nil {
 			return nil, 0, fmt.Errorf("sqlc: list incidents by filter (count): %w", err)
 		}
-		return incidentsFromSQLite(typed), int(total), nil
+		out := incidentsFromSQLite(typed)
+		if err := r.attachResources(ctx, out); err != nil {
+			return nil, 0, err
+		}
+		return out, int(total), nil
 
 	default:
 		return nil, 0, r.unconfigured()

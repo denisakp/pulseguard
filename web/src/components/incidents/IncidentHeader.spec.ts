@@ -22,13 +22,15 @@ function mkIncident(opts: { resolved?: boolean } = {}) {
 }
 
 describe('IncidentHeader', () => {
-  it('renders Active state with Resolve button when not resolved', () => {
+  it('renders Active state without a Resolve button when not resolved', () => {
     const w = mount(IncidentHeader, {
       global: { stubs },
       props: { incident: mkIncident({ resolved: false }) as unknown as import('@/types').Incident },
     })
     expect(w.text()).toContain('Active')
-    expect(w.text()).toContain('Resolve')
+    const buttonTexts = w.findAll('button').map((b) => b.text())
+    expect(buttonTexts).not.toContain('Resolve')
+    expect(buttonTexts).toContain('Back')
   })
 
   it('renders Resolved state without Resolve button when resolved', () => {
@@ -53,13 +55,13 @@ describe('IncidentHeader', () => {
     expect(w.text()).toContain('Database connection refused')
   })
 
-  it('emits action resolve when Resolve clicked', async () => {
+  it('emits action back when Back clicked', async () => {
     const w = mount(IncidentHeader, {
       global: { stubs },
       props: { incident: mkIncident({ resolved: false }) as unknown as import('@/types').Incident },
     })
     const buttons = w.findAll('button')
-    await buttons[0]?.trigger('click') // Resolve is first
-    expect(w.emitted('action')?.[0]?.[0]).toEqual({ kind: 'resolve' })
+    await buttons[0]?.trigger('click') // Back is the only action button
+    expect(w.emitted('action')?.[0]?.[0]).toEqual({ kind: 'back' })
   })
 })
