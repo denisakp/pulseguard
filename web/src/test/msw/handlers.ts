@@ -63,9 +63,27 @@ export const baselineHandlers = [
   ),
   http.delete(`${API}/incidents/:id/updates/:updateId`, () => new HttpResponse(null, { status: 204 })),
 
-  // Components
-  http.get(`${API}/components`, () => HttpResponse.json([])),
+  // Components (v1) — list is paginated `{ data, meta }`, single/create is `{ data }`.
+  // DELETE guard: 409 Conflict when the component still has resources attached.
+  http.get(`${API}/components`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
+  ),
+  http.get(`${API}/components/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'comp', status: 'up' } }),
+  ),
+  http.post(`${API}/components`, () =>
+    HttpResponse.json({ data: { id: '01H', name: 'new', status: 'up' } }, { status: 201 }),
+  ),
+  http.patch(`${API}/components/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'comp', status: 'up' } }),
+  ),
   http.delete(`${API}/components/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${API}/components/:id/resources/bulk-assign`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
+  http.post(`${API}/components/resources/bulk-remove`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
 
   // Credentials
   http.get(`${API}/credentials`, () => HttpResponse.json([])),

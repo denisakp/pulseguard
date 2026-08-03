@@ -450,6 +450,42 @@ components:
         updated_at:
           type: string
       type: object
+    github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot:
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_domain.ResourceStatus'
+      type: object
+    github_com_denisakp_ogoune_internal_dto.ComponentResponse:
+      properties:
+        created_at:
+          type: string
+        description:
+          type: string
+        grouping_window_seconds:
+          type: integer
+        id:
+          type: string
+        impacted_resources:
+          items:
+            $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot'
+          type: array
+          uniqueItems: false
+        name:
+          type: string
+        resources:
+          items:
+            $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot'
+          type: array
+          uniqueItems: false
+        status:
+          $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_domain.ComponentStatus'
+        updated_at:
+          type: string
+      type: object
     github_com_denisakp_ogoune_internal_dto.CreateResourcePayload:
       properties:
         component_id:
@@ -1082,18 +1118,13 @@ components:
         title:
           type: string
       type: object
-    github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse:
+    github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest:
       properties:
-        created_at:
-          type: string
-        description:
-          type: string
-        id:
-          type: string
-        name:
-          type: string
-        updated_at:
-          type: string
+        resource_ids:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
       type: object
     github_com_denisakp_ogoune_internal_dto_v1.CreateAnnouncementRequest:
       properties:
@@ -1124,8 +1155,15 @@ components:
       properties:
         description:
           type: string
+        grouping_window_seconds:
+          type: integer
         name:
           type: string
+        resource_ids:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
       type: object
     github_com_denisakp_ogoune_internal_dto_v1.CreateDashboardRequest:
       properties:
@@ -1741,6 +1779,13 @@ components:
             empty.
           type: string
       type: object
+    github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse:
+      properties:
+        data:
+          $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto.ComponentResponse'
+        meta:
+          $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse'
+      type: object
     github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_LiveSnapshotResponse:
       properties:
         data:
@@ -1766,13 +1811,6 @@ components:
       properties:
         data:
           $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.AnnouncementResponse'
-        meta:
-          $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse'
-      type: object
-    github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse:
-      properties:
-        data:
-          $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse'
         meta:
           $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse'
       type: object
@@ -1973,6 +2011,8 @@ components:
       properties:
         description:
           type: string
+        grouping_window_seconds:
+          type: integer
         name:
           type: string
       type: object
@@ -2209,7 +2249,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse'
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse'
           description: Created
         "403":
           content:
@@ -2252,6 +2292,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
           description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Conflict
       security:
       - BearerAuth: []
       summary: Delete a component
@@ -2270,7 +2316,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse'
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse'
           description: OK
         "404":
           content:
@@ -2281,6 +2327,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Get a component by ID
+      tags:
+      - components
+    patch:
+      parameters:
+      - description: Component ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.UpdateComponentRequest'
+                description: Update payload
+                summary: body
+        description: Update payload
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Not Found
+      security:
+      - BearerAuth: []
+      summary: Update a component (partial)
       tags:
       - components
     put:
@@ -2307,7 +2396,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse'
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse'
           description: OK
         "403":
           content:
@@ -2324,6 +2413,81 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a component
+      tags:
+      - components
+  /components/{id}/resources/bulk-assign:
+    post:
+      parameters:
+      - description: Component ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest'
+                description: Resource IDs
+                summary: body
+        description: Resource IDs
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse'
+          description: OK
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Unprocessable Entity
+      security:
+      - BearerAuth: []
+      summary: Assign resources to a component
+      tags:
+      - components
+  /components/resources/bulk-remove:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest'
+                description: Resource IDs
+                summary: body
+        description: Resource IDs
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse'
+          description: OK
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse'
+          description: Unprocessable Entity
+      security:
+      - BearerAuth: []
+      summary: Remove resources from their components
       tags:
       - components
   /dashboards:
