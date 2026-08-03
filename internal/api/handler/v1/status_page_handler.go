@@ -1,12 +1,20 @@
 package v1
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/denisakp/ogoune/internal/domain"
 	dtoV1 "github.com/denisakp/ogoune/internal/dto/v1"
 )
+
+// ComponentV1RepositoryInterface is the read surface over the component repository
+// used by the read-only status-page handler (components back status pages).
+type ComponentV1RepositoryInterface interface {
+	List(ctx context.Context, limit, offset int) ([]*domain.Component, error)
+	FindByID(ctx context.Context, id string) (*domain.Component, error)
+}
 
 // StatusPageV1Handler handles read-only status page list via the component repository.
 type StatusPageV1Handler struct {

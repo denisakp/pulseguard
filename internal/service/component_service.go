@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/denisakp/ogoune/internal/config"
 	"github.com/denisakp/ogoune/internal/domain"
@@ -206,6 +207,8 @@ func (s *ComponentService) toComponentResponse(ctx context.Context, component *d
 		ImpactedResources:     impacted,
 		Resources:             snaps,
 		GroupingWindowSeconds: component.GroupingWindowSeconds,
+		CreatedAt:             component.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:             component.UpdatedAt.UTC().Format(time.RFC3339),
 	}, nil
 }
 

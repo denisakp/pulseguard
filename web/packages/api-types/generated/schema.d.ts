@@ -215,7 +215,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -270,7 +270,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
                     };
                 };
                 /** @description Not Found */
@@ -308,7 +308,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -370,8 +370,175 @@ export interface paths {
                         "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
                     };
                 };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
             };
         };
+        options?: never;
+        head?: never;
+        /** Update a component (partial) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Component ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.UpdateComponentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/components/{id}/resources/bulk-assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assign resources to a component */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Component ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Resource IDs */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/components/resources/bulk-remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Remove resources from their components */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Resource IDs */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -4486,6 +4653,22 @@ export interface components {
             resources?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"][];
             updated_at?: string;
         };
+        "github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot": {
+            id?: string;
+            name?: string;
+            status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceStatus"];
+        };
+        "github_com_denisakp_ogoune_internal_dto.ComponentResponse": {
+            created_at?: string;
+            description?: string;
+            grouping_window_seconds?: number;
+            id?: string;
+            impacted_resources?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot"][];
+            name?: string;
+            resources?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot"][];
+            status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ComponentStatus"];
+            updated_at?: string;
+        };
         "github_com_denisakp_ogoune_internal_dto.CreateResourcePayload": {
             component_id?: string;
             confirmation_checks?: number;
@@ -4776,12 +4959,8 @@ export interface components {
             severity?: string;
             title?: string;
         };
-        "github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse": {
-            created_at?: string;
-            description?: string;
-            id?: string;
-            name?: string;
-            updated_at?: string;
+        "github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest": {
+            resource_ids?: string[];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateAnnouncementRequest": {
             description?: string;
@@ -4797,7 +4976,9 @@ export interface components {
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateComponentRequest": {
             description?: string;
+            grouping_window_seconds?: number;
             name?: string;
+            resource_ids?: string[];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateDashboardRequest": {
             defaultTimeRange?: string;
@@ -5098,6 +5279,10 @@ export interface components {
             /** @description Meta is short context (e.g. a monitor's target), omitted when empty. */
             meta?: string;
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ComponentResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_LiveSnapshotResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.LiveSnapshotResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
@@ -5112,10 +5297,6 @@ export interface components {
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_AnnouncementResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.AnnouncementResponse"];
-            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
-        };
-        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse": {
-            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CreateHostCredentialResponse": {
@@ -5226,6 +5407,7 @@ export interface components {
         };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateComponentRequest": {
             description?: string;
+            grouping_window_seconds?: number;
             name?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateDashboardRequest": {

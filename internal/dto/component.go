@@ -44,4 +44,6 @@ type ComponentResponse struct {
 	ImpactedResources     []ComponentResourceSnapshot `json:"impacted_resources"`
 	Resources             []ComponentResourceSnapshot `json:"resources"`
 	GroupingWindowSeconds int                         `json:"grouping_window_seconds"`
+	CreatedAt             string                      `json:"created_at"`
+	UpdatedAt             string                      `json:"updated_at"`
 }

@@ -7,6 +7,18 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Components moved to `/api/v1/components` (spec 086, US4)** — the frontend now manages
+  components (logical groupings of monitors with a rolled-up status) through the versioned API.
+  The v1 component handler was **rebuilt on `ComponentService`** — it previously bypassed the
+  service and talked to the repository directly, so it lacked every piece of component logic.
+  It now returns the rich shape the UI needs (derived `status`, `impacted_resources`, attached
+  `resources`, `grouping_window_seconds`, timestamps) and recovers the behavior the root API had:
+  resource membership on create (`resource_ids`, at least one required), grouping-window
+  validation, the delete guard (a component with resources still attached can't be deleted →
+  409), and the bulk assign/remove endpoints. Added `PATCH /{id}` alongside `PUT`. The root
+  component handler + routes are deleted. **Final domain of the Phase-3 root→v1 convergence —
+  the duplicated non-versioned root API for resources/incidents/tags/notifications/components is
+  now fully gone.**
 - **Notification channels moved to `/api/v1/*` (spec 086, US3)** — channel config, the
   channel test flows, and the notification stats counters now go through the versioned API
   (`notificationChannelService.ts` + `notificationStatsService.ts`; the in-app feed was already

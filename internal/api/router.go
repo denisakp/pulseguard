@@ -30,7 +30,6 @@ const (
 func NewRouter(
 	pingHandler *handler.PingHandler,
 	activityHandler *handler.MonitoringActivityHandler,
-	componentHandler *handler.ComponentHandler,
 	statusPageHandler *handler.StatusPageHandler,
 	publicStatusHandler *handler.PublicStatusHandler,
 	publicCacheMetrics middleware.PublicStatusCacheRecorder,
@@ -201,16 +200,8 @@ func NewRouter(
 		// Resources (Monitors) API — migrated to /api/v1/monitors (spec 085);
 		// the root /resources handler + routes were deleted in Phase 2b.
 
-		// Components API
-		r.Route("/components", func(r chi.Router) {
-			r.Get("/", componentHandler.ListComponents)
-			r.With(middleware.RequireReadWrite).Post("/", componentHandler.CreateComponent)
-			r.Get("/{id}", componentHandler.GetComponent)
-			r.With(middleware.RequireReadWrite).Patch("/{id}", componentHandler.UpdateComponent)
-			r.With(middleware.RequireReadWrite).Delete("/{id}", componentHandler.DeleteComponent)
-			r.With(middleware.RequireReadWrite).Post("/{id}/resources/bulk-assign", componentHandler.BulkAssignToComponent) // POST /components/{id}/resources/bulk-assign - assign multiple resources
-			r.With(middleware.RequireReadWrite).Post("/resources/bulk-remove", componentHandler.BulkRemoveFromComponent)    // POST /components/resources/bulk-remove - remove resources from components
-		})
+		// Components API — migrated to /api/v1/components (spec 086 US4); the root
+		// /components handler + routes were deleted.
 
 		// Tags API — migrated to /api/v1/tags (spec 086); the root /tags handler
 		// + routes were deleted.
@@ -331,13 +322,17 @@ func NewRouter(
 				r.With(middleware.RequireReadWrite).Delete("/{id}", channelV1Handler.Delete)
 				r.With(middleware.RequireReadWrite).Post("/{id}/test", channelV1Handler.Test)
 			})
-			// Component routes — registered in T034
+			// Component routes — registered in T034; membership (bulk assign/remove)
+			// + PATCH migrated from root (spec 086 US4).
 			r.Route("/components", func(r chi.Router) {
 				r.Get("/", componentV1Handler.List)
 				r.With(middleware.RequireReadWrite).Post("/", componentV1Handler.Create)
+				r.With(middleware.RequireReadWrite).Post("/resources/bulk-remove", componentV1Handler.BulkRemove)
 				r.Get("/{id}", componentV1Handler.Get)
 				r.With(middleware.RequireReadWrite).Put("/{id}", componentV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", componentV1Handler.Patch)
 				r.With(middleware.RequireReadWrite).Delete("/{id}", componentV1Handler.Delete)
+				r.With(middleware.RequireReadWrite).Post("/{id}/resources/bulk-assign", componentV1Handler.BulkAssign)
 			})
 			// Tag routes — registered in T034
 			r.Route("/tags", func(r chi.Router) {

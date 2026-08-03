@@ -19,7 +19,6 @@ func buildRouterForCoverage() http.Handler {
 	return NewRouter(
 		handler.NewPingHandler(&mockRouterPingService{}),
 		handler.NewMonitoringActivityHandler(nil),
-		handler.NewComponentHandler(nil),
 		handler.NewStatusPageHandler(nil),
 		handler.NewPublicStatusHandler(nil),
 		nil, // publicCacheMetrics
