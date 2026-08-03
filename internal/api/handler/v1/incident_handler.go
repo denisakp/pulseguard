@@ -16,6 +16,7 @@ type IncidentV1ServiceInterface interface {
 	ListAll(ctx context.Context, limit, offset int) ([]*domain.Incident, error)
 	ListByFilter(ctx context.Context, f dynquery.IncidentFilter, page, perPage int) ([]*domain.Incident, int, error)
 	GetIncidentByID(ctx context.Context, id string) (*domain.Incident, error)
+	GetEventStepsForIncident(ctx context.Context, incidentID string) ([]domain.IncidentEventStep, error)
 }
 
 // IncidentHandler handles v1 read endpoints for incidents.
@@ -37,14 +38,23 @@ func mapIncidentStatus(inc *domain.Incident) string {
 }
 
 // mapIncidentResponse maps a domain.Incident to a v1 IncidentResponse.
+// The rich fields (Resource, EventSteps, Diagnostics) are populated only when
+// the service hydrated them (detail path); on the list path Resource is
+// hydrated and the rest stay zero-valued — matching the legacy root behavior.
 func mapIncidentResponse(inc *domain.Incident) dtoV1.IncidentResponse {
 	resp := dtoV1.IncidentResponse{
-		ID:        inc.ID,
-		MonitorID: inc.ResourceID,
-		Cause:     inc.Cause,
-		Status:    mapIncidentStatus(inc),
-		StartedAt: inc.StartedAt.UTC().Format(time.RFC3339),
-		CreatedAt: inc.CreatedAt.UTC().Format(time.RFC3339),
+		ID:          inc.ID,
+		MonitorID:   inc.ResourceID,
+		ResourceID:  inc.ResourceID,
+		Resource:    inc.Resource,
+		Cause:       inc.Cause,
+		Status:      mapIncidentStatus(inc),
+		Details:     string(inc.Details),
+		EventSteps:  inc.EventStep,
+		Diagnostics: inc.IncidentDiagnostics,
+		StartedAt:   inc.StartedAt.UTC().Format(time.RFC3339),
+		CreatedAt:   inc.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:   inc.UpdatedAt.UTC().Format(time.RFC3339),
 	}
 	if inc.ResolvedAt != nil {
 		s := inc.ResolvedAt.UTC().Format(time.RFC3339)
@@ -119,4 +129,27 @@ func (h *IncidentHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, http.StatusOK, mapIncidentResponse(inc))
+}
+
+// GetEventSteps handles GET /api/v1/incidents/{id}/event-steps
+//
+// @Summary     List an incident's event steps
+// @Tags        incidents
+// @Security    BearerAuth
+// @Produce     json
+// @Param       id path string true "Incident ID"
+// @Success     200 {object} map[string]interface{}
+// @Failure     500 {object} dtoV1.ErrorResponse
+// @Router      /incidents/{id}/event-steps [get]
+func (h *IncidentHandler) GetEventSteps(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	steps, err := h.service.GetEventStepsForIncident(r.Context(), id)
+	if err != nil {
+		respondError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to retrieve event steps")
+		return
+	}
+	if steps == nil {
+		steps = []domain.IncidentEventStep{}
+	}
+	respond(w, http.StatusOK, steps)
 }

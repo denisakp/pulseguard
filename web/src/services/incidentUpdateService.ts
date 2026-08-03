@@ -19,22 +19,23 @@ export interface IncidentUpdatePayload {
 }
 
 export const listIncidentUpdates = async (incidentID: string): Promise<IncidentUpdate[]> => {
-  const data = await request<IncidentUpdate[] | null>(
+  const res = await request<{ data: IncidentUpdate[] | null }>(
     getAuthenticatedClient(),
-    `incidents/${encodeURIComponent(incidentID)}/updates`,
+    `v1/incidents/${encodeURIComponent(incidentID)}/updates`,
   )
-  return data ?? []
+  return res?.data ?? []
 }
 
 export const createIncidentUpdate = async (
   incidentID: string,
   payload: IncidentUpdatePayload,
 ): Promise<IncidentUpdate> => {
-  return await request<IncidentUpdate>(
+  const res = await request<{ data: IncidentUpdate }>(
     getAuthenticatedClient(),
-    `incidents/${encodeURIComponent(incidentID)}/updates`,
+    `v1/incidents/${encodeURIComponent(incidentID)}/updates`,
     { method: 'POST', json: payload },
   )
+  return res.data
 }
 
 export const updateIncidentUpdate = async (
@@ -42,17 +43,18 @@ export const updateIncidentUpdate = async (
   updateID: string,
   payload: IncidentUpdatePayload,
 ): Promise<IncidentUpdate> => {
-  return await request<IncidentUpdate>(
+  const res = await request<{ data: IncidentUpdate }>(
     getAuthenticatedClient(),
-    `incidents/${encodeURIComponent(incidentID)}/updates/${encodeURIComponent(updateID)}`,
+    `v1/incidents/${encodeURIComponent(incidentID)}/updates/${encodeURIComponent(updateID)}`,
     { method: 'PATCH', json: payload },
   )
+  return res.data
 }
 
 export const deleteIncidentUpdate = async (incidentID: string, updateID: string): Promise<void> => {
   await request<unknown>(
     getAuthenticatedClient(),
-    `incidents/${encodeURIComponent(incidentID)}/updates/${encodeURIComponent(updateID)}`,
+    `v1/incidents/${encodeURIComponent(incidentID)}/updates/${encodeURIComponent(updateID)}`,
     { method: 'DELETE' },
   )
 }

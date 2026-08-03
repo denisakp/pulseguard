@@ -47,11 +47,21 @@ export const baselineHandlers = [
   http.patch(`${API}/monitors/:id`, ({ params }) => HttpResponse.json({ data: { id: params.id } })),
   http.delete(`${API}/monitors/:id`, () => new HttpResponse(null, { status: 204 })),
 
-  // Incidents
-  http.get(`${API}/incidents`, () => HttpResponse.json([])),
-  http.get(`${API}/incidents/:id`, ({ params }) =>
-    HttpResponse.json({ id: params.id, status: 'detected' }),
+  // Incidents (v1) — list is paginated `{ data, meta }`, single is `{ data }`
+  http.get(`${API}/incidents`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 50, total: 0 } }),
   ),
+  http.get(`${API}/incidents/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, status: 'detected' } }),
+  ),
+  http.get(`${API}/incidents/:id/updates`, () => HttpResponse.json({ data: [] })),
+  http.post(`${API}/incidents/:id/updates`, () =>
+    HttpResponse.json({ data: { id: 'u-1', status: 'investigating', message: '' } }, { status: 201 }),
+  ),
+  http.patch(`${API}/incidents/:id/updates/:updateId`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.updateId, status: 'investigating', message: '' } }),
+  ),
+  http.delete(`${API}/incidents/:id/updates/:updateId`, () => new HttpResponse(null, { status: 204 })),
 
   // Components
   http.get(`${API}/components`, () => HttpResponse.json([])),

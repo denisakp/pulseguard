@@ -254,9 +254,10 @@ export interface SystemCapabilities {
 
 export interface IncidentsQueryParams {
   unresolved?: boolean
-  limit?: number
-  offset?: number
-  resource_id?: string
+  status?: 'open' | 'resolved'
+  monitor_id?: string
+  page?: number
+  per_page?: number
 }
 
 /**

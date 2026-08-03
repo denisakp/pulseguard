@@ -7,6 +7,17 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Incidents domain moved to `/api/v1/incidents` (spec 086, US2)** — the frontend now reads
+  incidents (list + rich detail) and manages the status-update timeline through the versioned
+  API. The v1 `IncidentResponse` became a superset carrying the rich detail fields the UI
+  renders (`resource_id`, embedded `resource`, `details`, `event_steps`, `diagnostics`,
+  `updated_at`) alongside the v1-native `monitor_id`/`status`, so the frontend `Incident` type
+  is unchanged; the v1 list now hydrates `resource` (so list search/filter by monitor name/type
+  keeps working). New v1 endpoints: `GET /{id}/event-steps` and the incident-updates timeline
+  (`GET`/`POST /{id}/updates`, `PATCH`/`DELETE /{id}/updates/{updateID}`, writes read/write-scoped).
+  The two frozen root incident handlers, their routes, and their `NewRouter` params are deleted.
+  Per-resource incident lists now filter server-side via `monitor_id` (the old root `resource_id`
+  param was dead). Second domain of the Phase-3 root→v1 convergence.
 - **Tags domain moved to `/api/v1/tags` (spec 086, US1)** — the frontend now reads/writes
   tags through the versioned API (`tagService.ts` walks the paginated `{data,meta}` list and
   unwraps the envelope); the v1 `TagResponse` gained `updated_at` and a `PATCH /api/v1/tags/{id}`
@@ -30,6 +41,10 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
+- **Broken "Resolve incident" button removed (spec 086, US2)** — the button called
+  `PATCH /incidents/{id}/resolve`, an endpoint that never existed (it 404'd on every click).
+  Incidents still auto-resolve when the monitor recovers; the dead client call, store action,
+  and UI control are gone.
 - **Root `/api/resources` handler + routes deleted (spec 085, Phase 2b)** — the frozen
   non-versioned `resource_handler.go` (+ its tests), the `r.Route("/resources", …)` block,
   and the `resourceHandler` parameter of `NewRouter` are gone now that the SPA reads from

@@ -24,8 +24,6 @@ func buildRouterForCoverage() http.Handler {
 		handler.NewPublicStatusHandler(nil),
 		nil, // publicCacheMetrics
 		handler.NewStatusPageSettingsHandler(nil),
-		handler.NewIncidentHandler(nil),
-		handler.NewIncidentUpdateHandler(nil),
 		handler.NewNotificationHandler(nil),
 		handler.NewMaintenanceHandler(nil),
 		handler.NewStatsHandler(nil),
@@ -34,6 +32,7 @@ func buildRouterForCoverage() http.Handler {
 		handler.NewAuthHandler(nil, nil),
 		handler.NewAccountHandler(nil, nil),
 		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, // incidentUpdateV1Handler (spec 086 US2)
 		nil, nil, nil, // hostV1Handler, agentStreamV1Handler, hostCredentialService
 		false,
 		&config.Config{

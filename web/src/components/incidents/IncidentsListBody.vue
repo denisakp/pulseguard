@@ -19,8 +19,8 @@ onMounted(async () => {
   loading.value = true
   try {
     await incidentStore.fetchIncidents({
-      resource_id: props.filter.resource_id,
-      limit: props.limit,
+      monitor_id: props.filter.resource_id,
+      per_page: props.limit,
     })
   } finally {
     loading.value = false

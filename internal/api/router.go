@@ -35,8 +35,6 @@ func NewRouter(
 	publicStatusHandler *handler.PublicStatusHandler,
 	publicCacheMetrics middleware.PublicStatusCacheRecorder,
 	statusPageSettingsHandler *handler.StatusPageSettingsHandler,
-	incidentHandler *handler.IncidentHandler,
-	incidentUpdateHandler *handler.IncidentUpdateHandler,
 	notificationHandler *handler.NotificationHandler,
 	maintenanceHandler *handler.MaintenanceHandler,
 	statsHandler *handler.StatsHandler,
@@ -52,6 +50,7 @@ func NewRouter(
 	escalationV1Handler *v1handler.EscalationHandler,
 	monitorV1Handler *v1handler.MonitorHandler,
 	incidentV1Handler *v1handler.IncidentHandler,
+	incidentUpdateV1Handler *v1handler.IncidentUpdateHandler,
 	searchV1Handler *v1handler.SearchHandler,
 	channelV1Handler *v1handler.NotificationChannelHandler,
 	componentV1Handler *v1handler.ComponentHandler,
@@ -220,17 +219,8 @@ func NewRouter(
 		// Monitoring Activities API
 		r.Get("/monitoring-activities", activityHandler.ListActivities) // GET /monitoring-activities - list activities (supports ?resource_id=xxx)
 
-		// Incidents API
-		r.Route("/incidents", func(r chi.Router) {
-			r.Get("/", incidentHandler.ListIncidents)                         // GET /incidents - list all incidents (supports ?unresolved=true, ?limit=x, ?offset=y)
-			r.Get("/{id}", incidentHandler.GetIncidentDetail)                 // GET /incidents/{id} - get incident details with event steps
-			r.Get("/{id}/event-steps", incidentHandler.GetIncidentEventSteps) // GET /incidents/{id}/event-steps - get event steps for incident
-			// Incident updates timeline (US7).
-			r.Get("/{id}/updates", incidentUpdateHandler.List)
-			r.With(middleware.RequireReadWrite).Post("/{id}/updates", incidentUpdateHandler.Create)
-			r.With(middleware.RequireReadWrite).Patch("/{id}/updates/{updateID}", incidentUpdateHandler.Update)
-			r.With(middleware.RequireReadWrite).Delete("/{id}/updates/{updateID}", incidentUpdateHandler.Delete)
-		})
+		// Incidents API — migrated to /api/v1/incidents (spec 086 US2); the root
+		// /incidents handlers + routes (incl. the updates timeline) were deleted.
 
 		// Notification Channels API
 		r.Route("/notification-channels", func(r chi.Router) {
@@ -330,6 +320,13 @@ func NewRouter(
 			r.Route("/incidents", func(r chi.Router) {
 				r.Get("/", incidentV1Handler.List)
 				r.Get("/{id}", incidentV1Handler.Get)
+				r.Get("/{id}/event-steps", incidentV1Handler.GetEventSteps)
+
+				// Incident timeline updates (migrated from root, spec 086 US2)
+				r.Get("/{id}/updates", incidentUpdateV1Handler.List)
+				r.With(middleware.RequireReadWrite).Post("/{id}/updates", incidentUpdateV1Handler.Create)
+				r.With(middleware.RequireReadWrite).Patch("/{id}/updates/{updateID}", incidentUpdateV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Delete("/{id}/updates/{updateID}", incidentUpdateV1Handler.Delete)
 			})
 			// Command-palette search (spec 084) — read-only, any valid credential.
 			r.Get("/search", searchV1Handler.List)
