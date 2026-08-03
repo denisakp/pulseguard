@@ -40,7 +40,7 @@ services:
       timeout: 5s
       retries: 5
   ogoune:
-    image: ghcr.io/denisakp/ogoune:47d4944
+    image: ghcr.io/denisakp/ogoune:322cd04
     restart: unless-stopped
     ports:
       - "${APP_PORT:-9596}:9596"
