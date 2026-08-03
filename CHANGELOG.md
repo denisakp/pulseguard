@@ -5,6 +5,16 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.0.0-beta.4] - 2026-08-03
+
+### Fixed
+
+- **`useNotificationChannels` spec type errors** — `web/src/composables/__tests__/useNotificationChannels.spec.ts`
+  passed a bare `{}` for `NotificationConfig` in two call sites, failing `vue-tsc --build` in the
+  release image build (`v1.0.0-beta.3`'s Docker build never completed). Cast to `SlackConfig`,
+  matching the `type: 'slack'` fixtures. Pre-existing since spec 086 US3 (PR #59), unrelated to
+  the `nebula/` docs work in beta.3.
+
 ## [1.0.0-beta.3] - 2026-08-03
 
 ### Added
