@@ -1,4 +1,9 @@
-FROM node:24-alpine AS frontend-builder
+# Builder stages pin to $BUILDPLATFORM (the runner's native arch) so they run
+# natively instead of under QEMU emulation for the arm64 target. The frontend
+# build emits arch-independent static assets (built once, shared by both target
+# images); the Go compiler cross-compiles via $TARGETOS/$TARGETARCH. Only the
+# final COPY-only stage is materialized per target platform.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend-builder
 
 WORKDIR /build/web
 
@@ -21,11 +26,15 @@ RUN printf 'verify-deps-before-run=false\nconfirm-modules-purge=false\n' > .npmr
 RUN pnpm build
 
 # Stage 2: Build Go Backend
-FROM golang:1.25-alpine3.22 AS go-builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine3.22 AS go-builder
 
 LABEL org.opencontainers.image.source="https://github.com/denisakp/ogoune"
 LABEL org.opencontainers.image.description="A monitoring solution offering uptime monitoring, performance tracking, and alerting features."
 LABEL org.opencontainers.image.title="Ogoune"
+
+# Cross-compile targets, supplied automatically by buildx per target platform.
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /build
 
@@ -38,7 +47,7 @@ COPY pkg/ pkg/
 COPY docs/ docs/
 COPY api/ api/
 
-RUN CGO_ENABLED=0 GOOS=linux go build \
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -ldflags='-w -s -extldflags "-static"' \
     -a -installsuffix cgo \
     -o ogoune ./cmd/api/main.go

@@ -5,6 +5,15 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Release image build ~5x faster** — `Dockerfile` and `Dockerfile.agent` builder stages now
+  pin to `--platform=$BUILDPLATFORM` and cross-compile Go via `$TARGETOS`/`$TARGETARCH` instead
+  of running under QEMU emulation for the `arm64` target. The frontend build runs once (its
+  output is arch-independent) instead of twice. The release workflow's two `docker/build-push`
+  steps also set `provenance: false`. Multi-arch release build drops from ~28min toward a few
+  minutes; images and layout are unchanged.
+
 ## [1.0.0-beta.4] - 2026-08-03
 
 ### Fixed

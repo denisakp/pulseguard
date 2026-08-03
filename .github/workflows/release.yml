@@ -84,6 +84,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha,scope=${{ env.IMAGE_NAME }}
           cache-to: type=gha,mode=max,scope=${{ env.IMAGE_NAME }}
+          provenance: false
           tags: ${{ steps.tags.outputs.list }}
 
       # Agent image (spec 082) — same commit/tag as the API image → lockstep version.
@@ -98,6 +99,7 @@ jobs:
             VERSION=${{ steps.vars.outputs.version }}
           cache-from: type=gha,scope=${{ env.IMAGE_NAME }}-agent
           cache-to: type=gha,mode=max,scope=${{ env.IMAGE_NAME }}-agent
+          provenance: false
           tags: ${{ steps.tags.outputs.agent_list }}
 
       - uses: actions/setup-go@v5

@@ -1,9 +1,14 @@
 # Ogoune host monitoring agent (spec 082).
 # Multi-stage: static Go build → distroless/static (nonroot, ships CA certs so
 # wss:// TLS verification works; no shell, no package manager, no secret).
-FROM golang:1.25-alpine3.22 AS go-builder
+# Builder pins to $BUILDPLATFORM (runner's native arch) and cross-compiles via
+# $TARGETOS/$TARGETARCH, avoiding QEMU emulation for the arm64 target.
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine3.22 AS go-builder
 
 ARG VERSION=dev
+# Cross-compile targets, supplied automatically by buildx per target platform.
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /build
 
@@ -14,7 +19,7 @@ COPY cmd/ cmd/
 COPY internal/ internal/
 COPY pkg/ pkg/
 
-RUN CGO_ENABLED=0 GOOS=linux go build \
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -ldflags="-w -s -X main.version=${VERSION} -extldflags '-static'" \
     -a -installsuffix cgo \
     -o ogoune-agent ./cmd/agent
