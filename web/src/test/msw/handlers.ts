@@ -34,32 +34,86 @@ export const baselineHandlers = [
   http.get(`${API}/me/onboarding-state`, () => HttpResponse.json({ status: 'pending' })),
   http.patch(`${API}/me/onboarding-state`, () => HttpResponse.json({ status: 'done' })),
 
-  // Resources
-  http.get(`${API}/resources`, () => HttpResponse.json([])),
-  http.get(`${API}/resources/:id`, ({ params }) =>
-    HttpResponse.json({ id: params.id, name: 'res' }),
+  // Resources (v1 monitors) — list is paginated `{ data, meta }`, single is `{ data }`
+  http.get(`${API}/monitors`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
   ),
-  http.post(`${API}/resources`, () =>
-    HttpResponse.json({ id: '01H', name: 'new' }, { status: 201 }),
+  http.get(`${API}/monitors/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'res' } }),
   ),
-  http.put(`${API}/resources/:id`, ({ params }) => HttpResponse.json({ id: params.id })),
-  http.delete(`${API}/resources/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${API}/monitors`, () =>
+    HttpResponse.json({ data: { id: '01H', name: 'new' } }, { status: 201 }),
+  ),
+  http.patch(`${API}/monitors/:id`, ({ params }) => HttpResponse.json({ data: { id: params.id } })),
+  http.delete(`${API}/monitors/:id`, () => new HttpResponse(null, { status: 204 })),
 
-  // Incidents
-  http.get(`${API}/incidents`, () => HttpResponse.json([])),
+  // Incidents (v1) — list is paginated `{ data, meta }`, single is `{ data }`
+  http.get(`${API}/incidents`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 50, total: 0 } }),
+  ),
   http.get(`${API}/incidents/:id`, ({ params }) =>
-    HttpResponse.json({ id: params.id, status: 'detected' }),
+    HttpResponse.json({ data: { id: params.id, status: 'detected' } }),
   ),
+  http.get(`${API}/incidents/:id/updates`, () => HttpResponse.json({ data: [] })),
+  http.post(`${API}/incidents/:id/updates`, () =>
+    HttpResponse.json({ data: { id: 'u-1', status: 'investigating', message: '' } }, { status: 201 }),
+  ),
+  http.patch(`${API}/incidents/:id/updates/:updateId`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.updateId, status: 'investigating', message: '' } }),
+  ),
+  http.delete(`${API}/incidents/:id/updates/:updateId`, () => new HttpResponse(null, { status: 204 })),
 
-  // Components
-  http.get(`${API}/components`, () => HttpResponse.json([])),
+  // Components (v1) — list is paginated `{ data, meta }`, single/create is `{ data }`.
+  // DELETE guard: 409 Conflict when the component still has resources attached.
+  http.get(`${API}/components`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
+  ),
+  http.get(`${API}/components/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'comp', status: 'up' } }),
+  ),
+  http.post(`${API}/components`, () =>
+    HttpResponse.json({ data: { id: '01H', name: 'new', status: 'up' } }, { status: 201 }),
+  ),
+  http.patch(`${API}/components/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'comp', status: 'up' } }),
+  ),
   http.delete(`${API}/components/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${API}/components/:id/resources/bulk-assign`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
+  http.post(`${API}/components/resources/bulk-remove`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
 
   // Credentials
   http.get(`${API}/credentials`, () => HttpResponse.json([])),
 
-  // Notification channels
-  http.get(`${API}/notification-channels`, () => HttpResponse.json([])),
+  // Notification channels (v1) — list is paginated `{ data, meta }`, single is `{ data }`.
+  // GET masks config secrets (password/auth_token/token/account_sid/secret absent).
+  http.get(`${API}/notification-channels`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
+  ),
+  http.get(`${API}/notification-channels/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'chan', type: 'slack', config: {} } }),
+  ),
+  http.post(`${API}/notification-channels`, () =>
+    HttpResponse.json({ data: { id: '01H', name: 'new', type: 'slack', config: {} } }, { status: 201 }),
+  ),
+  http.patch(`${API}/notification-channels/:id`, ({ params }) =>
+    HttpResponse.json({ data: { id: params.id, name: 'chan', type: 'slack', config: {} } }),
+  ),
+  http.delete(`${API}/notification-channels/:id`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${API}/notification-channels/:id/test`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
+  http.post(`${API}/notification-channels/test-config`, () =>
+    HttpResponse.json({ data: { message: 'ok' } }),
+  ),
+
+  // Notification stats (v1) — `{ data: { sent_30d, pending, failed_24h } }`
+  http.get(`${API}/notifications/stats`, () =>
+    HttpResponse.json({ data: { sent_30d: 0, pending: 0, failed_24h: 0 } }),
+  ),
 
   // Status pages
   http.get(`${API}/status-pages`, () => HttpResponse.json([])),
@@ -69,8 +123,10 @@ export const baselineHandlers = [
     HttpResponse.json({ edition: 'community', version: '1.0.0' }),
   ),
 
-  // Tags
-  http.get(`${API}/tags`, () => HttpResponse.json([])),
+  // Tags (v1) — list is paginated `{ data, meta }`
+  http.get(`${API}/tags`, () =>
+    HttpResponse.json({ data: [], meta: { page: 1, per_page: 100, total: 0 } }),
+  ),
 
   // Maintenance
   http.get(`${API}/maintenances`, () => HttpResponse.json([])),

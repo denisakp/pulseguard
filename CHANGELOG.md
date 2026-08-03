@@ -5,7 +5,100 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-_Nothing yet._
+### Changed
+
+- **⌘K command palette now searches server-side (spec 084 frontend swap)** — the palette
+  queries `GET /api/v1/search` (debounced 150 ms) once a query reaches 2 characters, so it
+  finds monitors and incidents beyond the in-memory store window (historical incidents,
+  monitors not yet loaded). Empty and single-character queries still filter the local corpus
+  instantly, and if the endpoint is unreachable the palette **falls back to the local Fuse
+  search** — no loss of function offline. Result routing uses the contract's `deep_link`
+  paths, which also fixes a stale incident route (`{name:'Incident'}` → `/incidents/{id}`).
+  `fuse.js` stays in the bundle as the fallback engine (removal deferred to post-prod
+  validation).
+- **Components moved to `/api/v1/components` (spec 086, US4)** — the frontend now manages
+  components (logical groupings of monitors with a rolled-up status) through the versioned API.
+  The v1 component handler was **rebuilt on `ComponentService`** — it previously bypassed the
+  service and talked to the repository directly, so it lacked every piece of component logic.
+  It now returns the rich shape the UI needs (derived `status`, `impacted_resources`, attached
+  `resources`, `grouping_window_seconds`, timestamps) and recovers the behavior the root API had:
+  resource membership on create (`resource_ids`, at least one required), grouping-window
+  validation, the delete guard (a component with resources still attached can't be deleted →
+  409), and the bulk assign/remove endpoints. Added `PATCH /{id}` alongside `PUT`. The root
+  component handler + routes are deleted. **Final domain of the Phase-3 root→v1 convergence —
+  the duplicated non-versioned root API for resources/incidents/tags/notifications/components is
+  now fully gone.**
+- **Notification channels moved to `/api/v1/*` (spec 086, US3)** — channel config, the
+  channel test flows, and the notification stats counters now go through the versioned API
+  (`notificationChannelService.ts` + `notificationStatsService.ts`; the in-app feed was already
+  v1 and is untouched). The v1 channel response was corrected to the full shape the UI needs —
+  `name` restored, the bogus duplicate `is_enabled` removed, telemetry (`last_sent_at`,
+  `last_failure_at`, `failures_24h`) added — while **masking secrets** (`password`/`auth_token`/
+  `token`/`account_sid`/`secret`) that the root API previously returned in cleartext. Update now
+  **preserves omitted secrets** (editing a channel without re-typing its password keeps the stored
+  one); the channel form makes secrets optional on edit ("leave blank to keep current"). New v1
+  endpoints: `POST /{id}/test`, `POST /test-config`, `GET /notifications/stats`, and `PATCH /{id}`.
+  The root notification handler + routes are deleted. Third domain of the Phase-3 convergence.
+- **Incidents domain moved to `/api/v1/incidents` (spec 086, US2)** — the frontend now reads
+  incidents (list + rich detail) and manages the status-update timeline through the versioned
+  API. The v1 `IncidentResponse` became a superset carrying the rich detail fields the UI
+  renders (`resource_id`, embedded `resource`, `details`, `event_steps`, `diagnostics`,
+  `updated_at`) alongside the v1-native `monitor_id`/`status`, so the frontend `Incident` type
+  is unchanged; the v1 list now hydrates `resource` (so list search/filter by monitor name/type
+  keeps working). New v1 endpoints: `GET /{id}/event-steps` and the incident-updates timeline
+  (`GET`/`POST /{id}/updates`, `PATCH`/`DELETE /{id}/updates/{updateID}`, writes read/write-scoped).
+  The two frozen root incident handlers, their routes, and their `NewRouter` params are deleted.
+  Per-resource incident lists now filter server-side via `monitor_id` (the old root `resource_id`
+  param was dead). Second domain of the Phase-3 root→v1 convergence.
+- **Tags domain moved to `/api/v1/tags` (spec 086, US1)** — the frontend now reads/writes
+  tags through the versioned API (`tagService.ts` walks the paginated `{data,meta}` list and
+  unwraps the envelope); the v1 `TagResponse` gained `updated_at` and a `PATCH /api/v1/tags/{id}`
+  alias (matching the frontend's partial-edit verb). The frozen root `/api/tags` handler,
+  its routes, its `NewRouter` param, and the dead root tag DTO are deleted. First domain of the
+  Phase-3 root→v1 convergence (mirrors spec 085); `TagService` is shared, so behavior is identical.
+- **v1 monitors return the rich resource shape (spec 085, Phase 2a)** — `/api/v1/monitors`
+  List/Get/Create/Update/PATCH/Pause/Resume now return the same enriched `ResourceResponse`
+  the root `/api/resources` returns (tags as objects, `last_checked`, `uptime_7d`,
+  `incident_count_30d`, `response_times`, `expiry_status`, `waiting`, SSL/domain
+  days-remaining, all monitor-type fields) and accept the full create/update payloads (no
+  dropped fields), reusing the root's mapping + service. This supersedes the thin
+  `MonitorResponse` for CRUD (kept only for the monitor↔host link endpoints). Prerequisite
+  for the frontend repoint + root-handler deletion (Phase 2b, still pending). Contract
+  change is safe: beta, and the SPA is the only v1 consumer.
+- **Frontend repointed to `/api/v1/monitors` (spec 085, Phase 2b)** — `resourceService.ts`
+  now calls the versioned endpoints (list walks the paginated `page`/`per_page` response,
+  unwrapping the `{data}` envelope). The `Resource` type and its ~25 consumers are
+  unchanged — the v1 rich shape is field-identical, so no mapping layer was needed. This
+  makes `/api/v1/monitors` the single source of truth for the resources domain.
+
+### Removed
+
+- **Broken "Resolve incident" button removed (spec 086, US2)** — the button called
+  `PATCH /incidents/{id}/resolve`, an endpoint that never existed (it 404'd on every click).
+  Incidents still auto-resolve when the monitor recovers; the dead client call, store action,
+  and UI control are gone.
+- **Root `/api/resources` handler + routes deleted (spec 085, Phase 2b)** — the frozen
+  non-versioned `resource_handler.go` (+ its tests), the `r.Route("/resources", …)` block,
+  and the `resourceHandler` parameter of `NewRouter` are gone now that the SPA reads from
+  `/api/v1/monitors`. No external consumer existed; the resource-credential routes remain
+  available under `/api/v1/monitors/{id}/credentials*`.
+
+### Added
+
+- **Monitors API parity with the root resources API (spec 085, Phase 1)** — additive
+  endpoints on `/api/v1/monitors` so the versioned API can become the single source of
+  truth: `GET /{id}/live` (live snapshot), `GET /{id}/uptime-stats`, `POST /{id}/tags`
+  + `DELETE /{id}/tags/{tagID}` (204), `PATCH /{id}` (partial update; `PUT` retained), and
+  the resource-credential routes re-mounted under `/api/v1/monitors/{id}/credentials*`. All
+  reuse the existing services (no new logic, no migration); writes are read/write-scoped.
+  The frontend repoint + root-handler deletion (Phase 2) is a deferred follow-up.
+- **Server-side search endpoint (spec 084)** — `GET /api/v1/search?q=&limit=&categories=`
+  powering the ⌘K command palette beyond the client-side (in-memory) window. Aggregates
+  case-insensitive substring/prefix matches across monitors (name/target), incidents
+  (cause), and app pages, returns a ranked, capped result set
+  (`{results,total,query_duration_ms}`). Read-only (any valid credential), dual-dialect
+  (SQLite + Postgres via the portable `LOWER() LIKE LOWER() ESCAPE` dynquery predicate,
+  injection-safe), no pagination, no new migration.
 
 ---
 

@@ -66,6 +66,23 @@ func TestBuildIncidentsQuery_FromTo(t *testing.T) {
 	}
 }
 
+func TestBuildIncidentsQuery_Q(t *testing.T) {
+	rowsSQL, rowsArgs, _, _, _ := buildBoth(IncidentFilter{Q: strPtr("timeout")}, 1, 25, sq.Dollar)
+	if !strings.Contains(rowsSQL, "LOWER(cause) LIKE LOWER(") || !strings.Contains(rowsSQL, "ESCAPE") {
+		t.Errorf("expected LOWER(cause) LIKE … ESCAPE clause, got: %s", rowsSQL)
+	}
+	if len(rowsArgs) != 1 || rowsArgs[0] != "%timeout%" {
+		t.Errorf("expected single %%timeout%% arg, got %v", rowsArgs)
+	}
+}
+
+func TestBuildIncidentsQuery_Q_EscapesMetachars(t *testing.T) {
+	_, rowsArgs, _, _, _ := buildBoth(IncidentFilter{Q: strPtr("50%_x")}, 1, 25, sq.Dollar)
+	if len(rowsArgs) != 1 || rowsArgs[0] != `%50\%\_x%` {
+		t.Errorf("expected metacharacters escaped, got %v", rowsArgs)
+	}
+}
+
 func TestBuildIncidentsQuery_AllFilters(t *testing.T) {
 	from := time.Now().Add(-24 * time.Hour)
 	to := time.Now()

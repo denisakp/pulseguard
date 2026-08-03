@@ -28,18 +28,12 @@ const (
 // NewRouter creates and configures the main HTTP router with all JSON API routes.
 // All endpoints return JSON responses - no HTML rendering.
 func NewRouter(
-	resourceHandler *handler.ResourceHandler,
 	pingHandler *handler.PingHandler,
 	activityHandler *handler.MonitoringActivityHandler,
-	tagHandler *handler.TagHandler,
-	componentHandler *handler.ComponentHandler,
 	statusPageHandler *handler.StatusPageHandler,
 	publicStatusHandler *handler.PublicStatusHandler,
 	publicCacheMetrics middleware.PublicStatusCacheRecorder,
 	statusPageSettingsHandler *handler.StatusPageSettingsHandler,
-	incidentHandler *handler.IncidentHandler,
-	incidentUpdateHandler *handler.IncidentUpdateHandler,
-	notificationHandler *handler.NotificationHandler,
 	maintenanceHandler *handler.MaintenanceHandler,
 	statsHandler *handler.StatsHandler,
 	systemHandler *handler.SystemHandler,
@@ -54,6 +48,8 @@ func NewRouter(
 	escalationV1Handler *v1handler.EscalationHandler,
 	monitorV1Handler *v1handler.MonitorHandler,
 	incidentV1Handler *v1handler.IncidentHandler,
+	incidentUpdateV1Handler *v1handler.IncidentUpdateHandler,
+	searchV1Handler *v1handler.SearchHandler,
 	channelV1Handler *v1handler.NotificationChannelHandler,
 	componentV1Handler *v1handler.ComponentHandler,
 	tagV1Handler *v1handler.TagHandler,
@@ -201,75 +197,24 @@ func NewRouter(
 			r.Delete("/{id}", escalationV1Handler.Delete)
 		})
 
-		// Resources (Monitors) API
-		r.Route("/resources", func(r chi.Router) {
-			r.Get("/", resourceHandler.ListResources)                                                                       // GET /resources - list all resources
-			r.With(middleware.RequireReadWrite).Post("/", resourceHandler.CreateResource)                                   // POST /resources - create new resource
-			r.Get("/{id}", resourceHandler.GetResourceByID)                                                                 // GET /resources/{id} - get resource details
-			r.Get("/{id}/live", resourceHandler.GetLive)                                                                    // GET /resources/{id}/live - get live resource snapshot
-			r.With(middleware.RequireReadWrite).Patch("/{id}", resourceHandler.UpdateResource)                              // PATCH /resources/{id} - update resource
-			r.With(middleware.RequireReadWrite).Delete("/{id}", resourceHandler.DeleteResource)                             // DELETE /resources/{id} - delete resource
-			r.With(middleware.RequireReadWrite).Post("/{id}/pause", resourceHandler.PauseResourceMonitoring)                // POST /resources/{id}/pause - pause monitoring
-			r.With(middleware.RequireReadWrite).Post("/{id}/resume", resourceHandler.ResumeResourceMonitoring)              // POST /resources/{id}/resume - resume monitoring
-			r.With(middleware.RequireReadWrite).Post("/{resourceID}/tags", resourceHandler.AddTagsToResource)               // POST /resources/{resourceID}/tags - add tags
-			r.With(middleware.RequireReadWrite).Delete("/{resourceID}/tags/{tagID}", resourceHandler.RemoveTagFromResource) // DELETE /resources/{resourceID}/tags/{tagID} - remove tag
-			r.Get("/{resourceId}/uptime-stats", activityHandler.GetUptimeStats)                                             // GET /resources/{resourceId}/uptime-stats - get hourly uptime stats
+		// Resources (Monitors) API — migrated to /api/v1/monitors (spec 085);
+		// the root /resources handler + routes were deleted in Phase 2b.
 
-			// Resource credentials (feature 028)
-			r.Get(routeCredentials, credentialV1Handler.Get)                                         // GET /resources/{id}/credentials - get masked credential
-			r.With(middleware.RequireReadWrite).Post(routeCredentials, credentialV1Handler.Set)      // POST /resources/{id}/credentials - create/replace credential
-			r.With(middleware.RequireReadWrite).Delete(routeCredentials, credentialV1Handler.Delete) // DELETE /resources/{id}/credentials - remove credential
-			r.With(middleware.RequireReadWrite, middleware.PerUserRateLimit(10)).
-				Post(routeCredentialsTest, credentialV1Handler.Test) // POST /resources/{id}/credentials/test - live-test (10 req/min/user)
-		})
+		// Components API — migrated to /api/v1/components (spec 086 US4); the root
+		// /components handler + routes were deleted.
 
-		// Components API
-		r.Route("/components", func(r chi.Router) {
-			r.Get("/", componentHandler.ListComponents)
-			r.With(middleware.RequireReadWrite).Post("/", componentHandler.CreateComponent)
-			r.Get("/{id}", componentHandler.GetComponent)
-			r.With(middleware.RequireReadWrite).Patch("/{id}", componentHandler.UpdateComponent)
-			r.With(middleware.RequireReadWrite).Delete("/{id}", componentHandler.DeleteComponent)
-			r.With(middleware.RequireReadWrite).Post("/{id}/resources/bulk-assign", componentHandler.BulkAssignToComponent) // POST /components/{id}/resources/bulk-assign - assign multiple resources
-			r.With(middleware.RequireReadWrite).Post("/resources/bulk-remove", componentHandler.BulkRemoveFromComponent)    // POST /components/resources/bulk-remove - remove resources from components
-		})
-
-		// Tags API
-		r.Route("/tags", func(r chi.Router) {
-			r.Get("/", tagHandler.ListTags)                                           // GET /tags - list all tags
-			r.With(middleware.RequireReadWrite).Post("/", tagHandler.CreateTag)       // POST /tags - create new tag
-			r.With(middleware.RequireReadWrite).Patch("/{id}", tagHandler.UpdateTag)  // PATCH /tags/{id} - update tag
-			r.With(middleware.RequireReadWrite).Delete("/{id}", tagHandler.DeleteTag) // DELETE /tags/{id} - delete tag
-		})
+		// Tags API — migrated to /api/v1/tags (spec 086); the root /tags handler
+		// + routes were deleted.
 
 		// Monitoring Activities API
 		r.Get("/monitoring-activities", activityHandler.ListActivities) // GET /monitoring-activities - list activities (supports ?resource_id=xxx)
 
-		// Incidents API
-		r.Route("/incidents", func(r chi.Router) {
-			r.Get("/", incidentHandler.ListIncidents)                         // GET /incidents - list all incidents (supports ?unresolved=true, ?limit=x, ?offset=y)
-			r.Get("/{id}", incidentHandler.GetIncidentDetail)                 // GET /incidents/{id} - get incident details with event steps
-			r.Get("/{id}/event-steps", incidentHandler.GetIncidentEventSteps) // GET /incidents/{id}/event-steps - get event steps for incident
-			// Incident updates timeline (US7).
-			r.Get("/{id}/updates", incidentUpdateHandler.List)
-			r.With(middleware.RequireReadWrite).Post("/{id}/updates", incidentUpdateHandler.Create)
-			r.With(middleware.RequireReadWrite).Patch("/{id}/updates/{updateID}", incidentUpdateHandler.Update)
-			r.With(middleware.RequireReadWrite).Delete("/{id}/updates/{updateID}", incidentUpdateHandler.Delete)
-		})
+		// Incidents API — migrated to /api/v1/incidents (spec 086 US2); the root
+		// /incidents handlers + routes (incl. the updates timeline) were deleted.
 
-		// Notification Channels API
-		r.Route("/notification-channels", func(r chi.Router) {
-			r.Get("/", notificationHandler.ListNotificationChannels)                                                   // GET /notification-channels - list all channels
-			r.With(middleware.RequireReadWrite).Post("/", notificationHandler.CreateNotificationChannel)               // POST /notification-channels - create new channel
-			r.With(middleware.RequireReadWrite).Post("/test-config", notificationHandler.ValidateAndTestChannelConfig) // POST /notification-channels/test-config - test config without saving
-			r.Get("/{id}", notificationHandler.GetNotificationChannel)                                                 // GET /notification-channels/{id} - get channel by ID
-			r.With(middleware.RequireReadWrite).Patch("/{id}", notificationHandler.UpdateNotificationChannel)          // PATCH /notification-channels/{id} - update channel
-			r.With(middleware.RequireReadWrite).Delete("/{id}", notificationHandler.DeleteNotificationChannel)         // DELETE /notification-channels/{id} - delete channel
-			r.With(middleware.RequireReadWrite).Post("/{id}/test", notificationHandler.TestNotificationChannelConfig)  // POST /notification-channels/{id}/test - test channel config
-		})
-
-		// Notification events stats (header counters in the admin dashboard).
-		r.Get("/notifications/stats", notificationHandler.GetStats)
+		// Notification Channels API — migrated to /api/v1/notification-channels
+		// (+ /api/v1/notifications/stats) in spec 086 US3; the root handler + routes
+		// were deleted.
 
 		// Maintenances API
 		r.Route("/maintenances", func(r chi.Router) {
@@ -329,6 +274,17 @@ func NewRouter(
 				// Monitor↔host link. Write-scoped.
 				r.With(middleware.RequireReadWrite).Post("/{id}/host", hostV1Handler.LinkMonitor)
 				r.With(middleware.RequireReadWrite).Delete("/{id}/host", hostV1Handler.UnlinkMonitor)
+				// Root→v1 parity additions (spec 085). Additive; reads open, writes scoped.
+				r.Get("/{id}/live", monitorV1Handler.GetLive)
+				r.Get("/{id}/uptime-stats", monitorV1Handler.GetUptimeStats)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", monitorV1Handler.Patch)
+				r.With(middleware.RequireReadWrite).Post("/{id}/tags", monitorV1Handler.AddTag)
+				r.With(middleware.RequireReadWrite).Delete("/{id}/tags/{tagID}", monitorV1Handler.RemoveTag)
+				// Resource credentials re-mounted under v1 (spec 085). Same handler as root.
+				r.Get(routeCredentials, credentialV1Handler.Get)
+				r.With(middleware.RequireReadWrite).Post(routeCredentials, credentialV1Handler.Set)
+				r.With(middleware.RequireReadWrite).Delete(routeCredentials, credentialV1Handler.Delete)
+				r.With(middleware.RequireReadWrite).With(middleware.PerUserRateLimit(10)).Post(routeCredentialsTest, credentialV1Handler.Test)
 			})
 			// Hosts — agent device monitoring. Read GET; writes scoped.
 			r.Route("/hosts", func(r chi.Router) {
@@ -344,22 +300,39 @@ func NewRouter(
 			r.Route("/incidents", func(r chi.Router) {
 				r.Get("/", incidentV1Handler.List)
 				r.Get("/{id}", incidentV1Handler.Get)
+				r.Get("/{id}/event-steps", incidentV1Handler.GetEventSteps)
+
+				// Incident timeline updates (migrated from root, spec 086 US2)
+				r.Get("/{id}/updates", incidentUpdateV1Handler.List)
+				r.With(middleware.RequireReadWrite).Post("/{id}/updates", incidentUpdateV1Handler.Create)
+				r.With(middleware.RequireReadWrite).Patch("/{id}/updates/{updateID}", incidentUpdateV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Delete("/{id}/updates/{updateID}", incidentUpdateV1Handler.Delete)
 			})
-			// Notification channel routes — registered in T029
+			// Command-palette search (spec 084) — read-only, any valid credential.
+			r.Get("/search", searchV1Handler.List)
+			// Notification channel routes — registered in T029; test/test-config
+			// + PATCH migrated from root (spec 086 US3).
 			r.Route("/notification-channels", func(r chi.Router) {
 				r.Get("/", channelV1Handler.List)
 				r.With(middleware.RequireReadWrite).Post("/", channelV1Handler.Create)
+				r.With(middleware.RequireReadWrite).Post("/test-config", channelV1Handler.TestConfig)
 				r.Get("/{id}", channelV1Handler.Get)
 				r.With(middleware.RequireReadWrite).Put("/{id}", channelV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", channelV1Handler.Patch)
 				r.With(middleware.RequireReadWrite).Delete("/{id}", channelV1Handler.Delete)
+				r.With(middleware.RequireReadWrite).Post("/{id}/test", channelV1Handler.Test)
 			})
-			// Component routes — registered in T034
+			// Component routes — registered in T034; membership (bulk assign/remove)
+			// + PATCH migrated from root (spec 086 US4).
 			r.Route("/components", func(r chi.Router) {
 				r.Get("/", componentV1Handler.List)
 				r.With(middleware.RequireReadWrite).Post("/", componentV1Handler.Create)
+				r.With(middleware.RequireReadWrite).Post("/resources/bulk-remove", componentV1Handler.BulkRemove)
 				r.Get("/{id}", componentV1Handler.Get)
 				r.With(middleware.RequireReadWrite).Put("/{id}", componentV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", componentV1Handler.Patch)
 				r.With(middleware.RequireReadWrite).Delete("/{id}", componentV1Handler.Delete)
+				r.With(middleware.RequireReadWrite).Post("/{id}/resources/bulk-assign", componentV1Handler.BulkAssign)
 			})
 			// Tag routes — registered in T034
 			r.Route("/tags", func(r chi.Router) {
@@ -367,6 +340,7 @@ func NewRouter(
 				r.With(middleware.RequireReadWrite).Post("/", tagV1Handler.Create)
 				r.Get("/{id}", tagV1Handler.Get)
 				r.With(middleware.RequireReadWrite).Put("/{id}", tagV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", tagV1Handler.Patch)
 				r.With(middleware.RequireReadWrite).Delete("/{id}", tagV1Handler.Delete)
 			})
 			// Status page routes — registered in T034
@@ -376,6 +350,9 @@ func NewRouter(
 			// Notification feed. GET read; mark-read mutations write-scoped.
 			r.Route("/notifications", func(r chi.Router) {
 				r.Get("/", notificationFeedV1Handler.List)
+				// Stats counters (channel handler; migrated from root, spec 086 US3).
+				// Static "/stats" is registered before the "/{id}/read" param route.
+				r.Get("/stats", channelV1Handler.Stats)
 				r.With(middleware.RequireReadWrite).Post("/{id}/read", notificationFeedV1Handler.MarkRead)
 				r.With(middleware.RequireReadWrite).Post("/read-all", notificationFeedV1Handler.MarkAllRead)
 			})

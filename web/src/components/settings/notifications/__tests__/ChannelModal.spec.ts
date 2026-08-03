@@ -56,6 +56,51 @@ describe('ChannelModal', () => {
     expect(emitted?.config.channel).toBe('oncall')
   })
 
+  it('create mode requires the smtp password (validate fails, field error set)', async () => {
+    const w = mount(ChannelModal, { props: { open: true } })
+    const vm = w.vm as unknown as Vm
+    vm.name = 'Ops'
+    vm.config = {
+      host: 'smtp.example.com',
+      port: 587,
+      username: 'ops',
+      password: '',
+      sender: 'noreply@example.com',
+      recipient: 'ops@example.com',
+    }
+    const r = vm.validate()
+    expect(r).toBeNull()
+    expect(vm.fieldError['config.password']).toBeTruthy()
+  })
+
+  it('edit mode: smtp channel with a masked (blank) password validates and emits', async () => {
+    const w = mount(ChannelModal, {
+      props: {
+        open: true,
+        initial: {
+          id: 'c1',
+          type: 'smtp',
+          name: 'Ops',
+          // password absent — GET masks it out
+          config: {
+            host: 'smtp.example.com',
+            port: 587,
+            username: 'ops',
+            sender: 'noreply@example.com',
+            recipient: 'ops@example.com',
+          },
+        },
+      },
+    })
+    const vm = w.vm as unknown as Vm
+    await flushPromises()
+    await vm.onSubmit()
+    const emitted = w.emitted('submit')?.[0]?.[0] as { type: string; config: { host: string } }
+    expect(emitted?.type).toBe('smtp')
+    expect(emitted?.config.host).toBe('smtp.example.com')
+    expect(vm.fieldError['config.password']).toBeUndefined()
+  })
+
   it('Send test surfaces inline result via testResult', async () => {
     testChannelMock.mockResolvedValue({ delivered: true, latency_ms: 42 })
     const w = mount(ChannelModal, {

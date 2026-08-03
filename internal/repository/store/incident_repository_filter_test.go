@@ -16,6 +16,57 @@ import (
 
 func timePtr(t time.Time) *time.Time { return &t }
 
+// TestIncidentRepository_ListByFilter_Q exercises the free-text `q` search over
+// incident cause (spec 084) on both dialects: case-insensitive substring +
+// metacharacter escape-safety.
+func TestIncidentRepository_ListByFilter_Q(t *testing.T) {
+	internaltest.ForEachDialect(t, func(t *testing.T, fx *internaltest.DialectFixture) {
+		ctx := context.Background()
+		repo := store.NewIncidentRepositorySQLC(fx.Runtime)
+		resRepo := store.NewResourceRepositorySQLC(fx.Runtime)
+
+		mon := "mon-q-" + fx.Dialect
+		_, err := resRepo.Create(ctx, &domain.Resource{
+			Base: domain.Base{ID: mon}, Name: mon, Type: domain.ResourceHTTP,
+			Target: "https://example.com", IsActive: true, Interval: 60, Timeout: 10,
+		})
+		require.NoError(t, err)
+
+		causes := []struct{ id, cause string }{
+			{"c1", "Connection timeout"},
+			{"c2", "DNS resolution failure"},
+			{"c3", "TLS handshake error"},
+			{"c4", "50% packet loss"}, // literal % — must be escaped, not a wildcard
+		}
+		now := time.Now()
+		for i, c := range causes {
+			_, err := repo.Create(ctx, &domain.Incident{
+				Base:       domain.Base{ID: fx.Dialect + "-q-" + c.id, CreatedAt: now.Add(time.Duration(i) * time.Second), UpdatedAt: now},
+				ResourceID: mon, Cause: c.cause, StartedAt: now,
+			})
+			require.NoError(t, err)
+		}
+
+		qf := func(s string) dynquery.IncidentFilter { return dynquery.IncidentFilter{Q: &s} }
+		count := func(s string) int {
+			items, total, err := repo.ListIncidentsByFilter(ctx, qf(s), 1, 50)
+			require.NoError(t, err)
+			assert.Equal(t, total, len(items))
+			return total
+		}
+
+		assert.Equal(t, 1, count("timeout"), "substring on cause")
+		assert.Equal(t, 1, count("TIMEOUT"), "case-insensitive")
+		assert.Equal(t, 1, count("failure"))
+		assert.Equal(t, 1, count("error"))
+		assert.Equal(t, 0, count("nomatch"))
+		// escape-safety: a literal '%' must match only the one cause containing '%',
+		// NOT every row (which is what an unescaped LIKE '%' would do).
+		assert.Equal(t, 1, count("50%"))
+		assert.Equal(t, 1, count("%"))
+	})
+}
+
 // TestIncidentRepository_ListByFilter exercises the dynamic-filter SQL path
 // against both SQLite and Postgres. Seeds incidents across 3
 // monitors with varied resolved states + timestamps.

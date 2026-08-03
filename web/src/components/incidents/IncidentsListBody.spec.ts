@@ -57,7 +57,7 @@ describe('IncidentsListBody', () => {
     })
     await flushPromises()
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.objectContaining({ resource_id: 'r1', limit: 50 }),
+      expect.objectContaining({ monitor_id: 'r1', per_page: 50 }),
     )
     const vm = w.vm as unknown as { filtered: Array<{ id: string }> }
     expect(vm.filtered.length).toBe(1)

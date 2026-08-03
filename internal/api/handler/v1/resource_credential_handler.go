@@ -68,7 +68,7 @@ func mapCredentialResponse(c *domain.ResourceCredential) dtoV1.CredentialRespons
 // @Param    id path string true "Resource ID"
 // @Success  200 {object} dtoV1.SingleResponse[dtoV1.CredentialResponse]
 // @Failure  404 {object} dtoV1.ErrorResponse
-// @Router   /resources/{id}/credentials [get]
+// @Router   /monitors/{id}/credentials [get]
 func (h *ResourceCredentialHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	cred, err := h.service.Get(r.Context(), id)
@@ -100,7 +100,7 @@ func (h *ResourceCredentialHandler) Get(w http.ResponseWriter, r *http.Request) 
 // @Failure  403 {object} dtoV1.ErrorResponse
 // @Failure  404 {object} dtoV1.ErrorResponse
 // @Failure  422 {object} dtoV1.ErrorResponse
-// @Router   /resources/{id}/credentials [post]
+// @Router   /monitors/{id}/credentials [post]
 func (h *ResourceCredentialHandler) Set(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	req, ok := decodeCredentialBody(w, r)
@@ -150,7 +150,7 @@ func (h *ResourceCredentialHandler) Set(w http.ResponseWriter, r *http.Request) 
 // @Param    id path string true "Resource ID"
 // @Success  204
 // @Failure  404 {object} dtoV1.ErrorResponse
-// @Router   /resources/{id}/credentials [delete]
+// @Router   /monitors/{id}/credentials [delete]
 func (h *ResourceCredentialHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	err := h.service.Delete(r.Context(), id)
@@ -183,7 +183,7 @@ func (h *ResourceCredentialHandler) Delete(w http.ResponseWriter, r *http.Reques
 // @Failure  404 {object} dtoV1.ErrorResponse
 // @Failure  422 {object} dtoV1.ErrorResponse
 // @Failure  429 {object} dtoV1.ErrorResponse
-// @Router   /resources/{id}/credentials/test [post]
+// @Router   /monitors/{id}/credentials/test [post]
 func (h *ResourceCredentialHandler) Test(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	req, ok := decodeCredentialBody(w, r)

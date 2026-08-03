@@ -17,6 +17,7 @@ import {
 } from '@/services/notificationChannelService'
 import { fetchNotificationStats } from '@/services/notificationStatsService'
 import type { NotificationChannel, CreateNotificationChannel } from '@/types'
+import { stripBlankSecretKeys } from '@/schemas/notification-channel.schema'
 import type { NotificationChannelInput } from '@/schemas/notification-channel.schema'
 import { useConfirm } from '@/composables/useConfirm'
 import ChannelModal from '@/components/settings/notifications/ChannelModal.vue'
@@ -175,16 +176,27 @@ function openEdit(c: NotificationChannel) {
 }
 
 async function onSubmit(payload: NotificationChannelInput) {
-  const createPayload: CreateNotificationChannel = {
-    name: payload.name,
-    type: payload.type as CreateNotificationChannel['type'],
-    config: payload.config as unknown as CreateNotificationChannel['config'],
-    enabled_by_default: payload.is_default,
-  }
+  const type = payload.type as CreateNotificationChannel['type']
   if (editing.value) {
-    await updateChannel(editing.value.id, createPayload)
+    // GET masks config secrets, so on edit they come back blank. Drop blank
+    // secret keys from the update payload — the backend preserves omitted
+    // secrets; a newly typed secret is non-empty and overwrites the stored one.
+    const config = stripBlankSecretKeys(
+      payload.config as unknown as Record<string, unknown>,
+    ) as unknown as CreateNotificationChannel['config']
+    await updateChannel(editing.value.id, {
+      name: payload.name,
+      type,
+      config,
+      enabled_by_default: payload.is_default,
+    })
   } else {
-    await createChannel(createPayload)
+    await createChannel({
+      name: payload.name,
+      type,
+      config: payload.config as unknown as CreateNotificationChannel['config'],
+      enabled_by_default: payload.is_default,
+    })
   }
   modalOpen.value = false
   await reload()
@@ -322,7 +334,7 @@ const columns: TableColumn<NotificationChannel>[] = [
   },
 ]
 
-defineExpose({ channels, stats, openCreate, onSubmit, onToggleDefault, onDelete, columns })
+defineExpose({ channels, stats, openCreate, openEdit, onSubmit, onToggleDefault, onDelete, columns })
 </script>
 
 <template>

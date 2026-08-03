@@ -28,18 +28,12 @@ func (m *mockRouterPingService) HandleHeartbeatRecovery(ctx context.Context, res
 	return nil
 }
 
-func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
-	resourceHandler := handler.NewResourceHandler(nil)
+func TestNewRouter_PingIsPublicAndRootResourcesRemoved(t *testing.T) {
 	pingHandler := handler.NewPingHandler(&mockRouterPingService{})
 	activityHandler := handler.NewMonitoringActivityHandler(nil)
-	tagHandler := handler.NewTagHandler(nil)
-	componentHandler := handler.NewComponentHandler(nil)
 	statusPageHandler := handler.NewStatusPageHandler(nil)
 	publicStatusHandler := handler.NewPublicStatusHandler(nil)
 	statusPageSettingsHandler := handler.NewStatusPageSettingsHandler(nil)
-	incidentHandler := handler.NewIncidentHandler(nil)
-	incidentUpdateHandler := handler.NewIncidentUpdateHandler(nil)
-	notificationHandler := handler.NewNotificationHandler(nil)
 	maintenanceHandler := handler.NewMaintenanceHandler(nil)
 	statsHandler := handler.NewStatsHandler(nil)
 	systemHandler := handler.NewSystemHandler()
@@ -48,18 +42,12 @@ func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
 	accountHandler := handler.NewAccountHandler(nil, nil)
 
 	router := NewRouter(
-		resourceHandler,
 		pingHandler,
 		activityHandler,
-		tagHandler,
-		componentHandler,
 		statusPageHandler,
 		publicStatusHandler,
 		nil, // publicCacheMetrics
 		statusPageSettingsHandler,
-		incidentHandler,
-		incidentUpdateHandler,
-		notificationHandler,
 		maintenanceHandler,
 		statsHandler,
 		systemHandler,
@@ -87,6 +75,8 @@ func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil, // incidentUpdateV1Handler (spec 086 US2)
+		nil, // searchV1Handler (spec 084)
 		nil, // hostV1Handler
 		nil, // agentStreamV1Handler
 		nil, // hostCredentialService
@@ -104,8 +94,10 @@ func TestNewRouter_PingIsPublicAndResourcesAreProtected(t *testing.T) {
 	router.ServeHTTP(pingRec, pingReq)
 	assert.Equal(t, http.StatusNotFound, pingRec.Code)
 
+	// Root /resources was migrated to /api/v1/monitors and deleted (spec 085
+	// Phase 2b): the route no longer exists, so it 404s instead of 401.
 	resourcesReq := httptest.NewRequest(http.MethodGet, "/resources/", nil)
 	resourcesRec := httptest.NewRecorder()
 	router.ServeHTTP(resourcesRec, resourcesReq)
-	assert.Equal(t, http.StatusUnauthorized, resourcesRec.Code)
+	assert.Equal(t, http.StatusNotFound, resourcesRec.Code)
 }

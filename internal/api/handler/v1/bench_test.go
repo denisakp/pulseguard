@@ -52,6 +52,9 @@ func (s *benchMonitorService) ListAll(ctx context.Context) ([]*domain.Resource, 
 func (s *benchMonitorService) GetResourceByID(ctx context.Context, id string) (*domain.Resource, error) {
 	return s.repo.FindByID(ctx, id)
 }
+func (s *benchMonitorService) GetResourceByIDWithResponseTimes(_ context.Context, _ string, _ int) (*dto.ResourceResponse, error) {
+	panic("bench harness: GetResourceByIDWithResponseTimes not used")
+}
 func (s *benchMonitorService) CreateResource(_ context.Context, _ *dto.CreateResourcePayload) (*domain.Resource, error) {
 	panic("bench harness: CreateResource not used")
 }
@@ -63,6 +66,12 @@ func (s *benchMonitorService) DeleteResource(_ context.Context, _ string) error 
 }
 func (s *benchMonitorService) PauseMonitoring(_ context.Context, _ string) error {
 	panic("bench harness: PauseMonitoring not used")
+}
+func (s *benchMonitorService) AddTagsToResource(_ context.Context, _ string, _ []string) error {
+	panic("bench harness: AddTagsToResource not used")
+}
+func (s *benchMonitorService) RemoveTagFromResource(_ context.Context, _, _ string) error {
+	panic("bench harness: RemoveTagFromResource not used")
 }
 func (s *benchMonitorService) ResumeMonitoring(_ context.Context, _ string) error {
 	panic("bench harness: ResumeMonitoring not used")
@@ -80,6 +89,9 @@ func (s *benchIncidentService) ListByFilter(ctx context.Context, f dynquery.Inci
 }
 func (s *benchIncidentService) GetIncidentByID(ctx context.Context, id string) (*domain.Incident, error) {
 	return s.repo.FindByID(ctx, id)
+}
+func (s *benchIncidentService) GetEventStepsForIncident(_ context.Context, _ string) ([]domain.IncidentEventStep, error) {
+	panic("bench harness: GetEventStepsForIncident not used")
 }
 
 // ----------------------------------------------------------------------------
@@ -146,7 +158,7 @@ func buildBenchRouter(b *testing.B, fx *internaltest.DialectFixture) http.Handle
 	b.Helper()
 	resourceRepo := store.NewResourceRepositorySQLC(fx.Runtime)
 	incidentRepo := store.NewIncidentRepositorySQLC(fx.Runtime)
-	monitorHandler := v1.NewMonitorHandler(&benchMonitorService{repo: resourceRepo})
+	monitorHandler := v1.NewMonitorHandler(&benchMonitorService{repo: resourceRepo}, nil, nil)
 	incidentHandler := v1.NewIncidentHandler(&benchIncidentService{repo: incidentRepo})
 
 	r := chi.NewRouter()

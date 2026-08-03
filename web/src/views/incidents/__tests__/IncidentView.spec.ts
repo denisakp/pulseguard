@@ -15,11 +15,6 @@ vi.mock('vue-router', () => ({
   RouterLink: { template: '<a><slot /></a>' },
 }))
 
-const useConfirmMock = vi.fn()
-vi.mock('@/composables/useConfirm', () => ({
-  useConfirm: (opts: unknown) => useConfirmMock(opts),
-}))
-
 const incident = {
   id: 'i1',
   resource_id: 'r1',
@@ -42,12 +37,10 @@ const incident = {
   ],
 }
 const getIncidentMock = vi.fn().mockResolvedValue(incident)
-const resolveIncidentMock = vi.fn().mockResolvedValue(incident)
 
 vi.mock('@/stores/incidentStore', () => ({
   useIncidentStore: () => ({
     getIncidentById: getIncidentMock,
-    resolveIncident: resolveIncidentMock,
   }),
 }))
 
@@ -91,9 +84,7 @@ function build() {
 
 beforeEach(() => {
   pushMock.mockReset()
-  useConfirmMock.mockReset()
   getIncidentMock.mockClear()
-  resolveIncidentMock.mockClear()
 })
 
 describe('IncidentView', () => {
@@ -107,34 +98,13 @@ describe('IncidentView', () => {
     expect(w.findComponent({ name: 'NotificationsPanel' }).exists()).toBe(true)
   })
 
-  it('Resolve action calls useConfirm then resolveIncident', async () => {
-    useConfirmMock.mockResolvedValueOnce(true)
-    const w = build()
-    await flushPromises()
-    await (w.vm as unknown as { onAction: (p: { kind: string }) => Promise<void> }).onAction({
-      kind: 'resolve',
-    })
-    expect(useConfirmMock).toHaveBeenCalledWith(expect.objectContaining({ ctaLabel: 'Resolve' }))
-    expect(resolveIncidentMock).toHaveBeenCalledWith('i1')
-  })
-
   it('Back action navigates to /incidents', async () => {
     const w = build()
     await flushPromises()
-    await (w.vm as unknown as { onAction: (p: { kind: string }) => Promise<void> }).onAction({
+    ;(w.vm as unknown as { onAction: (p: { kind: string }) => void }).onAction({
       kind: 'back',
     })
     expect(pushMock).toHaveBeenCalledWith('/incidents')
-  })
-
-  it('Cancel on Resolve confirm does not call service', async () => {
-    useConfirmMock.mockResolvedValueOnce(false)
-    const w = build()
-    await flushPromises()
-    await (w.vm as unknown as { onAction: (p: { kind: string }) => Promise<void> }).onAction({
-      kind: 'resolve',
-    })
-    expect(resolveIncidentMock).not.toHaveBeenCalled()
   })
 
   it('dark-mode artifact check: root carries bg-default (FR-020)', async () => {

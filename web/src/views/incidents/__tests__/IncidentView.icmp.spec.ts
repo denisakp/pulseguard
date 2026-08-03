@@ -15,12 +15,10 @@ vi.mock('@nuxt/ui/composables/useToast', () => ({
 }))
 
 const getIncidentByIdMock = vi.fn()
-const resolveIncidentMock = vi.fn()
 
 vi.mock('@/stores/incidentStore', () => ({
   useIncidentStore: () => ({
     getIncidentById: getIncidentByIdMock,
-    resolveIncident: resolveIncidentMock,
     $id: 'incident',
   }),
 }))

@@ -1,21 +1,27 @@
 import { describe, expect, it } from 'vitest'
 import { http, HttpResponse } from 'msw'
 
-import {
-  fetchIncidents,
-  fetchIncidentById,
-  resolveIncident,
-  fetchUnresolvedIncidents,
-} from '@/services/incidentService'
-import { NotFoundError, ServerError } from '@/core/errors'
+import { fetchIncidents, fetchIncidentById, fetchUnresolvedIncidents } from '@/services/incidentService'
+import { ServerError } from '@/core/errors'
 import { server } from '@/test/msw/server'
+
+const API = '*/api/v1'
+
+const listEnvelope = (
+  data: unknown[],
+  meta: { page: number; per_page: number; total: number } = {
+    page: 1,
+    per_page: 50,
+    total: data.length,
+  },
+) => HttpResponse.json({ data, meta })
 
 function captureSearchParamsOn(pattern: string) {
   const captured: { value: URLSearchParams | null } = { value: null }
   server.use(
     http.get(pattern, ({ request }) => {
       captured.value = new URL(request.url).searchParams
-      return HttpResponse.json([])
+      return listEnvelope([])
     }),
   )
   return captured
@@ -23,92 +29,71 @@ function captureSearchParamsOn(pattern: string) {
 
 describe('incidentService', () => {
   describe('fetchIncidents', () => {
-    it('sends GET to /incidents when no params provided', async () => {
+    it('sends GET to v1/incidents and unwraps the { data, meta } envelope', async () => {
       const incidents = [{ id: 'inc-1' }]
-      server.use(http.get('*/incidents', () => HttpResponse.json(incidents)))
+      server.use(
+        http.get(`${API}/incidents`, () =>
+          listEnvelope(incidents, { page: 2, per_page: 10, total: 25 }),
+        ),
+      )
 
-      const result = await fetchIncidents()
-      expect(result).toEqual(incidents)
+      const result = await fetchIncidents({ page: 2, per_page: 10 })
+      expect(result.data).toEqual(incidents)
+      expect(result.total).toBe(25)
+      expect(result.limit).toBe(10)
+      expect(result.offset).toBe(10) // (page 2 - 1) * per_page 10
     })
 
-    it('appends unresolved query param', async () => {
-      const captured = captureSearchParamsOn('*/incidents')
+    it('maps unresolved=true onto status=open', async () => {
+      const captured = captureSearchParamsOn(`${API}/incidents`)
       await fetchIncidents({ unresolved: true })
-      expect(captured.value?.get('unresolved')).toBe('true')
+      expect(captured.value?.get('status')).toBe('open')
+      expect(captured.value?.get('unresolved')).toBeNull()
     })
 
-    it('appends limit and offset query params', async () => {
-      const captured = captureSearchParamsOn('*/incidents')
-      await fetchIncidents({ limit: 10, offset: 20 })
-      expect(captured.value?.get('limit')).toBe('10')
-      expect(captured.value?.get('offset')).toBe('20')
+    it('passes status, monitor_id, page and per_page through', async () => {
+      const captured = captureSearchParamsOn(`${API}/incidents`)
+      await fetchIncidents({ status: 'resolved', monitor_id: 'm1', page: 3, per_page: 25 })
+      expect(captured.value?.get('status')).toBe('resolved')
+      expect(captured.value?.get('monitor_id')).toBe('m1')
+      expect(captured.value?.get('page')).toBe('3')
+      expect(captured.value?.get('per_page')).toBe('25')
     })
 
-    it('appends resource_id query param', async () => {
-      const captured = captureSearchParamsOn('*/incidents')
-      await fetchIncidents({ resource_id: 'r1' })
-      expect(captured.value?.get('resource_id')).toBe('r1')
-    })
-
-    it('combines multiple query params', async () => {
-      const captured = captureSearchParamsOn('*/incidents')
-      await fetchIncidents({ unresolved: true, limit: 5, offset: 0, resource_id: 'r1' })
-      expect(captured.value?.get('unresolved')).toBe('true')
-      expect(captured.value?.get('limit')).toBe('5')
-      expect(captured.value?.get('offset')).toBe('0')
-      expect(captured.value?.get('resource_id')).toBe('r1')
+    it('does not send legacy resource_id / limit / offset params', async () => {
+      const captured = captureSearchParamsOn(`${API}/incidents`)
+      await fetchIncidents({ monitor_id: 'm1', per_page: 5 })
+      expect(captured.value?.get('resource_id')).toBeNull()
+      expect(captured.value?.get('limit')).toBeNull()
+      expect(captured.value?.get('offset')).toBeNull()
     })
 
     it('propagates errors as typed ApiError', async () => {
-      server.use(http.get('*/incidents', () => HttpResponse.json({}, { status: 500 })))
+      server.use(http.get(`${API}/incidents`, () => HttpResponse.json({}, { status: 500 })))
       await expect(fetchIncidents()).rejects.toBeInstanceOf(ServerError)
     })
   })
 
   describe('fetchIncidentById', () => {
-    it('sends GET to /incidents/:id', async () => {
+    it('sends GET to v1/incidents/:id and unwraps { data }', async () => {
       const incident = { id: 'inc-1', cause: 'timeout' }
-      server.use(http.get('*/incidents/inc-1', () => HttpResponse.json(incident)))
+      server.use(http.get(`${API}/incidents/inc-1`, () => HttpResponse.json({ data: incident })))
 
       const result = await fetchIncidentById('inc-1')
       expect(result).toEqual(incident)
     })
   })
 
-  describe('resolveIncident', () => {
-    it('sends PATCH to /incidents/:id/resolve', async () => {
-      const resolved = { id: 'inc-1', resolved_at: '2026-01-01T00:00:00Z' }
-      let methodSeen = ''
-      server.use(
-        http.patch('*/incidents/inc-1/resolve', ({ request }) => {
-          methodSeen = request.method
-          return HttpResponse.json(resolved)
-        }),
-      )
-
-      const result = await resolveIncident('inc-1')
-      expect(methodSeen).toBe('PATCH')
-      expect(result).toEqual(resolved)
-    })
-
-    it('propagates 404 as NotFoundError', async () => {
-      server.use(
-        http.patch('*/incidents/inc-999/resolve', () => HttpResponse.json({}, { status: 404 })),
-      )
-      await expect(resolveIncident('inc-999')).rejects.toBeInstanceOf(NotFoundError)
-    })
-  })
-
   describe('fetchUnresolvedIncidents', () => {
-    it('sends GET to /incidents?unresolved=true', async () => {
+    it('requests status=open and returns the unwrapped data array', async () => {
       const incidents = [{ id: 'inc-1' }, { id: 'inc-2' }]
       server.use(
-        http.get('*/incidents', ({ request }) => {
+        http.get(`${API}/incidents`, ({ request }) => {
           const url = new URL(request.url)
-          if (url.searchParams.get('unresolved') === 'true') {
-            return HttpResponse.json(incidents)
+          if (url.searchParams.get('status') === 'open') {
+            return listEnvelope(incidents)
           }
-          return HttpResponse.json([])
+          return listEnvelope([])
         }),
       )
 
@@ -117,7 +102,7 @@ describe('incidentService', () => {
     })
 
     it('propagates errors', async () => {
-      server.use(http.get('*/incidents', () => HttpResponse.json({}, { status: 503 })))
+      server.use(http.get(`${API}/incidents`, () => HttpResponse.json({}, { status: 503 })))
       await expect(fetchUnresolvedIncidents()).rejects.toBeInstanceOf(ServerError)
     })
   })

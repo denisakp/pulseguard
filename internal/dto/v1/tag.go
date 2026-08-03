@@ -8,6 +8,7 @@ type TagResponse struct {
 	Color       *string `json:"color"`
 	Description *string `json:"description"`
 	CreatedAt   string  `json:"created_at"`
+	UpdatedAt   string  `json:"updated_at"`
 }
 
 // CreateTagRequest is the request body for POST /api/v1/tags.

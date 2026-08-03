@@ -39,6 +39,7 @@ func mapTagResponse(t *domain.Tags) dtoV1.TagResponse {
 		Color:       t.Color,
 		Description: t.Description,
 		CreatedAt:   t.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:   t.UpdatedAt.UTC().Format(time.RFC3339),
 	}
 }
 
@@ -178,6 +179,24 @@ func (h *TagHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, http.StatusOK, mapTagResponse(updated))
+}
+
+// Patch handles PATCH /api/v1/tags/{id} — partial update, alias of Update.
+// Exposed so the frontend's PATCH edits (inherited from the root API) map 1:1.
+//
+// @Summary     Update a tag (partial)
+// @Tags        tags
+// @Security    BearerAuth
+// @Accept      json
+// @Produce     json
+// @Param       id   path string true "Tag ID"
+// @Param       body body dtoV1.UpdateTagRequest true "Update payload"
+// @Success     200 {object} dtoV1.SingleResponse[dtoV1.TagResponse]
+// @Failure     404 {object} dtoV1.ErrorResponse
+// @Failure     403 {object} dtoV1.ErrorResponse
+// @Router      /tags/{id} [patch]
+func (h *TagHandler) Patch(w http.ResponseWriter, r *http.Request) {
+	h.Update(w, r)
 }
 
 // Delete handles DELETE /api/v1/tags/{id}

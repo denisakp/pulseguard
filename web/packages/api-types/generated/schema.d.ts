@@ -215,7 +215,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -270,7 +270,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
                     };
                 };
                 /** @description Not Found */
@@ -308,7 +308,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -370,8 +370,175 @@ export interface paths {
                         "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
                     };
                 };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
             };
         };
+        options?: never;
+        head?: never;
+        /** Update a component (partial) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Component ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.UpdateComponentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/components/{id}/resources/bulk-assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assign resources to a component */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Component ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Resource IDs */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/components/resources/bulk-remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Remove resources from their components */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Resource IDs */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1212,6 +1379,248 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/incidents/{id}/event-steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List an incident's event steps */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/incidents/{id}/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List an incident's timeline updates */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Add an update to an incident's timeline */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/incidents/{id}/updates/{updateID}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an incident timeline update */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                    /** @description Update ID */
+                    updateID: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Edit an incident timeline update */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Incident ID */
+                    id: string;
+                    /** @description Update ID */
+                    updateID: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/integrations/alert-rules": {
         parameters: {
             query?: never;
@@ -1371,7 +1780,7 @@ export interface paths {
             /** @description Monitor payload */
             requestBody: {
                 content: {
-                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.CreateMonitorRequest"];
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto.CreateResourcePayload"];
                 };
             };
             responses: {
@@ -1381,7 +1790,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -1420,7 +1829,10 @@ export interface paths {
         /** Get a monitor by ID */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Number of recent response-time points to include (default 60) */
+                    limit?: number;
+                };
                 header?: never;
                 path: {
                     /** @description Monitor ID */
@@ -1436,7 +1848,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"];
                     };
                 };
                 /** @description Not Found */
@@ -1464,7 +1876,7 @@ export interface paths {
             /** @description Update payload */
             requestBody: {
                 content: {
-                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.UpdateMonitorRequest"];
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto.UpdateResourcePayload"];
                 };
             };
             responses: {
@@ -1474,7 +1886,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -1538,6 +1950,274 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        /** Partially update a monitor */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Monitor ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Partial update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto.UpdateResourcePayload"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/monitors/{id}/credentials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the credential metadata for a resource (password masked) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Resource ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CredentialResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create or replace credentials for a resource */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Resource ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Credential payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.CredentialCreateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CredentialResponse"];
+                    };
+                };
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CredentialResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Remove credentials for a resource (revert to no-auth behavior) */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Resource ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/monitors/{id}/credentials/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Live-test credentials without persisting (rate-limited 10/min) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Resource ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Credential payload (not persisted) */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.CredentialCreateRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.CredentialTestResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1644,6 +2324,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/monitors/{id}/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live snapshot of a monitor */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Monitor ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_LiveSnapshotResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/monitors/{id}/pause": {
         parameters: {
             query?: never;
@@ -1672,7 +2400,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -1729,7 +2457,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -1752,6 +2480,171 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/monitors/{id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Attach tags to a monitor */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Monitor ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Tag IDs */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.AddTagsRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/monitors/{id}/tags/{tagID}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Detach a tag from a monitor */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Monitor ID */
+                    id: string;
+                    /** @description Tag ID */
+                    tagID: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/monitors/{id}/uptime-stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hourly uptime statistics for a monitor */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Monitor ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorUptimeStatsResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1933,7 +2826,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -1988,7 +2881,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
                     };
                 };
                 /** @description Not Found */
@@ -2026,7 +2919,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
                     };
                 };
                 /** @description Forbidden */
@@ -2090,6 +2983,168 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        /** Update a notification channel (partial) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Channel ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/notification-channels/{id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send a test notification through a saved channel */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Channel ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification-channels/test-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate and test an unsaved channel config */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Config to test */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.TestChannelConfigRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Unprocessable Entity */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2262,6 +3317,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/notifications/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notification stats counters */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_NotificationStatsResponse"];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reports/history": {
         parameters: {
             query?: never;
@@ -2427,22 +3527,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/resources/{id}/credentials": {
+    "/search": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get the credential metadata for a resource (password masked) */
+        /**
+         * Search monitors, incidents, and pages
+         * @description Command-palette search across monitors (name/target), incidents (cause), and app pages. Read-only.
+         */
         get: {
             parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Resource ID */
-                    id: string;
+                query: {
+                    /** @description Search query (min 2 characters, matched literally) */
+                    q: string;
+                    /** @description Max results (default 30, max 100) */
+                    limit?: number;
+                    /** @description Comma-separated filter: resource,incident,page (default all) */
+                    categories?: string;
                 };
+                header?: never;
+                path?: never;
                 cookie?: never;
             };
             requestBody?: never;
@@ -2453,68 +3560,11 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CredentialResponse"];
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_SearchResponse"];
                     };
                 };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** Create or replace credentials for a resource */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Resource ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            /** @description Credential payload */
-            requestBody: {
-                content: {
-                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.CredentialCreateRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CredentialResponse"];
-                    };
-                };
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CredentialResponse"];
-                    };
-                };
-                /** @description Forbidden */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -2533,107 +3583,8 @@ export interface paths {
                 };
             };
         };
-        /** Remove credentials for a resource (revert to no-auth behavior) */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Resource ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/resources/{id}/credentials/test": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
         put?: never;
-        /** Live-test credentials without persisting (rate-limited 10/min) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Resource ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            /** @description Credential payload (not persisted) */
-            requestBody: {
-                content: {
-                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.CredentialCreateRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.CredentialTestResponse"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
-                    };
-                };
-                /** @description Unprocessable Entity */
-                422: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
-                    };
-                };
-                /** @description Too Many Requests */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
-                    };
-                };
-            };
-        };
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3198,7 +4149,53 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update a tag (partial) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Tag ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Update payload */
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never> | components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.UpdateTagRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_TagResponse"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/toolbox/dns": {
@@ -3459,6 +4456,283 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        "github_com_denisakp_ogoune_internal_domain.Component": {
+            created_at?: string;
+            description?: string;
+            grouping_window_seconds?: number;
+            id?: string;
+            last_notification_status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ComponentStatus"];
+            name?: string;
+            resources?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"][];
+            updated_at?: string;
+        };
+        /** @enum {string} */
+        "github_com_denisakp_ogoune_internal_domain.ComponentStatus": "up" | "degraded" | "down";
+        /** @enum {string} */
+        "github_com_denisakp_ogoune_internal_domain.ExpiryStatus": "ok" | "warning" | "critical" | "expired";
+        "github_com_denisakp_ogoune_internal_domain.Incident": {
+            cause?: string;
+            created_at?: string;
+            details?: number[];
+            diagnostics?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.IncidentDiagnostics"];
+            event_steps?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.IncidentEventStep"][];
+            id?: string;
+            /** @description nil = active, timestamp = resolved */
+            resolved_at?: string;
+            resource?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"];
+            resource_id?: string;
+            started_at?: string;
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_domain.IncidentDiagnostics": {
+            /** @description true if response body is base64 encoded */
+            body_encoded?: boolean;
+            /** @description true if response body was truncated */
+            body_truncated?: boolean;
+            created_at?: string;
+            /** @description Milliseconds (0 if not measured) */
+            dns_duration?: number;
+            /** @description Machine-readable error from Go */
+            error_message?: string;
+            /** @description Human-friendly explanation */
+            error_summary?: string;
+            /** @description e.g., connection_timeout, invalid_status_code */
+            failure_type?: string;
+            /** @description Milliseconds (0 if body not captured) */
+            first_byte_duration?: number;
+            /** @description HTTP status code (-1 if N/A) */
+            http_status_code?: number;
+            /** @description ICMP enrichment fields (H2: populated by diagnostic enricher for all DOWN incidents) */
+            icmp_available?: boolean;
+            /** @description whether host replied to ICMP echo */
+            icmp_reachable?: boolean;
+            /** @description round-trip time in ms; null when unreachable */
+            icmp_rtt_ms?: number;
+            id?: string;
+            incident?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Incident"];
+            incident_id?: string;
+            /** @description Keyword enrichment fields (populated for keyword monitor incidents only) */
+            keyword?: string;
+            keyword_found?: boolean;
+            keyword_mode?: string;
+            /** @description Sanitized request headers */
+            request_headers?: {
+                [key: string]: string;
+            };
+            /** @description GET, HEAD, POST, etc. */
+            request_method?: string;
+            /** @description Timeout in seconds */
+            request_timeout?: number;
+            /** @description Full URL being checked */
+            request_url?: string;
+            /** @description Base64 encoded if needed, truncated to 5KB */
+            response_body?: string;
+            /** @description Response headers */
+            response_headers?: {
+                [key: string]: string;
+            };
+            /** @description Actual response size in bytes */
+            response_size?: number;
+            /** @description enum: icmp_unavailable|host_unreachable|service_down|"" */
+            root_cause_hint?: string;
+            /** @description Milliseconds (0 if not applicable) */
+            tls_duration?: number;
+            /** @description Milliseconds */
+            total_duration?: number;
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_domain.IncidentEventStep": {
+            created_at?: string;
+            id?: string;
+            incident?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Incident"];
+            incident_id?: string;
+            message?: string;
+            step?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.IncidentEventStepType"];
+            updated_at?: string;
+        };
+        /** @enum {string} */
+        "github_com_denisakp_ogoune_internal_domain.IncidentEventStepType": "detected" | "resolved" | "alert_sent" | "resource_down_alert" | "resource_up_alert" | "flapping" | "flapping_stabilized" | "reminder" | "component_alert";
+        "github_com_denisakp_ogoune_internal_domain.MonitoringActivity": {
+            created_at?: string;
+            id?: string;
+            is_maintenance?: boolean;
+            message?: string;
+            resource?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"];
+            resource_id?: string;
+            response_data?: number[];
+            response_time?: number;
+            success?: boolean;
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_domain.NotificationChannel": {
+            /** @description JSON configuration specific to channel type */
+            config?: number[];
+            created_at?: string;
+            enabled_by_default?: boolean;
+            failures_24h?: number;
+            id?: string;
+            last_failure_at?: string;
+            last_sent_at?: string;
+            name?: string;
+            type?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.NotificationChannelType"];
+            updated_at?: string;
+        };
+        /** @enum {string} */
+        "github_com_denisakp_ogoune_internal_domain.NotificationChannelType": "smtp" | "slack" | "sms";
+        "github_com_denisakp_ogoune_internal_domain.Resource": {
+            component?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Component"];
+            component_id?: string;
+            confirmation_checks?: number;
+            confirmation_interval?: number;
+            created_at?: string;
+            credential?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceCredential"];
+            expiry_alert_thresholds?: string;
+            failure_count?: number;
+            flap_detection_enabled?: boolean;
+            flap_max_duration_minutes?: number;
+            flap_started_at?: string;
+            flap_threshold?: number;
+            flap_window_seconds?: number;
+            heartbeat_grace?: number;
+            heartbeat_interval?: number;
+            heartbeat_slug?: string;
+            /** @description optional link to a monitored host */
+            host_id?: string;
+            id?: string;
+            incident_count_30d?: number;
+            incidents?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Incident"][];
+            /** @description in seconds */
+            interval?: number;
+            is_active?: boolean;
+            keyword?: string;
+            keyword_mode?: string;
+            last_checked?: string;
+            last_ping_at?: string;
+            last_status_transition?: string;
+            metadata?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceMetaData"];
+            metadata_pending?: boolean;
+            name?: string;
+            notification_channels?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.NotificationChannel"][];
+            protocol_port?: number;
+            protocol_type?: string;
+            reminder_interval_minutes?: number;
+            response_time?: number;
+            status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceStatus"];
+            tags?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Tags"][];
+            target?: string;
+            /** @description in seconds */
+            timeout?: number;
+            type?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceType"];
+            updated_at?: string;
+            uptime_7d?: number;
+            uptime_30d?: number;
+        };
+        "github_com_denisakp_ogoune_internal_domain.ResourceCredential": {
+            created_at?: string;
+            id?: string;
+            resource_id?: string;
+            updated_at?: string;
+            username?: string;
+        };
+        "github_com_denisakp_ogoune_internal_domain.ResourceMetaData": {
+            domain_expiration_date?: string;
+            domain_registrar?: string;
+            ssl_expiration_date?: string;
+            ssl_issuer?: string;
+        };
+        /** @enum {string} */
+        "github_com_denisakp_ogoune_internal_domain.ResourceStatus": "up" | "down" | "error" | "unknown" | "paused" | "pending" | "warning" | "flapping";
+        /** @enum {string} */
+        "github_com_denisakp_ogoune_internal_domain.ResourceType": "http" | "tcp" | "dns" | "icmp" | "heartbeat" | "keyword" | "protocol";
+        "github_com_denisakp_ogoune_internal_domain.Tags": {
+            color?: string;
+            created_at?: string;
+            description?: string;
+            id?: string;
+            name?: string;
+            resources?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"][];
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot": {
+            id?: string;
+            name?: string;
+            status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceStatus"];
+        };
+        "github_com_denisakp_ogoune_internal_dto.ComponentResponse": {
+            created_at?: string;
+            description?: string;
+            grouping_window_seconds?: number;
+            id?: string;
+            impacted_resources?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot"][];
+            name?: string;
+            resources?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ComponentResourceSnapshot"][];
+            status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ComponentStatus"];
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto.CreateResourcePayload": {
+            component_id?: string;
+            confirmation_checks?: number;
+            confirmation_interval?: number;
+            expiry_alert_thresholds?: string;
+            flap_detection_enabled?: boolean;
+            flap_max_duration_minutes?: number;
+            flap_threshold?: number;
+            flap_window_seconds?: number;
+            heartbeat_grace?: number;
+            heartbeat_interval?: number;
+            interval: number;
+            keyword?: string;
+            keyword_mode?: string;
+            name: string;
+            /**
+             * @description NotificationChannelNames are channel names to attach; resolved to IDs at create time.
+             *     Channels must already exist (they hold secrets and are never created here). Used by the
+             *     bulk import path; missing name is a validation error.
+             */
+            notification_channel_names?: string[];
+            protocol_port?: number;
+            protocol_type?: string;
+            reminder_interval_minutes?: number;
+            /** @description Tag names - will be created if they don't exist */
+            tags?: string[];
+            target: string;
+            timeout: number;
+            type: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceType"];
+        };
+        "github_com_denisakp_ogoune_internal_dto.LiveActiveIncident": {
+            cause?: string;
+            id?: string;
+            started_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto.LiveSnapshotResponse": {
+            active_incident?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.LiveActiveIncident"];
+            fetched_at?: string;
+            recent_activities?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.MonitoringActivity"][];
+            resource?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"];
+            stats?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.LiveStats"];
+        };
+        "github_com_denisakp_ogoune_internal_dto.LiveStats": {
+            avg_response_time_24h?: number;
+            last_response_time?: number;
+            uptime_24h?: number;
+            uptime_2h?: number;
+            uptime_7d?: number;
+            uptime_30d?: number;
+        };
+        "github_com_denisakp_ogoune_internal_dto.NotificationChannelResponse": {
+            config?: {
+                [key: string]: unknown;
+            };
+            created_at?: string;
+            enabled_by_default?: boolean;
+            failures_24h?: number;
+            id?: string;
+            last_failure_at?: string;
+            last_sent_at?: string;
+            name?: string;
+            type?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.NotificationChannelType"];
+            updated_at?: string;
+        };
         "github_com_denisakp_ogoune_internal_dto.ProblemDetail": {
             code?: string;
             detail?: string;
@@ -3585,6 +4859,98 @@ export interface components {
             incidents?: number;
             uptime_ratio?: number;
         };
+        "github_com_denisakp_ogoune_internal_dto.ResourceMetaDataResponse": {
+            domain_days_remaining?: number;
+            domain_expiration_date?: string;
+            domain_registrar?: string;
+            ssl_days_remaining?: number;
+            ssl_expiration_date?: string;
+            ssl_issuer?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto.ResourceResponse": {
+            component?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Component"];
+            component_id?: string;
+            confirmation_checks?: number;
+            confirmation_interval?: number;
+            created_at?: string;
+            credential?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceCredential"];
+            expiry_alert_thresholds?: string;
+            expiry_status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ExpiryStatus"];
+            failure_count?: number;
+            flap_detection_enabled?: boolean;
+            flap_max_duration_minutes?: number;
+            flap_started_at?: string;
+            flap_threshold?: number;
+            flap_window_seconds?: number;
+            heartbeat_grace?: number;
+            heartbeat_interval?: number;
+            heartbeat_slug?: string;
+            /** @description optional link to a monitored host */
+            host_id?: string;
+            id?: string;
+            incident_count_30d?: number;
+            incidents?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Incident"][];
+            /** @description in seconds */
+            interval?: number;
+            is_active?: boolean;
+            keyword?: string;
+            keyword_mode?: string;
+            last_checked?: string;
+            last_ping_at?: string;
+            last_status_transition?: string;
+            metadata?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ResourceMetaDataResponse"];
+            metadata_pending?: boolean;
+            name?: string;
+            notification_channels?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.NotificationChannel"][];
+            protocol_port?: number;
+            protocol_type?: string;
+            reminder_interval_minutes?: number;
+            response_time?: number;
+            response_times?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ResponseTimePoint"][];
+            status?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceStatus"];
+            tags?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Tags"][];
+            target?: string;
+            /** @description in seconds */
+            timeout?: number;
+            type?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceType"];
+            updated_at?: string;
+            uptime_7d?: number;
+            uptime_30d?: number;
+            waiting?: boolean;
+        };
+        "github_com_denisakp_ogoune_internal_dto.ResponseTimePoint": {
+            /** @description in milliseconds */
+            response_time?: number;
+            timestamp?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto.UpdateResourcePayload": {
+            component_id?: string;
+            confirmation_checks?: number;
+            confirmation_interval?: number;
+            expiry_alert_thresholds?: string;
+            flap_detection_enabled?: boolean;
+            flap_max_duration_minutes?: number;
+            flap_threshold?: number;
+            flap_window_seconds?: number;
+            heartbeat_grace?: number;
+            heartbeat_interval?: number;
+            interval?: number;
+            is_active?: boolean;
+            keyword?: string;
+            keyword_mode?: string;
+            name?: string;
+            protocol_port?: number;
+            protocol_type?: string;
+            reminder_interval_minutes?: number;
+            /** @description Tag IDs (ULIDs) - must reference existing tags */
+            tags?: string[];
+            target?: string;
+            timeout?: number;
+            type?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.ResourceType"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.AddTagsRequest": {
+            tag_ids?: string[];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.AnnouncementResponse": {
             createdAt?: string;
             description?: string;
@@ -3593,21 +4959,8 @@ export interface components {
             severity?: string;
             title?: string;
         };
-        "github_com_denisakp_ogoune_internal_dto_v1.ChannelResponse": {
-            config?: number[];
-            created_at?: string;
-            id?: string;
-            is_default?: boolean;
-            is_enabled?: boolean;
-            type?: string;
-            updated_at?: string;
-        };
-        "github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse": {
-            created_at?: string;
-            description?: string;
-            id?: string;
-            name?: string;
-            updated_at?: string;
+        "github_com_denisakp_ogoune_internal_dto_v1.BulkResourceIDsRequest": {
+            resource_ids?: string[];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateAnnouncementRequest": {
             description?: string;
@@ -3617,15 +4970,15 @@ export interface components {
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateChannelRequest": {
             config?: number[];
-            is_default?: boolean;
-            /** @description defaults to true if omitted */
-            is_enabled?: boolean;
+            enabled_by_default?: boolean;
             name?: string;
             type?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateComponentRequest": {
             description?: string;
+            grouping_window_seconds?: number;
             name?: string;
+            resource_ids?: string[];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateDashboardRequest": {
             defaultTimeRange?: string;
@@ -3638,18 +4991,6 @@ export interface components {
         "github_com_denisakp_ogoune_internal_dto_v1.CreateHostCredentialResponse": {
             credential?: string;
             prefix?: string;
-        };
-        "github_com_denisakp_ogoune_internal_dto_v1.CreateMonitorRequest": {
-            component_id?: string;
-            interval?: number;
-            keyword?: string;
-            name?: string;
-            protocol_port?: number;
-            protocol_type?: string;
-            tags?: string[];
-            target?: string;
-            timeout?: number;
-            type?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.CreateTagRequest": {
             color?: string;
@@ -3764,18 +5105,41 @@ export interface components {
         "github_com_denisakp_ogoune_internal_dto_v1.IncidentResponse": {
             cause?: string;
             created_at?: string;
+            details?: string;
+            diagnostics?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.IncidentDiagnostics"];
+            event_steps?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.IncidentEventStep"][];
             id?: string;
             monitor_id?: string;
             resolved_at?: string;
+            resource?: components["schemas"]["github_com_denisakp_ogoune_internal_domain.Resource"];
+            resource_id?: string;
             started_at?: string;
             /** @description "open" or "resolved" */
             status?: string;
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateRequest": {
+            message?: string;
+            status?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateResponse": {
+            created_at?: string;
+            id?: string;
+            incident_id?: string;
+            message?: string;
+            posted_at?: string;
+            posted_by?: string;
+            status?: string;
+            updated_at?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.LinkHostRequest": {
             host_id?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.MarkAllReadResponse": {
             marked?: number;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.MessageResponse": {
+            message?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.MetaResponse": {
             page?: number;
@@ -3797,6 +5161,21 @@ export interface components {
             timeout?: number;
             type?: string;
             updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStat": {
+            hour?: string;
+            successful_count?: number;
+            total_count?: number;
+            uptime_percent?: number;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStatsResponse": {
+            resource_id?: string;
+            stats?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStat"][];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.NotificationStatsResponse": {
+            failed_24h?: number;
+            pending?: number;
+            sent_30d?: number;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.PortResult": {
             banner?: string;
@@ -3883,16 +5262,41 @@ export interface components {
         "github_com_denisakp_ogoune_internal_dto_v1.SaveLayoutRequest": {
             widgets?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.WidgetInstance"][];
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SearchResponse": {
+            query_duration_ms?: number;
+            results?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SearchResult"][];
+            total?: number;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SearchResult": {
+            /** @description Category is one of: resource | incident | page. */
+            category?: string;
+            /** @description DeepLink is the in-app path that opens the item (e.g. /resources/<id>). */
+            deep_link?: string;
+            /** @description ID is a stable, category-prefixed id: "resource:<id>" | "incident:<id>" | "page:<label>". */
+            id?: string;
+            /** @description Label is the primary human-readable text (monitor name, incident cause, page name). */
+            label?: string;
+            /** @description Meta is short context (e.g. a monitor's target), omitted when empty. */
+            meta?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ComponentResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ComponentResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_LiveSnapshotResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.LiveSnapshotResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.NotificationChannelResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto.ResourceResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_AnnouncementResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.AnnouncementResponse"];
-            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
-        };
-        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse": {
-            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ChannelResponse"];
-            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
-        };
-        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ComponentResponse": {
-            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_CreateHostCredentialResponse": {
@@ -3927,12 +5331,28 @@ export interface components {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_IncidentUpdateResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.IncidentUpdateResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MarkAllReadResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MarkAllReadResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MessageResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MonitorResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorUptimeStatsResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStatsResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_NotificationStatsResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.NotificationStatsResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_PortScanResponse": {
@@ -3955,6 +5375,10 @@ export interface components {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SSLCheckResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
         };
+        "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_SearchResponse": {
+            data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.SearchResponse"];
+            meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
+        };
         "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_TagResponse": {
             data?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.TagResponse"];
             meta?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"];
@@ -3969,16 +5393,21 @@ export interface components {
             description?: string;
             id?: string;
             name?: string;
+            updated_at?: string;
+        };
+        "github_com_denisakp_ogoune_internal_dto_v1.TestChannelConfigRequest": {
+            config?: number[];
+            type?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest": {
             config?: number[];
-            is_default?: boolean;
-            is_enabled?: boolean;
+            enabled_by_default?: boolean;
             name?: string;
             type?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateComponentRequest": {
             description?: string;
+            grouping_window_seconds?: number;
             name?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateDashboardRequest": {
@@ -3988,18 +5417,6 @@ export interface components {
             scope?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.DashboardScope"];
             visibility?: string;
             widgets?: components["schemas"]["github_com_denisakp_ogoune_internal_dto_v1.WidgetInstance"][];
-        };
-        "github_com_denisakp_ogoune_internal_dto_v1.UpdateMonitorRequest": {
-            component_id?: string;
-            interval?: number;
-            keyword?: string;
-            name?: string;
-            protocol_port?: number;
-            protocol_type?: string;
-            tags?: string[];
-            target?: string;
-            timeout?: number;
-            type?: string;
         };
         "github_com_denisakp_ogoune_internal_dto_v1.UpdateReportSettingsRequest": {
             enabled?: boolean;
