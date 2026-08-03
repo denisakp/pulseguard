@@ -5,6 +5,8 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.0.0-beta.2] - 2026-08-03
+
 ### Changed
 
 - **⌘K command palette now searches server-side (spec 084 frontend swap)** — the palette
