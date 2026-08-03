@@ -35,7 +35,6 @@ func TestNewRouter_PingIsPublicAndRootResourcesRemoved(t *testing.T) {
 	statusPageHandler := handler.NewStatusPageHandler(nil)
 	publicStatusHandler := handler.NewPublicStatusHandler(nil)
 	statusPageSettingsHandler := handler.NewStatusPageSettingsHandler(nil)
-	notificationHandler := handler.NewNotificationHandler(nil)
 	maintenanceHandler := handler.NewMaintenanceHandler(nil)
 	statsHandler := handler.NewStatsHandler(nil)
 	systemHandler := handler.NewSystemHandler()
@@ -51,7 +50,6 @@ func TestNewRouter_PingIsPublicAndRootResourcesRemoved(t *testing.T) {
 		publicStatusHandler,
 		nil, // publicCacheMetrics
 		statusPageSettingsHandler,
-		notificationHandler,
 		maintenanceHandler,
 		statsHandler,
 		systemHandler,

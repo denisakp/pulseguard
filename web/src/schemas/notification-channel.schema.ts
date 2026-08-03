@@ -5,7 +5,30 @@ import { z } from 'zod'
  * Backend dispatch (internal/monitoring/incident_service.go) currently
  * handles `smtp` + `webhook`; `slack` is recognised by the domain enum but
  * not yet routed. Discord and Telegram are spec-idealised — deferred.
+ *
+ * Spec 086 US3 — the v1 `GET /notification-channels` endpoint MASKS config
+ * secrets (they come back absent). On edit the operator therefore sees blank
+ * secret fields and may leave them blank to keep the stored value, so the
+ * `edit` schema variant makes secrets optional (create stays strict). Blank
+ * secrets are stripped from the update payload by `stripBlankSecretKeys` so the
+ * backend preserves the stored credential.
  */
+
+/**
+ * Config keys the backend masks in GET responses and preserves on update when
+ * omitted or blank. Only `password` (SMTP) appears in the current form union;
+ * the rest are listed so the strip/optional logic stays correct if SMS or other
+ * secret-bearing channels are added.
+ */
+export const SECRET_CONFIG_KEYS = [
+  'password',
+  'auth_token',
+  'token',
+  'account_sid',
+  'secret',
+] as const
+
+export type SchemaMode = 'create' | 'edit'
 
 const baseFields = {
   name: z.string().trim().min(1, 'Required').max(80, 'At most 80 characters'),
@@ -13,20 +36,23 @@ const baseFields = {
   is_active: z.boolean().default(true),
 }
 
-export const smtpChannelSchema = z.object({
-  type: z.literal('smtp'),
-  ...baseFields,
-  config: z.object({
-    host: z.string().trim().min(1, 'SMTP host required'),
-    port: z.coerce.number().int().min(1).max(65535),
-    username: z.string().trim().min(1, 'Username required'),
-    password: z.string().min(1, 'Password required'),
-    sender: z.string().trim().email('Sender must be an email'),
-    recipient: z.string().trim().email('Recipient must be an email'),
-  }),
-})
+// SMTP config — password is required on create, optional on edit (leave blank
+// to keep the stored secret, which GET masks out).
+const smtpChannelSchema = (mode: SchemaMode) =>
+  z.object({
+    type: z.literal('smtp'),
+    ...baseFields,
+    config: z.object({
+      host: z.string().trim().min(1, 'SMTP host required'),
+      port: z.coerce.number().int().min(1).max(65535),
+      username: z.string().trim().min(1, 'Username required'),
+      password: mode === 'edit' ? z.string().optional() : z.string().min(1, 'Password required'),
+      sender: z.string().trim().email('Sender must be an email'),
+      recipient: z.string().trim().email('Recipient must be an email'),
+    }),
+  })
 
-export const slackChannelSchema = z.object({
+const slackChannelSchema = z.object({
   type: z.literal('slack'),
   ...baseFields,
   config: z.object({
@@ -42,7 +68,7 @@ export const slackChannelSchema = z.object({
   }),
 })
 
-export const webhookChannelSchema = z.object({
+const webhookChannelSchema = z.object({
   type: z.literal('webhook'),
   ...baseFields,
   config: z.object({
@@ -60,14 +86,33 @@ export const webhookChannelSchema = z.object({
   }),
 })
 
-export const notificationChannelSchema = z.discriminatedUnion('type', [
-  smtpChannelSchema,
-  slackChannelSchema,
-  webhookChannelSchema,
-])
+/**
+ * Build the discriminated channel schema for the given mode. `create` keeps
+ * secret fields required; `edit` relaxes them (masked secrets come back blank).
+ */
+export const channelSchemaFor = (mode: SchemaMode = 'create') =>
+  z.discriminatedUnion('type', [smtpChannelSchema(mode), slackChannelSchema, webhookChannelSchema])
+
+// Default (create) schema — kept as a named export for the strict-validation path.
+export const notificationChannelSchema = channelSchemaFor('create')
 
 export type NotificationChannelInput = z.infer<typeof notificationChannelSchema>
 export type ChannelType = NotificationChannelInput['type']
+
+/**
+ * Remove blank/absent secret keys from a channel config before sending an
+ * update. A key left blank means "keep the stored secret" — the backend
+ * preserves omitted secrets. A newly typed secret is a non-empty string and is
+ * kept as-is (overwrites the stored value).
+ */
+export function stripBlankSecretKeys<T extends Record<string, unknown>>(config: T): T {
+  const out: Record<string, unknown> = { ...config }
+  for (const key of SECRET_CONFIG_KEYS) {
+    const v = out[key]
+    if (v === undefined || v === null || v === '') delete out[key]
+  }
+  return out as T
+}
 
 export const CHANNEL_TYPES: { value: ChannelType; label: string; icon: string }[] = [
   { value: 'smtp', label: 'Email (SMTP)', icon: 'i-lucide-mail' },

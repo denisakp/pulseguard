@@ -785,6 +785,42 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto.NotificationChannelResponse": {
+                "properties": {
+                    "config": {
+                        "additionalProperties": {},
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "enabled_by_default": {
+                        "type": "boolean"
+                    },
+                    "failures_24h": {
+                        "type": "integer"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "last_failure_at": {
+                        "type": "string"
+                    },
+                    "last_sent_at": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_domain.NotificationChannelType"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto.ProblemDetail": {
                 "properties": {
                     "code": {
@@ -1520,36 +1556,6 @@
                 },
                 "type": "object"
             },
-            "github_com_denisakp_ogoune_internal_dto_v1.ChannelResponse": {
-                "properties": {
-                    "config": {
-                        "items": {
-                            "type": "integer"
-                        },
-                        "type": "array",
-                        "uniqueItems": false
-                    },
-                    "created_at": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "is_default": {
-                        "type": "boolean"
-                    },
-                    "is_enabled": {
-                        "type": "boolean"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "updated_at": {
-                        "type": "string"
-                    }
-                },
-                "type": "object"
-            },
             "github_com_denisakp_ogoune_internal_dto_v1.ComponentResponse": {
                 "properties": {
                     "created_at": {
@@ -1596,11 +1602,7 @@
                         "type": "array",
                         "uniqueItems": false
                     },
-                    "is_default": {
-                        "type": "boolean"
-                    },
-                    "is_enabled": {
-                        "description": "defaults to true if omitted",
+                    "enabled_by_default": {
                         "type": "boolean"
                     },
                     "name": {
@@ -2108,6 +2110,14 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.MessageResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.MetaResponse": {
                 "properties": {
                     "page": {
@@ -2197,6 +2207,20 @@
                         },
                         "type": "array",
                         "uniqueItems": false
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.NotificationStatsResponse": {
+                "properties": {
+                    "failed_24h": {
+                        "type": "integer"
+                    },
+                    "pending": {
+                        "type": "integer"
+                    },
+                    "sent_30d": {
+                        "type": "integer"
                     }
                 },
                 "type": "object"
@@ -2531,6 +2555,17 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto.NotificationChannelResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_ResourceResponse": {
                 "properties": {
                     "data": {
@@ -2546,17 +2581,6 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.AnnouncementResponse"
-                    },
-                    "meta": {
-                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
-                    }
-                },
-                "type": "object"
-            },
-            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse": {
-                "properties": {
-                    "data": {
-                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ChannelResponse"
                     },
                     "meta": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
@@ -2685,6 +2709,17 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MessageResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MonitorResponse": {
                 "properties": {
                     "data": {
@@ -2700,6 +2735,17 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MonitorUptimeStatsResponse"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
+                    }
+                },
+                "type": "object"
+            },
+            "github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_NotificationStatsResponse": {
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.NotificationStatsResponse"
                     },
                     "meta": {
                         "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.MetaResponse"
@@ -2818,6 +2864,21 @@
                 },
                 "type": "object"
             },
+            "github_com_denisakp_ogoune_internal_dto_v1.TestChannelConfigRequest": {
+                "properties": {
+                    "config": {
+                        "items": {
+                            "type": "integer"
+                        },
+                        "type": "array",
+                        "uniqueItems": false
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest": {
                 "properties": {
                     "config": {
@@ -2827,10 +2888,7 @@
                         "type": "array",
                         "uniqueItems": false
                     },
-                    "is_default": {
-                        "type": "boolean"
-                    },
-                    "is_enabled": {
+                    "enabled_by_default": {
                         "type": "boolean"
                     },
                     "name": {
@@ -6075,7 +6133,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"
                                 }
                             }
                         },
@@ -6108,6 +6166,71 @@
                     }
                 ],
                 "summary": "Create a notification channel",
+                "tags": [
+                    "notification-channels"
+                ]
+            }
+        },
+        "/notification-channels/test-config": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.TestChannelConfigRequest",
+                                        "summary": "body",
+                                        "description": "Config to test"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Config to test",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Validate and test an unsaved channel config",
                 "tags": [
                     "notification-channels"
                 ]
@@ -6178,7 +6301,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"
                                 }
                             }
                         },
@@ -6201,6 +6324,80 @@
                     }
                 ],
                 "summary": "Get a notification channel by ID",
+                "tags": [
+                    "notification-channels"
+                ]
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "description": "Channel ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "oneOf": [
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.UpdateChannelRequest",
+                                        "summary": "body",
+                                        "description": "Update payload"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "description": "Update payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Update a notification channel (partial)",
                 "tags": [
                     "notification-channels"
                 ]
@@ -6242,7 +6439,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_ChannelResponse"
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_NotificationChannelResponse"
                                 }
                             }
                         },
@@ -6275,6 +6472,62 @@
                     }
                 ],
                 "summary": "Update a notification channel",
+                "tags": [
+                    "notification-channels"
+                ]
+            }
+        },
+        "/notification-channels/{id}/test": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "Channel ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_MessageResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "403": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Unprocessable Entity"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Send a test notification through a saved channel",
                 "tags": [
                     "notification-channels"
                 ]
@@ -6393,6 +6646,41 @@
                 "summary": "Mark all visible notifications read (optional before_timestamp cursor)",
                 "tags": [
                     "notifications"
+                ]
+            }
+        },
+        "/notifications/stats": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.SingleResponse-github_com_denisakp_ogoune_internal_dto_v1_NotificationStatsResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/github_com_denisakp_ogoune_internal_dto_v1.ErrorResponse"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "summary": "Notification stats counters",
+                "tags": [
+                    "notification-channels"
                 ]
             }
         },

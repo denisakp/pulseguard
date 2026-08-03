@@ -35,7 +35,6 @@ func NewRouter(
 	publicStatusHandler *handler.PublicStatusHandler,
 	publicCacheMetrics middleware.PublicStatusCacheRecorder,
 	statusPageSettingsHandler *handler.StatusPageSettingsHandler,
-	notificationHandler *handler.NotificationHandler,
 	maintenanceHandler *handler.MaintenanceHandler,
 	statsHandler *handler.StatsHandler,
 	systemHandler *handler.SystemHandler,
@@ -222,19 +221,9 @@ func NewRouter(
 		// Incidents API — migrated to /api/v1/incidents (spec 086 US2); the root
 		// /incidents handlers + routes (incl. the updates timeline) were deleted.
 
-		// Notification Channels API
-		r.Route("/notification-channels", func(r chi.Router) {
-			r.Get("/", notificationHandler.ListNotificationChannels)                                                   // GET /notification-channels - list all channels
-			r.With(middleware.RequireReadWrite).Post("/", notificationHandler.CreateNotificationChannel)               // POST /notification-channels - create new channel
-			r.With(middleware.RequireReadWrite).Post("/test-config", notificationHandler.ValidateAndTestChannelConfig) // POST /notification-channels/test-config - test config without saving
-			r.Get("/{id}", notificationHandler.GetNotificationChannel)                                                 // GET /notification-channels/{id} - get channel by ID
-			r.With(middleware.RequireReadWrite).Patch("/{id}", notificationHandler.UpdateNotificationChannel)          // PATCH /notification-channels/{id} - update channel
-			r.With(middleware.RequireReadWrite).Delete("/{id}", notificationHandler.DeleteNotificationChannel)         // DELETE /notification-channels/{id} - delete channel
-			r.With(middleware.RequireReadWrite).Post("/{id}/test", notificationHandler.TestNotificationChannelConfig)  // POST /notification-channels/{id}/test - test channel config
-		})
-
-		// Notification events stats (header counters in the admin dashboard).
-		r.Get("/notifications/stats", notificationHandler.GetStats)
+		// Notification Channels API — migrated to /api/v1/notification-channels
+		// (+ /api/v1/notifications/stats) in spec 086 US3; the root handler + routes
+		// were deleted.
 
 		// Maintenances API
 		r.Route("/maintenances", func(r chi.Router) {
@@ -330,13 +319,17 @@ func NewRouter(
 			})
 			// Command-palette search (spec 084) — read-only, any valid credential.
 			r.Get("/search", searchV1Handler.List)
-			// Notification channel routes — registered in T029
+			// Notification channel routes — registered in T029; test/test-config
+			// + PATCH migrated from root (spec 086 US3).
 			r.Route("/notification-channels", func(r chi.Router) {
 				r.Get("/", channelV1Handler.List)
 				r.With(middleware.RequireReadWrite).Post("/", channelV1Handler.Create)
+				r.With(middleware.RequireReadWrite).Post("/test-config", channelV1Handler.TestConfig)
 				r.Get("/{id}", channelV1Handler.Get)
 				r.With(middleware.RequireReadWrite).Put("/{id}", channelV1Handler.Update)
+				r.With(middleware.RequireReadWrite).Patch("/{id}", channelV1Handler.Patch)
 				r.With(middleware.RequireReadWrite).Delete("/{id}", channelV1Handler.Delete)
+				r.With(middleware.RequireReadWrite).Post("/{id}/test", channelV1Handler.Test)
 			})
 			// Component routes — registered in T034
 			r.Route("/components", func(r chi.Router) {
@@ -362,6 +355,9 @@ func NewRouter(
 			// Notification feed. GET read; mark-read mutations write-scoped.
 			r.Route("/notifications", func(r chi.Router) {
 				r.Get("/", notificationFeedV1Handler.List)
+				// Stats counters (channel handler; migrated from root, spec 086 US3).
+				// Static "/stats" is registered before the "/{id}/read" param route.
+				r.Get("/stats", channelV1Handler.Stats)
 				r.With(middleware.RequireReadWrite).Post("/{id}/read", notificationFeedV1Handler.MarkRead)
 				r.With(middleware.RequireReadWrite).Post("/read-all", notificationFeedV1Handler.MarkAllRead)
 			})

@@ -7,5 +7,9 @@ export interface NotificationStats {
 }
 
 export const fetchNotificationStats = async (): Promise<NotificationStats> => {
-  return await request<NotificationStats>(getAuthenticatedClient(), 'notifications/stats')
+  const res = await request<{ data: NotificationStats }>(
+    getAuthenticatedClient(),
+    'v1/notifications/stats',
+  )
+  return res.data
 }

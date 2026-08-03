@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { notificationChannelSchema, emptyConfigForType } from './notification-channel.schema'
+import {
+  notificationChannelSchema,
+  channelSchemaFor,
+  emptyConfigForType,
+  stripBlankSecretKeys,
+} from './notification-channel.schema'
 
 describe('notificationChannelSchema', () => {
   it('accepts a valid smtp channel', () => {
@@ -82,6 +87,38 @@ describe('notificationChannelSchema', () => {
     expect(r.success).toBe(false)
   })
 
+  it('create mode requires the smtp password', () => {
+    const r = channelSchemaFor('create').safeParse({
+      type: 'smtp',
+      name: 'Ops mailbox',
+      config: {
+        host: 'smtp.example.com',
+        port: 587,
+        username: 'ops',
+        password: '',
+        sender: 'noreply@example.com',
+        recipient: 'ops@example.com',
+      },
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it('edit mode accepts an smtp channel with a blank (masked) password', () => {
+    const r = channelSchemaFor('edit').safeParse({
+      type: 'smtp',
+      name: 'Ops mailbox',
+      config: {
+        host: 'smtp.example.com',
+        port: 587,
+        username: 'ops',
+        // password omitted — masked by GET, left blank on edit
+        sender: 'noreply@example.com',
+        recipient: 'ops@example.com',
+      },
+    })
+    expect(r.success).toBe(true)
+  })
+
   it('emptyConfigForType returns sane defaults for each type', () => {
     const s = emptyConfigForType('smtp') as { port: number }
     expect(s.port).toBe(587)
@@ -90,5 +127,30 @@ describe('notificationChannelSchema', () => {
     const w = emptyConfigForType('webhook') as { method: string; headers: unknown[] }
     expect(w.method).toBe('POST')
     expect(w.headers).toEqual([])
+  })
+})
+
+describe('stripBlankSecretKeys', () => {
+  it('drops blank/absent secret keys so the backend preserves the stored value', () => {
+    const out = stripBlankSecretKeys({
+      host: 'smtp.example.com',
+      password: '',
+      auth_token: undefined,
+      username: 'ops',
+    })
+    expect(out).not.toHaveProperty('password')
+    expect(out).not.toHaveProperty('auth_token')
+    expect(out).toEqual({ host: 'smtp.example.com', username: 'ops' })
+  })
+
+  it('keeps a newly typed non-empty secret', () => {
+    const out = stripBlankSecretKeys({ username: 'ops', password: 'n3w' })
+    expect(out.password).toBe('n3w')
+  })
+
+  it('leaves non-secret keys untouched', () => {
+    const out = stripBlankSecretKeys({ webhook_url: '', channel: 'oncall' })
+    // webhook_url is NOT a masked secret, so an empty value is preserved
+    expect(out).toEqual({ webhook_url: '', channel: 'oncall' })
   })
 })
