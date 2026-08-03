@@ -5,6 +5,18 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **v1 monitors return the rich resource shape (spec 085, Phase 2a)** — `/api/v1/monitors`
+  List/Get/Create/Update/PATCH/Pause/Resume now return the same enriched `ResourceResponse`
+  the root `/api/resources` returns (tags as objects, `last_checked`, `uptime_7d`,
+  `incident_count_30d`, `response_times`, `expiry_status`, `waiting`, SSL/domain
+  days-remaining, all monitor-type fields) and accept the full create/update payloads (no
+  dropped fields), reusing the root's mapping + service. This supersedes the thin
+  `MonitorResponse` for CRUD (kept only for the monitor↔host link endpoints). Prerequisite
+  for the frontend repoint + root-handler deletion (Phase 2b, still pending). Contract
+  change is safe: beta, and the SPA is the only v1 consumer.
+
 ### Added
 
 - **Monitors API parity with the root resources API (spec 085, Phase 1)** — additive

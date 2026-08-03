@@ -52,6 +52,9 @@ func (s *benchMonitorService) ListAll(ctx context.Context) ([]*domain.Resource, 
 func (s *benchMonitorService) GetResourceByID(ctx context.Context, id string) (*domain.Resource, error) {
 	return s.repo.FindByID(ctx, id)
 }
+func (s *benchMonitorService) GetResourceByIDWithResponseTimes(_ context.Context, _ string, _ int) (*dto.ResourceResponse, error) {
+	panic("bench harness: GetResourceByIDWithResponseTimes not used")
+}
 func (s *benchMonitorService) CreateResource(_ context.Context, _ *dto.CreateResourcePayload) (*domain.Resource, error) {
 	panic("bench harness: CreateResource not used")
 }

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	v1 "github.com/denisakp/ogoune/internal/api/handler/v1"
+	"github.com/denisakp/ogoune/internal/domain"
 	"github.com/denisakp/ogoune/internal/dto"
 	dtoV1 "github.com/denisakp/ogoune/internal/dto/v1"
 	"github.com/denisakp/ogoune/internal/service"
@@ -16,6 +17,38 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// TestMonitorParity_ListReturnsRichShape locks the spec-085 Phase-2a enrichment:
+// GET /api/v1/monitors now returns the rich dto.ResourceResponse (uptime_7d,
+// incident_count_30d, tags-as-objects) instead of the thin MonitorResponse.
+func TestMonitorParity_ListReturnsRichShape(t *testing.T) {
+	up := 99.5
+	inc := 3
+	res := &domain.Resource{
+		Name: "api", Type: domain.ResourceHTTP, Target: "https://x",
+		Uptime7d: &up, IncidentCount30d: &inc,
+		Tags: []*domain.Tags{{Base: domain.Base{ID: "tag1"}, Name: "prod"}},
+	}
+	res.ID = "m1"
+	router := newMonitorRouter(&mockMonitorService{resources: []*domain.Resource{res}})
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/monitors?per_page=50", nil)
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	require.Equal(t, http.StatusOK, rr.Code)
+
+	var body struct {
+		Data []map[string]any `json:"data"`
+	}
+	require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &body))
+	require.Len(t, body.Data, 1)
+	row := body.Data[0]
+	assert.Equal(t, 99.5, row["uptime_7d"], "rich field uptime_7d present")
+	assert.EqualValues(t, 3, row["incident_count_30d"], "rich field incident_count_30d present")
+	tags, ok := row["tags"].([]any)
+	require.True(t, ok && len(tags) == 1, "tags is an array of objects")
+	assert.Equal(t, "tag1", tags[0].(map[string]any)["id"], "tag object carries id (not just name)")
+}
 
 type liveStub struct {
 	resp *dto.LiveSnapshotResponse

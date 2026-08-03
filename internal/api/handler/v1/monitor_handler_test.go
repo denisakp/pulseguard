@@ -121,6 +121,18 @@ func (m *mockMonitorService) UpdateResource(_ context.Context, id string, payloa
 	return &domain.Resource{Base: domain.Base{ID: id, CreatedAt: time.Now(), UpdatedAt: time.Now()}}, nil
 }
 
+func (m *mockMonitorService) GetResourceByIDWithResponseTimes(_ context.Context, id string, _ int) (*dto.ResourceResponse, error) {
+	if m.getErr != nil {
+		return nil, m.getErr
+	}
+	r := domain.Resource{}
+	r.ID = id
+	if m.resource != nil {
+		r = *m.resource
+	}
+	return &dto.ResourceResponse{Resource: r}, nil
+}
+
 func (m *mockMonitorService) AddTagsToResource(_ context.Context, _ string, tagIDs []string) error {
 	m.lastTagIDs = tagIDs
 	return m.addTagsErr
@@ -397,6 +409,10 @@ type mockMonitorServiceNotFound struct {
 }
 
 func (m *mockMonitorServiceNotFound) GetResourceByID(_ context.Context, _ string) (*domain.Resource, error) {
+	return nil, errNotFound
+}
+
+func (m *mockMonitorServiceNotFound) GetResourceByIDWithResponseTimes(_ context.Context, _ string, _ int) (*dto.ResourceResponse, error) {
 	return nil, errNotFound
 }
 
