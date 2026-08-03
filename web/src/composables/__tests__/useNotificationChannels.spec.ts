@@ -17,6 +17,7 @@ vi.mock('@/services/notificationChannelService', () => ({
 }))
 
 import { useNotificationChannels } from '../useNotificationChannels'
+import type { SlackConfig } from '@/types'
 
 beforeEach(() => {
   fetchChannelsMock.mockReset()
@@ -51,7 +52,12 @@ describe('useNotificationChannels', () => {
     createChannelMock.mockResolvedValue({ id: 'new', name: 'N', type: 'slack', config: {} })
     const c = useNotificationChannels()
     await c.loadChannels()
-    const created = await c.addChannel({ name: 'N', type: 'slack', config: {}, enabled_by_default: false })
+    const created = await c.addChannel({
+      name: 'N',
+      type: 'slack',
+      config: {} as SlackConfig,
+      enabled_by_default: false,
+    })
     expect(created.id).toBe('new')
     expect(c.channels.value.map((x) => x.id)).toEqual(['new'])
   })
@@ -81,7 +87,7 @@ describe('useNotificationChannels', () => {
     testChannelConfigMock.mockResolvedValue(undefined)
     const c = useNotificationChannels()
     await c.testChannel('a')
-    await c.testChannelConfig({ type: 'slack', config: {} })
+    await c.testChannelConfig({ type: 'slack', config: {} as SlackConfig })
     expect(testChannelMock).toHaveBeenCalledWith('a')
     expect(testChannelConfigMock).toHaveBeenCalledWith({ type: 'slack', config: {} })
   })
