@@ -7,6 +7,15 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **⌘K command palette now searches server-side (spec 084 frontend swap)** — the palette
+  queries `GET /api/v1/search` (debounced 150 ms) once a query reaches 2 characters, so it
+  finds monitors and incidents beyond the in-memory store window (historical incidents,
+  monitors not yet loaded). Empty and single-character queries still filter the local corpus
+  instantly, and if the endpoint is unreachable the palette **falls back to the local Fuse
+  search** — no loss of function offline. Result routing uses the contract's `deep_link`
+  paths, which also fixes a stale incident route (`{name:'Incident'}` → `/incidents/{id}`).
+  `fuse.js` stays in the bundle as the fallback engine (removal deferred to post-prod
+  validation).
 - **Components moved to `/api/v1/components` (spec 086, US4)** — the frontend now manages
   components (logical groupings of monitors with a rolled-up status) through the versioned API.
   The v1 component handler was **rebuilt on `ComponentService`** — it previously bypassed the
@@ -89,8 +98,7 @@ follows [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/).
   (cause), and app pages, returns a ranked, capped result set
   (`{results,total,query_duration_ms}`). Read-only (any valid credential), dual-dialect
   (SQLite + Postgres via the portable `LOWER() LIKE LOWER() ESCAPE` dynquery predicate,
-  injection-safe), no pagination, no new migration. The palette frontend swap (with a
-  client-side fallback) is a deferred follow-up.
+  injection-safe), no pagination, no new migration.
 
 ---
 

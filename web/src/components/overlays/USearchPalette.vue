@@ -85,6 +85,7 @@ watch(
 )
 
 const counterText = computed(() => {
+  if (palette.searching.value) return 'Searching…'
   const total = palette.results.value.length
   return `${total} result${total === 1 ? '' : 's'} · ${palette.lastQueryDurationMs.value}ms`
 })
